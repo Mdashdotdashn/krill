@@ -136,9 +136,9 @@
             {
               var currline = editor.getCursorPosition();
               range =  new Range(currline.row, currline.column, currline.row, currline.column);
-              editor.session.insert(currline,"\n");
             }
             sendRange(editor,log, range);
+            return true;
           },
           readOnly: true
           });
