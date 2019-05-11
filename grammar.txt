@@ -2,8 +2,16 @@ start = sequence
 
 ws "whitespace" = " "*
 quote = '"'
-char =  [0-9a-zA-Z]
-sequence_step = chars:char+ ws { return chars.join("");}
-sub_sequence =  "[" elements:element+ "]" { return elements;}
-element = sequence_step / sub_sequence
-sequence = ws quote elements:element+ quote { return elements; }
+
+// single step definition
+step_char =  [0-9a-zA-Z]
+cycle_step = chars:step_char+ ws { return chars.join("");}
+
+// define a sub cycle
+sub_cycle =  "[" elements:element+ "]" { return elements;}
+
+// a sequence slice is either a single step or a sub cycle
+sequence_slice = cycle_step / sub_cycle
+
+// a sequence, made of slices
+sequence = ws quote slice:sequence_slice+ quote { return slice; }
