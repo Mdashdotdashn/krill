@@ -1,0 +1,28 @@
+{
+  "name": "krill",
+  "version": "1.0.0",
+  "description": "liv coding environment",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mdashdotdashn/krill.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Mdashdotdashn/krill/issues"
+  },
+  "homepage": "https://github.com/Mdashdotdashn/krill#readme",
+  "dependencies": {
+    "@hapi/hapi": "^18.3.1",
+    "@hapi/inert": "^5.2.0",
+    "hapi": "^18.1.0",
+    "mathjs": "^5.10.0",
+    "pegjs": "^0.10.0"
+  }
+}

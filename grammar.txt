@@ -1,0 +1,9 @@
+start = sequence
+
+ws "whitespace" = " "*
+quote = '"'
+char =  [0-9a-zA-Z]
+sequence_step = chars:char+ ws { return chars.join("");}
+sub_sequence =  "[" elements:element+ "]" { return elements;}
+element = sequence_step / sub_sequence
+sequence = ws quote elements:element+ quote { return elements; }

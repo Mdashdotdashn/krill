@@ -1,0 +1,193 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <meta name="Description" content=""/>
+    <link rel="shortcut icon" href=""/>
+    <style>
+      body {
+          background-color: #B9B7AA;
+      }
+
+      #editor {
+          height: 275px;
+          width: 600px;
+          border: 1px solid #DDD;
+          border-radius: 4px;
+          border-bottom-right-radius: 0px;
+          margin-top: 5px;
+      }
+      #log {
+          height: 275px;
+          width: 600px;
+          border: 1px solid #DDD;
+          border-radius: 4px;
+          border-bottom-right-radius: 0px;
+          margin-top: 5px;
+      }
+      .warning
+      {
+          background: rgba(255, 50, 50, 0.5);
+          position: absolute;
+          width: 100% !important;
+          left: 0 !important;
+      }
+    </style>
+
+    <script src="js/jquery-1.7.1.min.js"></script>
+    <script src="js/peg-0.10.0.min.js"></script>
+    <script src="js/ace/min/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script>
+
+    var Range = ace.require('ace/range').Range;
+    var parser;
+    var lastMarkerRow;
+    var lastMarkerID;
+
+    function buildErrorMessage(e) {
+      return e.location !== undefined
+        ? "Line " + e.location.start.line + ", column " + e.location.start.column + ": " + e.message
+        : e.message;
+    }
+
+    function testParser(string)
+    {
+      try {
+        parser.parse(string);
+        return true;
+      }
+      catch(e)
+      {
+        console.log(buildErrorMessage(e));
+        return false;
+      }
+    }
+
+    function processCommand(log, command)
+    {
+      command = command.replace(/(\r\n|\n|\r)/gm,"");
+      if (command.trim())
+      {
+        $.getJSON('/command', { command : command }, function(response)
+        {
+          var logsession = log.session
+          logsession.insert({
+             row: logsession.getLength(),
+             column: 0
+          }, response.reply + "\n");        })
+      }
+    }
+
+    function pollServerEvents()
+    {
+      $.getJSON('/reporter', function(response)
+      {
+          console.log(response.reply);
+          setTimeout(pollServerEvents, 1);
+      })
+    }
+
+    function sendRange(editor, log, range)
+    {
+      for (var i = range.start.row; i<= range.end.row; i++)
+      {
+        var lineText = editor.session.getLine(i);
+        var result =  processCommand(log, lineText);
+      }
+    }
+
+    $( document ).ready(function()
+    {
+      // listen to server events
+
+        setTimeout(pollServerEvents, 10);
+        console.log( "ready!" );
+
+     // Setup editor and log
+        var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai");
+        editor.getSession().setMode("ace/mode/text");
+
+        var log = ace.edit("log");
+        log.setTheme("ace/theme/terminal");
+        log.getSession().setMode("ace/mode/text");
+
+        editor.commands.addCommand({
+          name: 'sendLine',
+          bindKey: {win: 'Shift-Enter', mac: 'Shift-Enter'},
+          exec: function(editor) {
+            var selection = editor.getSelection();
+            var range = selection.getRange();
+
+            // look for the case were a single line is selected but selection goes to next one.
+            if (range.start.row > range.end.row)
+            {
+              if (range.start.column ==0)
+              {
+                range.start.row -=1;
+              }
+            }
+            if (range.end.row > range.start.row)
+            {
+              range.end.row -=1;
+            }
+            if (selection.isEmpty())
+            {
+              var currline = editor.getCursorPosition();
+              range =  new Range(currline.row, currline.column, currline.row, currline.column);
+              editor.session.insert(currline,"\n");
+            }
+            sendRange(editor,log, range);
+          },
+          readOnly: true
+          });
+
+        var highlightSyntax = function()
+        {
+          var currline = editor.getCursorPosition().row;
+          var lineText = editor.session.getLine(currline);
+          if (lineText.trim().length > 0)
+          {
+            var success = testParser(lineText);
+            if (lastMarkerID)
+            {
+              editor.getSession().removeMarker(lastMarkerID);
+            }
+            if (!success)
+            {
+              lastMarkerID = editor.getSession().addMarker(new Range(currline, 0, currline, 1), "warning", "line", true);
+            }
+          }
+        }
+
+        editor.getSession().selection.on('changeCursor', function() {
+          highlightSyntax();
+        });
+
+        editor.getSession().getDocument().on('change', function() {
+          highlightSyntax();
+        });
+
+      // Setup local parser
+
+        $.get('/grammar.txt', function(data)
+        {
+          var parserSource = peg.generate(data, {
+            cache:    $("#option-cache").is(":checked"),
+            optimize: $("#option-optimize").val(),
+            output:   "source"
+          });
+
+          parser = eval(parserSource);
+
+        });
+    });
+    </script>
+</head>
+
+<body>
+<div id="editor"></div>
+<div id="log"></div>
+</body>
+</html>
