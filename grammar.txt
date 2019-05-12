@@ -1,17 +1,33 @@
+{
+  var SequenceStub = function(data, alignment)
+  {
+    this.aligment_ = alignment;
+    this.data_ = data;
+  }
+}
+
 start = sequence
 
 ws "whitespace" = " "*
+comma = ws "," ws;
 quote = '"'
 
 // single step definition
 step_char =  [0-9a-zA-Z]
-cycle_step = chars:step_char+ ws { return chars.join("");}
+step = ws chars:step_char+ ws { return chars.join("") }
 
-// define a sub cycle
-sub_cycle =  "[" elements:element+ "]" { return elements;}
+// define a sub cycle i.e. [1 2, 3 [4]]
+sub_cycle =   "[" s:stack "]" { return s}
 
-// a sequence slice is either a single step or a sub cycle
-sequence_slice = cycle_step / sub_cycle
+// a slice is either a single step or a sub cycle
+slice = step / sub_cycle
 
-// a sequence, made of slices
-sequence = ws quote slice:sequence_slice+ quote { return slice; }
+// a cycle is a combination of one or more slices
+cycle = s:(slice)+ { return new SequenceStub(s,"h")}
+
+// a stack is a serie of vertically aligned cycles, separated by a comma
+stack = c:cycle cs:(comma v:cycle { return v})*
+  { cs.unshift(c); return new SequenceStub(cs,"v") }
+// a sequence is a quoted stack
+sequence = ws quote s:stack quote
+  { return s; }

@@ -25,10 +25,10 @@ var Application = function()
 Application.prototype.parse = function(command)
 {
 	var result = parser.parse(command); // returns something like a function call: method, arg1, arg2, arg3
-	console.log("translating: " + JSON.stringify(result));
+//	console.log("translating: " + JSON.stringify(result));
 	var sequence = this.toSequence(result);
 	console.log("result: " + JSON.stringify(sequence));
-	return JSON.stringify(sequence);
+	return JSON.stringify(sequence, undefined, 1);
 };
 
 Application.prototype.toSequence = function(sequenceArray)
