@@ -1,4 +1,5 @@
 var assert = require("assert");
+var math = require("mathjs");
 var peg = require("pegjs");
 var fs = require('fs');
 
@@ -19,7 +20,20 @@ function testSequence(string, expected)
   assert.deepEqual(output,expected);
 }
 
+function testNextTime(string, time, expected)
+{
+  var sequenceArray = parser.parse(quote+string+quote);
+  var sequence = new Sequence(sequenceArray);
+  assert.deepEqual(sequence.nextTimeFrom(time), math.fraction(expected));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
+
+testNextTime("1 2 3, 4 5", math.number(0.5), "2/3");
+testNextTime("1 2 3", math.number(0), "1/3");
+testNextTime("1 2 3", math.fraction("1/3"), "2/3");
+testNextTime("1 2 3", math.fraction("2/3"), "1");
+testNextTime("1 2 3", math.fraction("4/3"), "2/3");
 
 testSequence("1 2 3",
  [

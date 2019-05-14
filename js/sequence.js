@@ -52,8 +52,8 @@ var renderArray = function(sequenceArray, timeScale, timeOffset)
 
 Sequence = function(sequenceArray)
 {
-  this.length_ = 1;
-  var rendered = renderArray(sequenceArray , this.length_, 0);
+  this.cycleLength_ = math.fraction("1");
+  var rendered = renderArray(sequenceArray , this.cycleLength_, 0);
   var grouped = rendered.reduce(function(collection, x) {
     // push and create if necessary
     (collection[x.time] = collection[x.time] ? collection[x.time]: []).push(x.value);
@@ -66,4 +66,28 @@ Sequence = function(sequenceArray)
     ordered.push({time: key, values : grouped[key]});
   });
   this.sequence_ = ordered;
+}
+
+Sequence.prototype.timeAtIndex = function(index)
+{
+  return math.fraction(this.sequence_[index].time);
+}
+
+Sequence.prototype.nextTimeFrom = function(time)
+{
+  var searchTime = math.mod(time, this.cycleLength_);
+
+  var minIndex = 0;
+  var minTime = this.timeAtIndex(minIndex);
+
+  while (minIndex < this.sequence_.length)
+  {
+    var minTime = this.timeAtIndex(minIndex);
+    if (minTime > searchTime)
+    {
+      return minTime;
+    }
+    minIndex++;
+  }
+  return this.cycleLength_;
 }
