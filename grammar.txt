@@ -1,16 +1,63 @@
 {
   var SequenceStub = function(data, alignment)
   {
+    this.type_ = "sequence";
     this.aligment_ = alignment;
     this.data_ = data;
   }
+
+  var OperantStub = function(name, args, sequence)
+  {
+    this.type_ = "command";
+    this.name_ = name;
+    this.args_ = args;
+    this.sequence_ = sequence;
+  }
 }
 
-start = sequence
+start = input
+
+// ----- Numbers -----
+
+number "number"
+  = minus? int frac? exp? { return parseFloat(text()); }
+
+decimal_point
+  = "."
+
+digit1_9
+  = [1-9]
+
+e
+  = [eE]
+
+exp
+  = e (minus / plus)? DIGIT+
+
+frac
+  = decimal_point DIGIT+
+
+int
+  = zero / (digit1_9 DIGIT*)
+
+minus
+  = "-"
+
+plus
+  = "+"
+
+zero
+  = "0"
+
+DIGIT  = [0-9]
+
+// ------------------ alpha numeral ---------------------------
 
 ws "whitespace" = " "*
 comma = ws "," ws;
 quote = '"'
+
+// ------------------ steps and cycles ---------------------------
 
 // single step definition
 step_char =  [0-9a-zA-Z]
@@ -22,12 +69,29 @@ sub_cycle =   "[" s:stack "]" { return s}
 // a slice is either a single step or a sub cycle
 slice = step / sub_cycle
 
-// a cycle is a combination of one or more slices
-cycle = s:(slice)+ { return new SequenceStub(s,"h")}
+// a single cycle is a combination of one or more slices
+single_cycle = s:(slice)+ { return new SequenceStub(s,"h")}
 
-// a stack is a serie of vertically aligned cycles, separated by a comma
-stack = c:cycle cs:(comma v:cycle { return v})*
+// a stack is a serie of vertically aligned single cycles, separated by a comma
+stack = c:single_cycle cs:(comma v:single_cycle { return v})*
   { cs.unshift(c); return new SequenceStub(cs,"v") }
+
 // a sequence is a quoted stack
 sequence = ws quote s:stack quote
   { return s; }
+
+// ------------------ commands ---------------------------
+
+command = slow
+
+slow = "slow" ws a:number
+  { return { name: "slow", args :{ amount: a}}}
+
+// ------------------ high level  ---------------------------
+
+sequ_or_command = s:sequence
+     {return s}
+   / c:command ws "$" ws soc:sequ_or_command
+     { return new OperantStub(c.name,c.args,soc)}
+
+input = sequ_or_command

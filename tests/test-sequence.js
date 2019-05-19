@@ -15,7 +15,8 @@ var parser = peg.generate(buf.toString());
 function testSequence(string, expected)
 {
   var sequenceArray = parser.parse(quote+string+quote);
-  var sequence = new Sequence(sequenceArray);
+  var sequence = new Sequence();
+  sequence.renderArray(sequenceArray);
   var output = sequence.sequence_.reduce(function(a,x) { var o = new Object() ; o[x.time] = x.values; a.push(o); return a;}, []);
   assert.deepEqual(output,expected);
 }
@@ -23,7 +24,8 @@ function testSequence(string, expected)
 function testNextTime(string, time, expected)
 {
   var sequenceArray = parser.parse(quote+string+quote);
-  var sequence = new Sequence(sequenceArray);
+  var sequence = new Sequence();
+  sequence.renderArray(sequenceArray);
   assert.deepEqual(sequence.nextTimeFrom(time), math.fraction(expected));
 }
 
