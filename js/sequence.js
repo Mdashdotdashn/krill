@@ -83,15 +83,25 @@ Sequence.prototype.renderArray = function(sequenceArray)
   this.sequence_ = ordered;
 }
 
+Sequence.prototype.size = function()
+{
+  return this.sequence_.length;
+}
+
+Sequence.prototype.dataAtIndex = function(index)
+{
+  return this.sequence_[index];
+}
+
+
 Sequence.prototype.timeAtIndex = function(index)
 {
   return math.fraction(this.sequence_[index].time);
 }
 
-Sequence.prototype.nextTimeFrom = function(time)
+// This could be nicely replaced by a binary search
+Sequence.prototype.nextTimeFrom = function(searchTime)
 {
-  var searchTime = math.mod(time, math.fraction(this.cycleLength_));
-
   var minIndex = 0;
   var minTime = this.timeAtIndex(minIndex);
 
@@ -100,9 +110,24 @@ Sequence.prototype.nextTimeFrom = function(time)
     var minTime = this.timeAtIndex(minIndex);
     if (minTime > searchTime)
     {
-      return minTime;
+      return { time: math.fraction(minTime), values: this.dataAtIndex(minIndex).values };
     }
     minIndex++;
   }
-  return math.fraction(this.cycleLength_);
+}
+
+Sequence.prototype.valueAtTime = function(time)
+{
+  var searchTime = math.mod(time, math.fraction(this.cycleLength_));
+
+  var minIndex = 0;
+
+  while (minIndex < this.sequence_.length)
+  {
+    var current = this.timeAtIndex(minIndex);
+    if (current == searchTime)
+    {
+      return this.sequence_[index].values;
+    }
+  }
 }

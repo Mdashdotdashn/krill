@@ -26,7 +26,10 @@ function testNextTime(string, time, expected)
   var sequenceArray = parser.parse(quote+string+quote);
   var sequence = new Sequence();
   sequence.renderArray(sequenceArray);
-  assert.deepEqual(sequence.nextTimeFrom(time), math.fraction(expected));
+  // Test we've got either the expected value or 'undefined' (meaning the cycle finishing)
+  var next = sequence.nextTimeFrom(math.fraction(time));
+  var nextTime = next ? next.time : undefined;
+  assert.deepEqual(nextTime, expected ? math.fraction(expected) : undefined);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -34,8 +37,7 @@ function testNextTime(string, time, expected)
 testNextTime("1 2 3, 4 5", math.number(0.5), "2/3");
 testNextTime("1 2 3", math.number(0), "1/3");
 testNextTime("1 2 3", math.fraction("1/3"), "2/3");
-testNextTime("1 2 3", math.fraction("2/3"), "1");
-testNextTime("1 2 3", math.fraction("4/3"), "2/3");
+testNextTime("1 2 3", math.fraction("2/3"), undefined);
 
 testSequence("1 2 3",
  [
