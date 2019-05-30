@@ -9,7 +9,7 @@ var quote ="\"";
 
 var testAdvance = function(time, expectedTime, expectedValues)
 {
-  assert.equal(player.advance(time), expectedTime);
+  assert.equal(fracToString(player.advance(time)), expectedTime);
   if (expectedValues)
   {
     assert.deepEqual(player.currentValues(), expectedValues)

@@ -1,11 +1,32 @@
 const math = require("mathjs");
 const _ = require("lodash");
 
+Step = function(time, values)
+{
+  this.time_ = (typeof time == 'string') ? math.fraction(time) : time;
+  this.values_ = values;
+}
+
+Step.prototype.time = function()
+{
+  return this.time_;
+}
+
+Step.prototype.timeString = function()
+{
+    return math.format(this.time_);
+}
+
+Step.prototype.values = function()
+{
+  return this.values_;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 fracToString = function(f)
 {
-  return ""+f.n+"/"+f.d;
+  return math.format(f);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -32,7 +53,7 @@ var renderHorizontalData = function(data, timeScale, timeOffset)
     else
     {
       const fraction = math.fraction(position);
-      return { time: fracToString(fraction), value: x };
+      return new Step(fraction,x);
     }
   }, this);
 //LOG  console.log("Hrendered = "+JSON.stringify(rendered));
@@ -59,7 +80,7 @@ var renderArray = function(sequenceArray, timeScale, timeOffset)
 
 Sequence = function()
 {
-  this.cycleLength_ = 0;
+  this.cycleLength_ = math.fraction(0);
   this.sequence_ = [];
 }
 
@@ -69,17 +90,18 @@ Sequence.prototype.renderArray = function(sequenceArray)
   var rendered = renderArray(sequenceArray , length, 0);
   var grouped = rendered.reduce(function(collection, x) {
     // push and create if necessary
-    (collection[x.time] = collection[x.time] ? collection[x.time]: []).push(x.value);
+    var t = x.timeString();
+    (collection[t] = collection[t] ? collection[t]: []).push(x.values_);
      return collection;}
   ,{});
 
   const ordered = [];
   const fractionCompareFn = (a,b) => { return math.compare(math.fraction(a), math.fraction(b))};
   Object.keys(grouped).sort(fractionCompareFn).forEach(function(key) {
-    ordered.push({time: key, values : grouped[key]});
+    ordered.push(new Step(key,grouped[key]));
   });
 
-  this.cycleLength_ = fracToString(math.fraction(length));
+  this.cycleLength_ = math.fraction(length);
   this.sequence_ = ordered;
 }
 
@@ -96,7 +118,7 @@ Sequence.prototype.dataAtIndex = function(index)
 
 Sequence.prototype.timeAtIndex = function(index)
 {
-  return math.fraction(this.sequence_[index].time);
+  return this.sequence_[index].time();
 }
 
 // This could be nicely replaced by a binary search
@@ -108,9 +130,9 @@ Sequence.prototype.nextTimeFrom = function(searchTime)
   while (minIndex < this.sequence_.length)
   {
     var minTime = this.timeAtIndex(minIndex);
-    if (minTime > searchTime)
+    if (math.compare(minTime, searchTime) > 0)
     {
-      return { time: math.fraction(minTime), values: this.dataAtIndex(minIndex).values };
+      return this.sequence_[minIndex];
     }
     minIndex++;
   }
@@ -118,7 +140,7 @@ Sequence.prototype.nextTimeFrom = function(searchTime)
 
 Sequence.prototype.valueAtTime = function(time)
 {
-  var searchTime = math.mod(time, math.fraction(this.cycleLength_));
+  var searchTime = math.mod(time,this.cycleLength_);
 
   var minIndex = 0;
 

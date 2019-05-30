@@ -33,17 +33,17 @@ SequencePlayer.prototype.advance = function(time)
   // sequence if queued
   if (!this.sequence_)
   {
-    var position = fracToString(math.add(offset, cycleLength));
-    this.current_ = { time: position, values: undefined};
+    var position = math.add(offset, cycleLength);
+    this.current_ = new Step(position,undefined);
     this.resetCycle_ = true;
   }
   else {
     var nextData = this.sequence_.nextTimeFrom(cycleTime);
     if (!nextData) this.resetCycle_ = true;
-    var position = fracToString(math.add(offset, nextData ? nextData.time : cycleLength));
-    this.current_ = { time: position, values: nextData ? nextData.values : undefined };
+    var position = fracToString(math.add(offset, nextData ? nextData.time() : cycleLength));
+    this.current_ = new Step(position, nextData ? nextData.values() : undefined);
   }
-  return this.current_.time;
+  return this.current_.time();
 }
 
 SequencePlayer.prototype.currentValues = function()
@@ -61,12 +61,12 @@ SequencePlayer.prototype.currentValues = function()
     }
     // This is a shortcut not taking into account there could be no data at
     // for 0/1 (for example "rotL 0.01 $ [1, 2]")
-    this.current_.values = this.sequence_.dataAtIndex(0).values;
+    this.current_.values_ = this.sequence_.dataAtIndex(0).values_;
 
     this.queued_ = undefined;
     this.resetCycle_ = false;
   }
 
   // return the value
-  return this.current_.values;
+  return this.current_.values();
 }

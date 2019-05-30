@@ -17,7 +17,7 @@ function testSequence(string, expected)
   var sequenceArray = parser.parse(quote+string+quote);
   var sequence = new Sequence();
   sequence.renderArray(sequenceArray);
-  var output = sequence.sequence_.reduce(function(a,x) { var o = new Object() ; o[x.time] = x.values; a.push(o); return a;}, []);
+  var output = sequence.sequence_.reduce(function(a,x) { var t = x.timeString(); var o = new Object() ;o[t] = x.values(); a.push(o); return a;}, []);
   assert.deepEqual(output,expected);
 }
 
@@ -28,16 +28,11 @@ function testNextTime(string, time, expected)
   sequence.renderArray(sequenceArray);
   // Test we've got either the expected value or 'undefined' (meaning the cycle finishing)
   var next = sequence.nextTimeFrom(math.fraction(time));
-  var nextTime = next ? next.time : undefined;
+  var nextTime = next ? next.time_ : undefined;
   assert.deepEqual(nextTime, expected ? math.fraction(expected) : undefined);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-testNextTime("1 2 3, 4 5", math.number(0.5), "2/3");
-testNextTime("1 2 3", math.number(0), "1/3");
-testNextTime("1 2 3", math.fraction("1/3"), "2/3");
-testNextTime("1 2 3", math.fraction("2/3"), undefined);
 
 testSequence("1 2 3",
  [
@@ -67,3 +62,8 @@ testSequence("1 2 3",
      { "1/3" : ["2", "5"] },
      { "2/3" : ["3", "6", "C4"] },
    ]);
+
+   testNextTime("1 2 3, 4 5", math.number(0.5), "2/3");
+   testNextTime("1 2 3", math.number(0), "1/3");
+   testNextTime("1 2 3", math.fraction("1/3"), "2/3");
+   testNextTime("1 2 3", math.fraction("2/3"), undefined);

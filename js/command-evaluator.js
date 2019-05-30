@@ -5,14 +5,14 @@ var stretchSequence = function(sequence, factor)
   f = math.fraction(factor);
 
   var multTime = function(t) {
-    var multed = math.multiply(math.fraction(t), f);
-    return fracToString(multed);
+    var multed = math.multiply(t, f);
+    return multed;
   }
 
   var result = new Sequence();
   result.cycleLength_ = multTime(sequence.cycleLength_);
   result.sequence_ = sequence.sequence_.map(function(x) {
-    return {time : multTime(x.time), values: x.values };
+    return new Step(multTime(x.time()),x.values());
   })
   return result;
 }
