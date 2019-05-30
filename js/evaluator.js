@@ -5,10 +5,8 @@ require("./reducer.js");
 
 Evaluator = function()
 {
-  console.log("loading grammar..");
 	var buf = fs.readFileSync( __dirname + '/../grammar.txt');
   this.parser = peg.generate(buf.toString());
-	console.log("loaded.");
 
   this.reducer = new Reducer();
 }
