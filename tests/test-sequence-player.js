@@ -36,7 +36,8 @@ testAdvance("3/1", "10/3", ["b"]); // 3 -> 3.(3)
 
 // setting a new sequence will queue only at current sequence's end
 
-var sequence4 = evaluator.evaluate(quote+"d  e f g"+quote);
+var sequence4 = evaluator.evaluate("slow 2 $ "+quote+"d  e f g"+quote);
 player.setSequence(sequence4)
-testAdvance("10/3", "11/3", ["c"]); // 3.(3) -> 3.(6)
+testAdvance("10/3", "11/3", ["c"]); // 3.(3) -> 3.(6); this is still playing the old cycle
 testAdvance("11/3", "4/1", ["d"]); // 3.(6) -> 4 ;  we hit cycle start and queue new one
+testAdvance("4/1", "9/2", ["e"]); // 4 -> 4.5; the slowed down cycle length_ should be taken into account

@@ -21,7 +21,7 @@ SequencePlayer.prototype.advance = function(time)
   var f = math.fraction(time);
   var cycleLength = math.fraction(this.sequence_ ? this.sequence_.cycleLength_ : "1/1");
   var cycleTime = math.mod(f,cycleLength);
-  var offset = math.floor(math.divide(f, cycleLength));
+  var offset = math.multiply(math.floor(math.divide(f, cycleLength)), cycleLength);
 
 //  console.log("-----------------------------"+ time);
 //  console.log("length = "+ cycleLength);
