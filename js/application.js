@@ -1,5 +1,10 @@
 require('./evaluator.js');
 require('./playback/engine.js');
+require('./midi/midi.js');
+
+var easymidi = require('easymidi');
+
+console.log(easymidi.getOutputs());
 
 var Application = function()
 {
@@ -7,6 +12,8 @@ var Application = function()
 	this.engine_ = new Engine();
 	this.engine_.start();
 	this.engine_.connect(this);
+	this.midiDevice_ = new easymidi.Output('Microsoft GS Wavetable Synth 0');
+	this.values_ = undefined;
 }
 
 Application.prototype.parse = function(command)
@@ -18,7 +25,24 @@ Application.prototype.parse = function(command)
 
 Application.prototype.tick = function(values)
 {
-	console.log("ticked with " + values);
+	var device = this.midiDevice_;
+
+	processNotes = function(v,m)
+	{
+		if (v) v.forEach(function(x) {
+			var note = parseInt(x) + 48;
+			console.log(note);
+			device.send(m, {
+			  note: note,
+			  velocity: 127,
+			  channel: 0
+			});
+		});
+	}
+
+	processNotes(this.values_, 'noteon');
+	this.values_ = values;
+	processNotes(this.values_, 'noteoff');
 }
 
 module.exports = new Application();
