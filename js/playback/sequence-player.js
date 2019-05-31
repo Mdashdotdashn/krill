@@ -46,6 +46,13 @@ SequencePlayer.prototype.advance = function(time)
   return this.current_.time();
 }
 
+SequencePlayer.prototype.reset = function()
+{
+  // probably a lot more complex than this
+  this.resetCycle_ = true;
+  this.current_ = new Step("0", undefined);
+}
+
 SequencePlayer.prototype.currentValues = function()
 {
   // If the last advance lead to a cycle end we evaluate possible
@@ -61,12 +68,12 @@ SequencePlayer.prototype.currentValues = function()
     }
     // This is a shortcut not taking into account there could be no data at
     // for 0/1 (for example "rotL 0.01 $ [1, 2]")
-    this.current_.values_ = this.sequence_.dataAtIndex(0).values_;
+    this.current_.values_ = this.sequence_ ? this.sequence_.dataAtIndex(0).values_ : undefined;
 
     this.queued_ = undefined;
     this.resetCycle_ = false;
   }
 
   // return the value
-  return this.current_.values();
+  return this.current_ ? this.current_.values() : undefined;
 }
