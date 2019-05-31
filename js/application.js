@@ -1,6 +1,5 @@
 require('./evaluator.js');
 require('./playback/engine.js');
-require('./midi/midi.js');
 
 var easymidi = require('easymidi');
 
