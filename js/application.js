@@ -12,6 +12,7 @@ var Application = function()
 	this.engine_.start();
 	this.engine_.connect(this);
 	this.midiDevice_ = new easymidi.Output('Microsoft GS Wavetable Synth 0');
+//	this.midiDevice_ = new easymidi.Output('Teensy MIDI 2');
 	this.values_ = undefined;
 }
 

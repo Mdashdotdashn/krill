@@ -3,6 +3,12 @@ var fs = require('fs');
 
 require("./reducer.js");
 
+// Evaluator
+//
+// Takes a string reprenting a command and transforms it into a tree of
+// processing nodes
+//
+
 Evaluator = function()
 {
 	var buf = fs.readFileSync( __dirname + '/../grammar.txt');

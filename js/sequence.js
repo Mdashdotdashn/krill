@@ -84,6 +84,16 @@ Sequence = function()
   this.sequence_ = [];
 }
 
+Sequence.prototype.tick = function()
+{
+}
+
+Sequence.prototype.render = function()
+{
+  return this;
+}
+
+
 Sequence.prototype.renderArray = function(sequenceArray)
 {
   var length = math.number(1);
