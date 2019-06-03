@@ -60,7 +60,7 @@ quote = '"'
 // ------------------ steps and cycles ---------------------------
 
 // single step definition
-step_char =  [0-9a-zA-Z]
+step_char =  [0-9a-zA-Z~]
 step = ws chars:step_char+ ws { return chars.join("") }
 
 // define a sub cycle i.e. [1 2, 3 [4]]

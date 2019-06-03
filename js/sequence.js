@@ -44,18 +44,22 @@ var renderHorizontalData = function(data, timeScale, timeOffset)
 {
 //LOG console.log("Hrender of "+JSON.stringify(data));
   var division = timeScale/(data.length);
-  var rendered = data.map(function(x, index) {
+  var rendered = data.reduce(function(container, x, index) {
     var position = timeOffset + division * index;
     if (typeof x === 'object')
     {
-      return renderArray(x, division, position);
+      container.push(renderArray(x, division, position));
     }
     else
     {
-      const fraction = math.fraction(position);
-      return new Step(fraction,x);
+      if (x != '~')
+      {
+        const fraction = math.fraction(position);
+        container.push(new Step(fraction,x));
+      }
     }
-  }, this);
+    return container;
+  }, []);
 //LOG  console.log("Hrendered = "+JSON.stringify(rendered));
   return rendered;
 }
