@@ -1,26 +1,6 @@
 const math = require("mathjs");
 const _ = require("lodash");
 
-Step = function(time, values)
-{
-  this.time_ = (typeof time == 'string') ? math.fraction(time) : time;
-  this.values_ = values;
-}
-
-Step.prototype.time = function()
-{
-  return this.time_;
-}
-
-Step.prototype.timeString = function()
-{
-    return math.format(this.time_);
-}
-
-Step.prototype.values = function()
-{
-  return this.values_;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -35,7 +15,22 @@ var renderVerticalData = function(data, timeScale, timeOffset)
 {
 //LOG  console.log("Vrender of "+JSON.stringify(data));
   // we assume all vertical data contains a horizontal containter
-  var rendered = data.map((x) => renderArray(x, timeScale, timeOffset));
+  var rendered = data.map(function(x)
+    {
+      if (typeof x === 'object')
+      {
+        return renderArray(x, timeScale, timeOffset);
+      }
+      else
+      {
+        var position = timeOffset;
+        if (x != '~')
+        {
+          const fraction = math.fraction(position);
+          return new Step(fraction,x);
+        }
+      }
+    });
 //LOG  console.log("Vrendered ="+JSON.stringify(rendered));
   return _.flattenDeep(rendered);
 }
@@ -66,26 +61,27 @@ var renderHorizontalData = function(data, timeScale, timeOffset)
 
 var renderArray = function(sequenceArray, timeScale, timeOffset)
 {
-  var aligment = sequenceArray.aligment_;
-  var data = sequenceArray.data_;
+  console.log(sequenceArray);
+  var alignment = sequenceArray.arguments_.alignment;
+  var source = sequenceArray.source_;
 
-  switch(aligment)
+  switch(alignment)
   {
     case "h":
-      return renderHorizontalData(data, timeScale, timeOffset);
+      return renderHorizontalData(source, timeScale, timeOffset);
 
     case "v":
-      return renderVerticalData(data, timeScale, timeOffset);
+      return renderVerticalData(source, timeScale, timeOffset);
   }
-  throw "Unknown aligment "+ aligment;
+  throw "Unknown alignment "+ alignment;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Sequence = function()
+Sequence = function(array)
 {
-  this.cycleLength_ = math.fraction(0);
-  this.sequence_ = [];
+  this.cycleLength_ = math.fraction(1);
+  this.sequence_ = array;
 }
 
 Sequence.prototype.tick = function()
@@ -95,28 +91,6 @@ Sequence.prototype.tick = function()
 Sequence.prototype.render = function()
 {
   return this;
-}
-
-
-Sequence.prototype.renderArray = function(sequenceArray)
-{
-  var length = math.number(1);
-  var rendered = renderArray(sequenceArray , length, 0);
-  var grouped = rendered.reduce(function(collection, x) {
-    // push and create if necessary
-    var t = x.timeString();
-    (collection[t] = collection[t] ? collection[t]: []).push(x.values_);
-     return collection;}
-  ,{});
-
-  const ordered = [];
-  const fractionCompareFn = (a,b) => { return math.compare(math.fraction(a), math.fraction(b))};
-  Object.keys(grouped).sort(fractionCompareFn).forEach(function(key) {
-    ordered.push(new Step(key,grouped[key]));
-  });
-
-  this.cycleLength_ = math.fraction(length);
-  this.sequence_ = ordered;
 }
 
 Sequence.prototype.size = function()

@@ -1,8 +1,22 @@
 assert = require("assert");
 math = require("mathjs");
-require('../js/evaluator.js');
+require('../js/input-evaluator.js');
+require('../js/rendering-tree.js');
 
-evaluator = new Evaluator();
+TestEvaluator = function()
+{
+  this.evaluator_ = new Evaluator();
+  this.renderingTree_ = new RenderingTree();
+}
+
+TestEvaluator.prototype.evaluate = function(s)
+{
+  var model = this.evaluator_.evaluate(s);
+  var renderingTree = this.renderingTree_.rebuild(model);
+  return renderingTree.render();
+}
+
+evaluator = new TestEvaluator();
 quote ="\"";
 
 convertSequenceToString = function(sequence)

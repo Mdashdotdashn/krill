@@ -1,17 +1,16 @@
 {
-  var SequenceStub = function(data, alignment)
+  var SequenceStub = function(source, alignment)
   {
     this.type_ = "sequence";
-    this.aligment_ = alignment;
-    this.data_ = data;
+    this.arguments_ = { alignment : alignment};
+    this.source_ = source;
   }
 
-  var OperantStub = function(name, args, sequence)
+  var OperantStub = function(name, args, source)
   {
-    this.type_ = "command";
-    this.name_ = name;
-    this.args_ = args;
-    this.sequence_ = sequence;
+    this.type_ = name;
+    this.arguments_ = args;
+    this.source_ = source;
   }
 }
 
@@ -66,15 +65,23 @@ step = ws chars:step_char+ ws { return chars.join("") }
 // define a sub cycle i.e. [1 2, 3 [4]]
 sub_cycle =   "[" s:stack "]" { return s}
 
-// a slice is either a single step or a sub cycle
-slice = step / sub_cycle
+// define a timeline i.e. <1 3 [3 5]>. We simply defer to a stack and change the alignement
+timeline = "<" sc:single_cycle ">"
+  { sc.arguments_.alignment = "t"; return sc;}
 
-// a single cycle is a combination of one or more slices
-single_cycle = s:(slice)+ { return new SequenceStub(s,"h")}
+// a slice is either a single step or a sub cycle
+slice = step / sub_cycle  / timeline
+
+// a single cycle is a combination of one or more slices (as an array). If we
+// have only one element, we skip the array and return the element itself
+single_cycle = s:(slice)+
+  { if (s.length == 1)  {return s[0];} else {return new SequenceStub(s,"h");} }
 
 // a stack is a serie of vertically aligned single cycles, separated by a comma
+// if the stack contains only one element, we don't create a stack but return the
+// underlying element
 stack = c:single_cycle cs:(comma v:single_cycle { return v})*
-  { cs.unshift(c); return new SequenceStub(cs,"v") }
+  { if (cs.length == 0) { return c;} else { cs.unshift(c); return new SequenceStub(cs,"v");}  }
 
 // a sequence is a quoted stack
 sequence = ws quote s:stack quote

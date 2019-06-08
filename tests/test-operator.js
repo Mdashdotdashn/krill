@@ -80,11 +80,11 @@ function testTimelineOperator()
       { "3/2" : ["7"] },
     ];
 
-  var operator = makeTimeLineOperator([sequence1, sequence2]);
+  var operator = makeTimelineOperator([sequence1, sequence2]);
   var testAdvance = function(expected)
   {
-    operator.tick();
     testSequenceMatches(operator.render(), expected);
+    operator.tick();
   }
 
   testAdvance(expected1);

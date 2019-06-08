@@ -38,3 +38,4 @@ makeValueWrapperOperator = function(v)
 
 require("./op-timeline.js");
 require("./op-slow.js");
+require("./op-sequence.js");

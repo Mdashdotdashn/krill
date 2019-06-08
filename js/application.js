@@ -1,4 +1,5 @@
-require('./evaluator.js');
+require('./input-evaluator.js');
+require('./rendering-tree.js');
 require('./playback/engine.js');
 
 var easymidi = require('easymidi');
@@ -8,6 +9,7 @@ console.log(easymidi.getOutputs());
 var Application = function()
 {
 	this.evaluator_ = new Evaluator();
+  this.renderingTree_ = new RenderingTree();
 	this.engine_ = new Engine();
 	this.engine_.start();
 	this.engine_.connect(this);
@@ -19,7 +21,9 @@ var Application = function()
 Application.prototype.parse = function(command)
 {
 	var result = this.evaluator_.evaluate(command);
-	this.engine_.setSequence(result);
+  var renderingTree = this.renderingTree_.rebuild(result);
+  JSON.stringify(renderingTree);
+//	this.engine_.setSequence(result);
 	return JSON.stringify(result, undefined, 1);
 };
 

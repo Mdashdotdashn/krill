@@ -1,11 +1,9 @@
 var assert = require("assert");
 
 require("../js/playback/sequence-player.js");
-require("../js/evaluator.js");
+require("./base.js");
 
 var player = new SequencePlayer();
-var evaluator = new Evaluator();
-var quote ="\"";
 
 var testAdvance = function(time, expectedTime, expectedValues)
 {
