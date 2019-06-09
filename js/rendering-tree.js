@@ -15,7 +15,9 @@ function buildTreeForChild(child)
   {
     return buildTreeForNode(child);
   }
-  return child;
+  // make a singe sequence out of the step
+  var sequenceArray = [new Step("0", [child])];
+  return new Sequence(sequenceArray);
 }
 // Builds a rendering tree composed of operator nodes that can be
 // ticked (advanced) && rendered
