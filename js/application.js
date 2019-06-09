@@ -13,7 +13,8 @@ var Application = function()
 	this.engine_ = new Engine();
 	this.engine_.start();
 	this.engine_.connect(this);
-	this.midiDevice_ = new easymidi.Output('Microsoft GS Wavetable Synth 0');
+  this.midiDevice_ = new easymidi.Output('loopMIDI Port 1');
+//	this.midiDevice_ = new easymidi.Output('Microsoft GS Wavetable Synth 0');
 //	this.midiDevice_ = new easymidi.Output('Teensy MIDI 2');
 	this.values_ = undefined;
 }
@@ -22,8 +23,7 @@ Application.prototype.parse = function(command)
 {
 	var result = this.evaluator_.evaluate(command);
   var renderingTree = this.renderingTree_.rebuild(result);
-  JSON.stringify(renderingTree);
-//	this.engine_.setSequence(result);
+	this.engine_.setRenderingTree(renderingTree);
 	return JSON.stringify(result, undefined, 1);
 };
 
@@ -35,7 +35,6 @@ Application.prototype.tick = function(values)
 	{
 		if (v) v.forEach(function(x) {
 			var note = parseInt(x) + 48;
-			console.log(note);
 			device.send(m, {
 			  note: note,
 			  velocity: 127,
@@ -43,10 +42,10 @@ Application.prototype.tick = function(values)
 			});
 		});
 	}
-
-	processNotes(this.values_, 'noteon');
-	this.values_ = values;
 	processNotes(this.values_, 'noteoff');
+	this.values_ = values;
+  console.log(values);
+	processNotes(this.values_, 'noteon');
 }
 
 module.exports = new Application();

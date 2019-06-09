@@ -70,16 +70,7 @@ SequenceRenderingOperator.prototype.tick = function()
 SequenceRenderingOperator.prototype.render = function()
 {
   // Renders concatenate sub steps as full cycles
-  const steps = this.nodes_.map(function(x) {
-    if (x instanceof Object)
-    {
-      return x.render().sequence_;
-    }
-    else
-    {
-      return [new Step(math.fraction("0"), x)] ;
-    }
-  });
+  const steps = this.nodes_.map((x) => x.render().sequence_);
 
   // In horizontal mode, all steps are dividing the interval so we scale them accordingly
   const scaled = (this.alignment_ == "h") ? ScaleAndOffset(steps)  : steps;

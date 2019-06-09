@@ -38,7 +38,7 @@ Engine.prototype.start = function()
 Engine.prototype.processTick = function()
 {
   var currentCycleTime = this.currentTime_;
-  var values = this.player_.currentValues();
+  var values = this.player_.valuesForTime(currentCycleTime);
   if (values) this.emit("tick", values);
   var nextCycleTime = this.player_.advance(currentCycleTime);
   var offset = math.number(math.subtract(nextCycleTime,currentCycleTime)) / this.cps_ * 1000;
@@ -46,7 +46,7 @@ Engine.prototype.processTick = function()
   this.currentTime_ = nextCycleTime;
 }
 
-Engine.prototype.setSequence = function(s)
+Engine.prototype.setRenderingTree = function(s)
 {
-  this.player_.setSequence(s);
+  this.player_.setRenderingTree(s);
 }

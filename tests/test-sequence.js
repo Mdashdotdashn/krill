@@ -4,7 +4,7 @@ require('../js/sequence.js');
 
 function testNextTime(string, time, expected)
 {
-  var sequence = evaluator.evaluate(quote + string + quote);
+  var sequence = evaluator.evaluateSequence(quote + string + quote);
   // Test we've got either the expected value or 'undefined' (meaning the cycle finishing)
   var next = sequence.nextTimeFrom(math.fraction(time));
   var nextTime = next ? next.time_ : undefined;

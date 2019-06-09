@@ -3,16 +3,26 @@ math = require("mathjs");
 require('../js/input-evaluator.js');
 require('../js/rendering-tree.js');
 
+Dump = function(o)
+{
+  console.log(JSON.stringify(o, undefined,1));
+}
+
 TestEvaluator = function()
 {
   this.evaluator_ = new Evaluator();
   this.renderingTree_ = new RenderingTree();
 }
 
-TestEvaluator.prototype.evaluate = function(s)
+TestEvaluator.prototype.evaluateRenderingTree = function(s)
 {
-  var model = this.evaluator_.evaluate(s);
-  var renderingTree = this.renderingTree_.rebuild(model);
+  const model = this.evaluator_.evaluate(s);
+  return this.renderingTree_.rebuild(model);
+}
+
+TestEvaluator.prototype.evaluateSequence = function(s)
+{
+  const renderingTree = this.evaluateRenderingTree(s);
   return renderingTree.render();
 }
 
