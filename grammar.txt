@@ -81,7 +81,7 @@ single_cycle = s:(slice)+
 // if the stack contains only one element, we don't create a stack but return the
 // underlying element
 stack = c:single_cycle cs:(comma v:single_cycle { return v})*
-  { if (cs.length == 0) { return c;} else { cs.unshift(c); return new SequenceStub(cs,"v");}  }
+  { if (cs.length == 0 && c instanceof Object) { return c;} else { cs.unshift(c); return new SequenceStub(cs,"v");}  }
 
 // a sequence is a quoted stack
 sequence = ws quote s:stack quote

@@ -6,6 +6,11 @@ var testSequence = function(sequenceString, expected)
   testSequenceMatches(sequence, expected);
 }
 
+testSequence("true",
+[
+  { "0/1" : ["true"] },  
+])
+
 testSequence("1 2 3",
 [
  { "0/1" : ["1"] },

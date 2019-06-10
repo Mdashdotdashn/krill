@@ -1,3 +1,7 @@
+Dump = function(o)
+{
+  console.log(JSON.stringify(o, undefined,1));
+}
 
 CHECK_TYPE = function(value, expectedType)
 {

@@ -3,11 +3,6 @@ math = require("mathjs");
 require('../js/input-evaluator.js');
 require('../js/rendering-tree.js');
 
-Dump = function(o)
-{
-  console.log(JSON.stringify(o, undefined,1));
-}
-
 TestEvaluator = function()
 {
   this.evaluator_ = new Evaluator();
