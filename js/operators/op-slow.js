@@ -9,12 +9,12 @@ var stretchSequence = function(sequence, factor)
     return multed;
   }
 
-  var result = new Sequence();
-  result.cycleLength_ = multTime(sequence.cycleLength_);
-  result.sequence_ = sequence.sequence_.map(function(x) {
-    return new Step(multTime(x.time()),x.values());
+  var clone = sequence.clone();
+  clone.cycleLength_ = multTime(clone.cycleLength_);
+  clone.events_ = clone.events_.map(function(x) {
+    return new Event(multTime(x.time()),x.values());
   })
-  return result;
+  return clone;
 }
 
 makeSlowOperator = function(source, stretchFactor)

@@ -5,28 +5,28 @@ require("../sequence.js");
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Step = function(time, values)
+Event = function(time, values)
 {
   this.time_ = (typeof time == 'string') ? math.fraction(time) : time;
   this.values_ = values;
 }
 
-Step.prototype.time = function()
+Event.prototype.time = function()
 {
   return this.time_;
 }
 
-Step.prototype.applyTime = function(f)
+Event.prototype.applyTime = function(f)
 {
-  return new Step(f(this.time_),this.values_);
+  return new Event(f(this.time_),this.values_);
 }
 
-Step.prototype.timeString = function()
+Event.prototype.timeString = function()
 {
     return math.format(this.time_);
 }
 
-Step.prototype.values = function()
+Event.prototype.values = function()
 {
   return this.values_;
 }
@@ -35,19 +35,16 @@ Step.prototype.values = function()
 
 // Apply a scaling factor on the element array so all elements
 // fit a 1 cycles length all together
-function ScaleAndOffset(stepArray)
+function ScaleAndOffset(eventArray)
 {
-  var scaleFactor = math.fraction("1/"+stepArray.length);
+  var scaleFactor = math.fraction("1/"+eventArray.length);
   var offset = math.fraction(0);
   // every step is an array that need to be scaled
   // we also drop any element that is a rest (~)
-  return scaled = stepArray.map((s) => {
+  return scaled = eventArray.map((s) => {
     result = s.reduce((c,x) => {
-      if (x.values_ != "~")
-      {
-        const offsetted = x.applyTime((t) => { return math.add(math.multiply(t,scaleFactor), offset)});
-        c.push(offsetted);
-      }
+      const offsetted = x.applyTime((t) => { return math.add(math.multiply(t,scaleFactor), offset)});
+      c.push(offsetted);
       return c;
     },[]);
     offset = math.add(offset,scaleFactor);
@@ -70,7 +67,7 @@ SequenceRenderingOperator.prototype.tick = function()
 SequenceRenderingOperator.prototype.render = function()
 {
   // Renders concatenate sub steps as full cycles
-  const steps = this.nodes_.map((x) => x.render().sequence_);
+  const steps = this.nodes_.map((x) => x.render().events_);
 
   // In horizontal mode, all steps are dividing the interval so we scale them accordingly
   const scaled = (this.alignment_ == "h") ? ScaleAndOffset(steps)  : steps;
@@ -91,11 +88,11 @@ SequenceRenderingOperator.prototype.render = function()
   const ordered = [];
   const fractionCompareFn = (a,b) => { return math.compare(math.fraction(a), math.fraction(b))};
   Object.keys(grouped).sort(fractionCompareFn).forEach(function(key) {
-    ordered.push(new Step(key,_.flattenDeep(grouped[key])));
+    ordered.push(new Event(key,_.flattenDeep(grouped[key])));
   });
 
 //  console.log('returning ' + JSON.stringify(ordered));
-  return new Sequence(ordered);
+  return makeSequenceFromEventArray(ordered);
 }
 
 //////////////////////////////////////////////////////////////////////////////

@@ -8,7 +8,7 @@ var testSequence = function(sequenceString, expected)
 
 testSequence("true",
 [
-  { "0/1" : ["true"] },  
+  { "0/1" : ["true"] },
 ])
 
 testSequence("1 2 3",
@@ -21,12 +21,6 @@ testSequence("1 2 3",
 testSequence("1 2 [3]",
 [
   { "0/1" : ["1"] },
-  { "1/3" : ["2"] },
-  { "2/3" : ["3"] },
-]);
-
-testSequence("~ 2 3",
-[
   { "1/3" : ["2"] },
   { "2/3" : ["3"] },
 ]);
@@ -52,10 +46,3 @@ testSequence("1 2 3, 4 5 [6, C4]",
    { "1/3" : ["2", "5"] },
    { "2/3" : ["3", "6", "C4"] },
  ]);
-
- testSequence("0 ~ 0 ~, ~ ~ 1",
-  [
-    { "0/1" : ["0"] },
-    { "1/2" : ["0"] },
-    { "2/3" : ["1"] },
-  ]);

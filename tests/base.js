@@ -26,7 +26,7 @@ quote ="\"";
 
 convertSequenceToString = function(sequence)
 {
-  return sequence.sequence_.reduce(function(a,x) { var o = new Object() ; o[x.timeString()] = x.values(); a.push(o); return a;}, []);
+  return sequence.events_.reduce(function(a,x) { var o = new Object() ; o[x.timeString()] = x.values(); a.push(o); return a;}, []);
 }
 
 testSequenceMatches = function(sequence, expected, cycleLength)

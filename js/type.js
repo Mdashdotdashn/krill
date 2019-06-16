@@ -14,3 +14,8 @@ CHECK_TYPE = function(value, expectedType)
   }
   return true;
 }
+
+CloneString = function(s)
+{
+  return (' ' + s).slice(1);
+}

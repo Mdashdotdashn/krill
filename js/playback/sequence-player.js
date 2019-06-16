@@ -51,14 +51,14 @@ SequencePlayer.prototype.advance = function(time)
   if (!this.sequence_)
   {
     var position = math.add(offset, cycleLength);
-    this.current_ = new Step(position,undefined);
+    this.current_ = new Event(position,undefined);
     this.resetCycle_ = true;
   }
   else {
     var nextData = this.sequence_.nextTimeFrom(cycleTime);
     if (!nextData) this.resetCycle_ = true;
     var position = fracToString(math.add(offset, nextData ? nextData.time() : cycleLength));
-    this.current_ = new Step(position, nextData ? nextData.values() : undefined);
+    this.current_ = new Event(position, nextData ? nextData.values() : undefined);
   }
   return this.current_.time();
 }
@@ -69,7 +69,7 @@ SequencePlayer.prototype.reset = function()
   this.resetCycle_ = true;
   this.sequence_ = undefined;
   this.queued_ = undefined;
-  this.current_ = new Step("0", null);
+  this.current_ = new Event("0", null);
 }
 
 SequencePlayer.prototype.valuesForTime = function(currentTime)

@@ -16,7 +16,7 @@ Operator.prototype.render = function()
   // render all arguments first
   var renderedArguments = this.arguments_.map((x) => x.render(x));
   var renderedSequence = this.renderFn_(renderedArguments);
-  CHECK_TYPE(renderedSequence, Sequence);
+//  CHECK_TYPE(renderedSequence, Sequence);
   return renderedSequence;
 }
 
