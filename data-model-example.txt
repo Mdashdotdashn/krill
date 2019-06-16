@@ -1,106 +1,33 @@
-slow 2 $ "bd <sd hh lt>"
+From the model, we can establish a render tree composed of operator combining segments
 
-{
- "type_": "slow",
- "arguments_": {
-  "amount": 2
- },
- "source_": {
-  "type_": "sequence",
-  "arguments_": {
-   "alignment": "h"
-  },
-  "source_": [
-   "bd",
-   {
-    "type_": "sequence",
-    "arguments_": {
-     "alignment": "t"
-    },
-    "source_": [
-     "sd",
-     "hh",
-     "lt"
-    ]
-   }
-  ]
- }
+Event {
+  time_
+  [Values]
 }
 
-------------------------------------------------------------
-
-"1 2 3, 4 5"
-
-{
- "type_": "sequence",
- "arguments_": {
-  "alignment": "v"
- },
- "source_": [
-  {
-   "type_": "sequence",
-   "arguments_": {
-    "alignment": "h"
-   },
-   "source_": [
-    "1",
-    "2",
-    "3"
-   ]
-  },
-  {
-   "type_": "sequence",
-   "arguments_": {
-    "alignment": "h"
-   },
-   "source_": [
-    "4",
-    "5"
-   ]
-  }
- ]
+Lane {
+  [ Events ]
+  cycleLength_;
+  targetName_;
 }
 
-------------------------------------------------------------
+Segment {
+  [Lanes]
+}
 
-"1 2 3, 4 5 [6, C4]"
 
-{
- "type_": "sequence",
- "arguments_": {
-  "alignment": "v"
- },
- "source_": [
-  {
-   "type_": "sequence",
-   "arguments_": {
-    "alignment": "h"
-   },
-   "source_": [
-    "1",
-    "2",
-    "3"
-   ]
-  },
-  {
-   "type_": "sequence",
-   "arguments_": {
-    "alignment": "h"
-   },
-   "source_": [
-    "4",
-    "5",
-    {
-     "type_": "sequence",
-     "arguments_": {
-      "alignment": "v"
-     },
-     "source_": [
-      "6",
-      "C4"
-     ]
-    }
-   ]
-  }
- ]
+Rendering a segment leads to a single timeline of automation
+
+AutomationValue {
+  targetName_
+  [ Values ]
+}
+
+AutomationPoint {
+  time_;
+  [ AutomationValues ]
+}
+
+AutomationTimeline {
+  [AutomationPoints ]
 }
