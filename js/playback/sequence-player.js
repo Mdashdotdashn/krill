@@ -34,7 +34,6 @@ SequencePlayer.prototype.cycleTimeAndOffset = function(time)
 
 SequencePlayer.prototype.advance = function(time)
 {
-
 //  console.log("-----------------------------"+ time);
 //  console.log("length = "+ cycleLength);
 //  console.log("inner cycle time = "+cycleTime);
@@ -72,7 +71,7 @@ SequencePlayer.prototype.reset = function()
   this.current_ = new Event("0", null);
 }
 
-SequencePlayer.prototype.valuesForTime = function(currentTime)
+SequencePlayer.prototype.eventForTime = function(currentTime)
 {
   const time = math.fraction(currentTime);
   // If the last advance lead to a cycle end we evaluate possible
@@ -103,5 +102,7 @@ SequencePlayer.prototype.valuesForTime = function(currentTime)
     this.resetCycle_ = false;
   }
 
-  return this.current_ ? this.current_.values() : undefined;
+  return this.current_
+    ? { target: this.current_.targetName_, values: this.current_.values() }
+    : undefined;
 }

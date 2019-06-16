@@ -8,10 +8,10 @@ var player = new SequencePlayer();
 var testAdvance = function(time, expectedTime, expectedValues)
 {
   assert.equal(fracToString(player.advance(time)), expectedTime);
-  values = player.valuesForTime(time);
+  const event = player.eventForTime(time);
   if (expectedValues !== undefined)
   {
-    assert.deepEqual(values, expectedValues)
+    assert.deepEqual(event.values, expectedValues)
   }
 }
 

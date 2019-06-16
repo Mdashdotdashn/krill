@@ -38,7 +38,7 @@ Engine.prototype.start = function()
 Engine.prototype.processTick = function()
 {
   var currentCycleTime = this.currentTime_;
-  var values = this.player_.valuesForTime(currentCycleTime);
+  var values = this.player_.eventForTime(currentCycleTime);
   if (values) this.emit("tick", values);
   var nextCycleTime = this.player_.advance(currentCycleTime);
   var offset = math.number(math.subtract(nextCycleTime,currentCycleTime)) / this.cps_ * 1000;
