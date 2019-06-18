@@ -59,14 +59,14 @@ quote = '"'
 // ------------------ steps and cycles ---------------------------
 
 // single step definition
-step_char =  [0-9a-zA-Z~]
+step_char =  [0-9a-zA-Z~] / "-" / "#"
 step = ws chars:step_char+ ws { return chars.join("") }
 
 // define a sub cycle i.e. [1 2, 3 [4]]
-sub_cycle =   "[" s:stack "]" { return s}
+sub_cycle = ws  "[" ws s:stack ws "]" ws { return s}
 
 // define a timeline i.e. <1 3 [3 5]>. We simply defer to a stack and change the alignement
-timeline = "<" sc:single_cycle ">"
+timeline = ws "<" ws sc:single_cycle ws ">" ws
   { sc.arguments_.alignment = "t"; return sc;}
 
 // a slice is either a single step or a sub cycle
@@ -75,7 +75,7 @@ slice = step / sub_cycle  / timeline
 // a single cycle is a combination of one or more slices (as an array). If we
 // have only one element, we skip the array and return the element itself
 single_cycle = s:(slice)+
-  { if (s.length == 1)  {return s[0];} else {return new SequenceStub(s,"h");} }
+  { return new SequenceStub(s,"h"); }
 
 // a stack is a serie of vertically aligned single cycles, separated by a comma
 // if the stack contains only one element, we don't create a stack but return the
@@ -89,7 +89,10 @@ sequence = ws quote s:stack quote
 
 // ------------------ commands ---------------------------
 
-command = slow
+command = slow / target
+
+target = "target" ws quote s:step quote
+  { return { name: "target", args : { name:s}}}
 
 slow = "slow" ws a:number
   { return { name: "slow", args :{ amount: a}}}

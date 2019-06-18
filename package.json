@@ -27,6 +27,7 @@
     "lodash": "^4.17.11",
     "mathjs": "^5.10.0",
     "nanotimer": "^0.3.15",
+    "note-parser": "^2.0.1",
     "pegjs": "^0.10.0"
   }
 }

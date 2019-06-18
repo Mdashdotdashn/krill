@@ -11,23 +11,18 @@ Lane {
   targetName_;
 }
 
-Segment {
-  [Lanes]
+Operator
+{
+  arguments_;
+  [Operators] childs_;
+
+  render -> op(childs.render) ->[Lanes]
 }
 
+Operators transforms a group of child lanes into another group of lanes
 
-Rendering a segment leads to a single timeline of automation
+A player interacts with all the lanes
 
-AutomationValue {
-  targetName_
-  [ Values ]
-}
-
-AutomationPoint {
-  time_;
-  [ AutomationValues ]
-}
-
-AutomationTimeline {
-  [AutomationPoints ]
+Player {
+  [LanePlayer]
 }

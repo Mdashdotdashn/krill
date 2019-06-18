@@ -29,8 +29,12 @@ function buildTreeForNode(node)
 	var child = buildTreeForChild(node.source_);
 	switch (node.type_)
 	{
+    case "target":
+      return makeTargetOperator(child, node.arguments_.name);
+
 		case "slow":
 			return makeSlowOperator(child, math.fraction(node.arguments_.amount));
+
     case "sequence":
       if (node.arguments_.alignment == "t")
       {

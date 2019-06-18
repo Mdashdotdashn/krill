@@ -102,7 +102,8 @@ SequencePlayer.prototype.eventForTime = function(currentTime)
     this.resetCycle_ = false;
   }
 
-  return this.current_
-    ? { target: this.current_.targetName_, values: this.current_.values() }
+  var targetName = this.sequence_ ? this.sequence_.targetName_: undefined;
+  return (this.current_ && this.current_.values_)
+    ? { target: targetName, values: this.current_.values() }
     : undefined;
 }
