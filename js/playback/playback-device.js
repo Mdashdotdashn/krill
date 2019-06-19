@@ -8,7 +8,7 @@ var convertToNoteNumber = function(x)
   // first let's see if it is a number
   var parsedInt = parseInt(x);
   var parsedNote = parser.parse(x);
-  return isNaN(parsedInt) ? (parsedNote ? parsedNote.midi : undefined) : parsedInt + 32;
+  return isNaN(parsedInt) ? (parsedNote ? parsedNote.midi : undefined) : parsedInt + 36;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
