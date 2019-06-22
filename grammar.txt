@@ -97,11 +97,16 @@ target = "target" ws quote s:step quote
 slow = "slow" ws a:number
   { return { name: "slow", args :{ amount: a}}}
 
+
+comment = '//' p:([^\n]*)
+
 // ------------------ high level  ---------------------------
 
-sequ_or_command = s:sequence
+sequ_or_command_or_comment =
+   s:sequence ws (comment)*
      {return s}
-   / c:command ws "$" ws soc:sequ_or_command
+   / c:command ws "$" ws soc:sequ_or_command_or_comment
      { return new OperantStub(c.name,c.args,soc)}
+   / comment
 
-input = sequ_or_command
+input = s:sequ_or_command_or_comment
