@@ -97,16 +97,31 @@ target = "target" ws quote s:step quote
 slow = "slow" ws a:number
   { return { name: "slow", args :{ amount: a}}}
 
-
 comment = '//' p:([^\n]*)
+
+// ---------------- grouping --------------------------------
+
+group_command = cat
+
+// cat is another form of timeline
+cat = "cat" ws "[" ws  s:sequence_or_command ss:(comma v:sequence_or_command { return v})* ws "]"
+  { ss.unshift(s); return new SequenceStub(ss,"t"); }
 
 // ------------------ high level  ---------------------------
 
+sequence_or_group =
+  group_command /
+  sequence
+
+sequence_or_command =
+  sg:sequence_or_group ws (comment)*
+    {return sg}
+  / c:command ws "$" ws soc:sequence_or_command
+    { return new OperantStub(c.name,c.args,soc)}
+
 sequ_or_command_or_comment =
-   s:sequence ws (comment)*
-     {return s}
-   / c:command ws "$" ws soc:sequ_or_command_or_comment
-     { return new OperantStub(c.name,c.args,soc)}
+  sc: sequence_or_command
+    { return sc }
    / comment
 
 input = s:sequ_or_command_or_comment
