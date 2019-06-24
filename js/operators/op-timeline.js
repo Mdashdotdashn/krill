@@ -8,7 +8,7 @@ var TimelineOperator = function(operatorArray)
 TimelineOperator.prototype.tick = function()
 {
   this.current_ = (this.current_ + 1) % this.nodes_.length;
-  this.nodes_.forEach((x) => x.tick());
+  this.nodes_[this.current_].tick();
 }
 
 TimelineOperator.prototype.render = function()
