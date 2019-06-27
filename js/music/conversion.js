@@ -1,6 +1,12 @@
 var parser = require('note-parser');
 var chord = require('tonal-chord');
 
+var drumMap = new Array();
+drumMap["bd"] = 36;
+drumMap["sd"] = 38;
+drumMap["hh"] = 42;
+drumMap["oh"] = 46;
+
 convertToNotes = function(x)
 {
   var notes = [];
@@ -10,10 +16,10 @@ convertToNotes = function(x)
     notes.push(parsedInt + 36);
   }
   else {
+    // Then let's ee if it is a note name
     const parsedNote = parser.parse(x);
     if (parsedNote)
     {
-      console.log(parsedNote);
       if (parsedNote.midi)
       {
         notes.push(parsedNote.midi);
@@ -25,11 +31,16 @@ convertToNotes = function(x)
     }
     else
     {
+      // Is it a chord
       const parsedChord = chord.notes(x);
-      console.log(parsedChord);
       if (parsedChord.length > 0)
       {
         notes = parsedChord.map((x) => convertToNotes(x));
+      }
+      else
+      {
+        // is it a drum name
+        if(drumMap[x]) notes.push(drumMap[x]);
       }
     }
   }
