@@ -6,13 +6,13 @@ require('../js/rendering-tree.js');
 TestEvaluator = function()
 {
   this.evaluator_ = new Evaluator();
-  this.renderingTree_ = new RenderingTree();
+  this.renderingTreeBuilder_ = new RenderingTreeBuilder();
 }
 
 TestEvaluator.prototype.evaluateRenderingTree = function(s)
 {
   const model = this.evaluator_.evaluate(s);
-  return this.renderingTree_.rebuild(model);
+  return this.renderingTreeBuilder_.rebuild(model);
 }
 
 TestEvaluator.prototype.evaluateSequence = function(s)

@@ -71,9 +71,10 @@ SequencePlayer.prototype.reset = function()
   this.current_ = new Event("0", null);
 }
 
+// Returns the event queued for the current time if it matches the time
+
 SequencePlayer.prototype.eventForTime = function(currentTime)
 {
-  const time = math.fraction(currentTime);
   // If the last advance lead to a cycle end we evaluate possible
   // queueing and set data to the start of the next cycle
   if (this.resetCycle_)
@@ -102,8 +103,14 @@ SequencePlayer.prototype.eventForTime = function(currentTime)
     this.resetCycle_ = false;
   }
 
-  var targetName = this.sequence_ ? this.sequence_.targetName_: undefined;
-  return (this.current_ && this.current_.values_)
-    ? { target: targetName, values: this.current_.values() }
-    : undefined;
+  // Look if an event is set for this player
+  if (this.current_ && this.current_.values_)
+  {
+    // Look if it matches the current time
+    if (math.equal(math.fraction(currentTime), this.current_.time()))
+    {
+      var targetName = this.sequence_ ? this.sequence_.targetName_: undefined;
+      return { target: targetName, values: this.current_.values() };
+    }
+  }
 }

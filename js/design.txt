@@ -1,0 +1,37 @@
+The overall goal is to transform a sequence of command / code into a sequence
+of events. Events happen at given time, referred to as Fraction of a global
+"cycle" (typically a bar)
+
+e.g.
+"bd hh sd hh"
+    ->  "bd" at 0
+        "hh" at 1/4
+        "sd" at 1/2
+        "hh" at 3/4
+
+These events can then be played back through some 'device'
+
+The transformation of the string original data is done in steps:
+  1- transformation of the input into structured data (through pegjs)
+  2- the construction of a rendering tree made of operators
+  3- the rendering tree is passed on to players that renders it in order to
+     play the generated events
+
+Operators implement the following API:
+  +-----------------------------------------------+
+  |   Operator                                    |
+  |   - tick() // advances to next state          |
+  |   - render() // returns a playable sequence   |
+  +-----------------------------------------------+
+
+  where tick() advance to the next state
+    (if any - usually triggered when the event array is consumed)
+  while render() return the whole array of event to be played in the form of a
+    Sequence:
+
+    +------------------------------------------------+
+    |   Sequence                                     |
+    |   o cycleLength_  // length of the data        |
+    |   o events_ // array of events to be triggered |
+    |     (all times are in fraction of the cycle)   |
+    +------------------------------------------------+

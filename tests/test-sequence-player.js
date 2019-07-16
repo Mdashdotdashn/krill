@@ -8,7 +8,7 @@ var player = new SequencePlayer();
 var testAdvance = function(time, expectedTime, expectedValues)
 {
   assert.equal(fracToString(player.advance(time)), expectedTime);
-  const event = player.eventForTime(time);
+  const event = player.eventForTime(expectedTime);
   if (expectedValues !== undefined)
   {
     assert.deepEqual(event.values, expectedValues)
@@ -47,25 +47,6 @@ function TestPlaybackTiming()
   testAdvance("10/3", "11/3", ["c"]); // 3.(3) -> 3.(6); this is still playing the old cycle
   testAdvance("11/3", "4/1", ["d"]); // 3.(6) -> 4 ;  we hit cycle start and queue new one
   testAdvance("4/1", "9/2", ["e"]); // 4 -> 4.5; the slowed down cycle length_ should be taken into account
-
-  // setting a sequence with no steps at 0 qhouldn't trigger it
-  updateInput(quote+"~ scars filthier"+quote);
-  testAdvance("11/2", "6/1", null); // Reporting the missing step's time is ok but no data should be sent
-  testAdvance("6/1", "19/3", ["scars"]); // then move on to the next
 }
 
-function TestTimelineSequences()
-{
-  player.reset();
-  updateInput(quote + "1 2 <3 4>" + quote);
-  testAdvance("1/3", "1/1");
-  testAdvance("1/1", "4/3", ["2"]);
-  testAdvance("4/3", "5/3", ["3"]);
-  // Restart the cycle but this time the second time
-  testAdvance("5/3", "2/1");
-  testAdvance("2/1", "7/3", ["2"]);
-  testAdvance("7/3", "8/3", ["4"]);
-}
-
-//TestPlaybackTiming();
-TestTimelineSequences();
+TestPlaybackTiming();

@@ -4,52 +4,62 @@ require("./operators/operators.js");
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// Childs can be values, arrays or nodes
-function buildTreeForChild(child)
+// nodes can be values, arrays or nodes
+function buildTreeForNode(node)
 {
-  if (Array.isArray(child))
+  // If it is an array, create an area of equivalent operator
+  if (Array.isArray(node))
   {
-    return child.map((x) => buildTreeForChild(x));
+    return node.map((x) => buildTreeForNode(x));
   }
-  if (child instanceof Object)
+
+  // If the node is an object, it is expected to be an operator note
+  if (node instanceof Object)
   {
-    return buildTreeForNode(child);
+    return buildOperatorNode(node);
   }
+
   // make a single sequence out of the event
-  var sequenceArray = [new Event("0", [child])];
+  var sequenceArray = [new Event("0", [node])];
   return makeSequenceFromEventArray(sequenceArray);
 }
+
 // Builds a rendering tree composed of operator nodes that can be
 // ticked (advanced) && rendered
 
-function buildTreeForNode(node)
+function buildOperatorNode(node)
 {
-  // If the child os an object it is expected to be another node.
-  // Otherwise, it is raw data
-	var child = buildTreeForChild(node.source_);
+  // First build the tree for the source of the current node
+	var source = buildTreeForNode(node.source_);
+
+  // Create the appropriate operator from the current type
 	switch (node.type_)
 	{
     case "target":
-      return makeTargetOperator(child, node.arguments_.name);
+      return makeTargetOperator(source, node.arguments_.name);
 
 		case "slow":
-			return makeSlowOperator(child, math.fraction(node.arguments_.amount));
+			return makeSlowOperator(source, math.fraction(node.arguments_.amount));
 
     case "sequence":
       if (node.arguments_.alignment == "t")
       {
-        return makeTimelineOperator(child);
+        return makeTimelineOperator(source);
       }
-      return makeSequenceRenderingOperator(child, node.arguments_.alignment);
+      return makeSequenceRenderingOperator(source, node.arguments_.alignment);
 	}
 	throw "Unknown model node type: " + node.type_;
 }
 
-RenderingTree = function()
+////////////////////////////////////////////////////////////////////////////////
+// Render tree builder. Constructs the operator tree from the model data
+
+RenderingTreeBuilder = function()
 {
 }
 
-RenderingTree.prototype.rebuild = function(modelNodeTree)
+// Rebuilds a whole tree from the model tree
+RenderingTreeBuilder.prototype.rebuild = function(modelNodeTree)
 {
   var tree =  buildTreeForNode(modelNodeTree);
   return tree;

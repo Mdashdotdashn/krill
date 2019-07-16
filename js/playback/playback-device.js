@@ -13,8 +13,8 @@ var tickPlayer = function(player, events)
 			device.send(m, {
 			  note: x.note,
 			  velocity: 127,
-			  channel: x.channel
-			});
+        channel: x.channel
+      });
 		});
 	}
 
@@ -22,7 +22,7 @@ var tickPlayer = function(player, events)
 
   player.values_ = events.values.reduce((c,x) => {
      const notes = convertToNotes(x);
-     const mapped = notes.map((n) => { return {note: n, channel: 0}});
+     const mapped = notes.map((n) => { return {note: n, channel: 9}});
      console.log(mapped);
      return c.concat(mapped);
    },[]);

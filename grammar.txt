@@ -6,7 +6,7 @@
     this.source_ = source;
   }
 
-  var OperantStub = function(name, args, source)
+  var OperatorStub = function(name, args, source)
   {
     this.type_ = name;
     this.arguments_ = args;
@@ -50,31 +50,40 @@ zero
 
 DIGIT  = [0-9]
 
-// ------------------ alpha numeral ---------------------------
+// ------------------ delimiters ---------------------------
 
 ws "whitespace" = " "*
 comma = ws "," ws;
-quote = '"'
+quote = '"' / "'"
 
 // ------------------ steps and cycles ---------------------------
 
-// single step definition
+// single step definition (e.g bd)
 step_char =  [0-9a-zA-Z~] / "-" / "#"
 step = ws chars:step_char+ ws { return chars.join("") }
 
-// define a sub cycle i.e. [1 2, 3 [4]]
+// define a sub cycle e.g. [1 2, 3 [4]]
 sub_cycle = ws  "[" ws s:stack ws "]" ws { return s}
 
-// define a timeline i.e. <1 3 [3 5]>. We simply defer to a stack and change the alignement
+// define a timeline e.g <1 3 [3 5]>. We simply defer to a stack and change the alignement
 timeline = ws "<" ws sc:single_cycle ws ">" ws
   { sc.arguments_.alignment = "t"; return sc;}
 
 // a slice is either a single step or a sub cycle
 slice = step / sub_cycle  / timeline
 
-// a single cycle is a combination of one or more slices (as an array). If we
+// slice operator affects the timing/size of a slice (e.g. [a b c]@3)
+// at this point, we assume we can represent them as regular sequence operators
+slice_operator = "@" a:number
+  { { return { name: "slow", args :{ amount: a}}} }
+
+// a slice with an operator applied i.e [bd@4 sd@3]@2 hh]
+slice_with_operator = s:slice o:slice_operator?
+  { return (o) ? new OperatorStub(o.name,o.args,s) : s;}
+
+// a single cycle is a combination of one or more successive slices (as an array). If we
 // have only one element, we skip the array and return the element itself
-single_cycle = s:(slice)+
+single_cycle = s:(slice_with_operator)+
   { return new SequenceStub(s,"h"); }
 
 // a stack is a serie of vertically aligned single cycles, separated by a comma
@@ -117,7 +126,7 @@ sequence_or_command =
   sg:sequence_or_group ws (comment)*
     {return sg}
   / c:command ws "$" ws soc:sequence_or_command
-    { return new OperantStub(c.name,c.args,soc)}
+    { return new OperatorStub(c.name,c.args,soc)}
 
 sequ_or_command_or_comment =
   sc: sequence_or_command

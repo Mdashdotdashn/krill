@@ -5,6 +5,7 @@ require("../sequence.js");
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// Events are container for a step happening at a given time in a sequence
 Event = function(time, values)
 {
   this.time_ = (typeof time == 'string') ? math.fraction(time) : time;
@@ -37,20 +38,43 @@ Event.prototype.values = function()
 // fit a 1 cycles length all together
 function ScaleAndOffset(eventArray)
 {
-  var scaleFactor = math.fraction("1/"+eventArray.length);
+}
+
+// Horizontal steps are played one after another and are squeezed together
+// to fit in a cycle
+var computeHorizontalSteps = function(nodes)
+{
+  // render the nodes
+  const renders = nodes.map((x) => x.render());
+
+  // since there can be complex operations here, we use the length of
+  // the sequence as a weighting factor. That way, we can use the length
+  // to implement "bd@3 sd"
+
+  const totalWeigth = renders.reduce((total, x) => total + x.cycleLength_, 0);
+
   var offset = math.fraction(0);
-  // every step is an array that need to be scaled
-  // we also drop any element that is a rest (~)
-  return scaled = eventArray.map((s) => {
-    result = s.reduce((c,x) => {
-      const offsetted = x.applyTime((t) => { return math.add(math.multiply(t,scaleFactor), offset)});
-      c.push(offsetted);
-      return c;
+  // every step is an array whose elements need to be scaled
+  return scaled = renders.map((s) => {
+    // Walk the render's event element
+    const scaleFactor = math.fraction(s.cycleLength_ + "/" + totalWeigth);
+    result = s.events_.map((x) => {
+      // scale them
+      return x.applyTime((t) => { return math.add(math.multiply(t,scaleFactor), offset)});
     },[]);
-    offset = math.add(offset,scaleFactor);
+    offset = math.add(offset ,scaleFactor);
     return result;
   })
 }
+
+// Vertical steps are played alongside with no
+// weighting
+var computeVerticalSteps = function(nodes)
+{
+  return nodes.map((x) => x.render().events_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 var SequenceRenderingOperator = function(operatorArray, alignment)
 {
@@ -67,13 +91,12 @@ SequenceRenderingOperator.prototype.tick = function()
 SequenceRenderingOperator.prototype.render = function()
 {
   // Renders concatenate sub steps as full cycles
-  const steps = this.nodes_.map((x) => x.render().events_);
-
-  // In horizontal mode, all steps are dividing the interval so we scale them accordingly
-  const scaled = (this.alignment_ == "h") ? ScaleAndOffset(steps)  : steps;
+  const steps = (this.alignment_ == "h")
+      ? computeHorizontalSteps(this.nodes_)
+      : computeVerticalSteps(this.nodes_);
 
   // Merge all data in a single array
-  const merged = scaled.reduce(function(collection,x) {
+  const merged = steps.reduce(function(collection,x) {
      return collection.concat(x);
   }, []);
 

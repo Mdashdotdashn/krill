@@ -6,6 +6,7 @@ drumMap["bd"] = 36;
 drumMap["sd"] = 38;
 drumMap["hh"] = 42;
 drumMap["oh"] = 46;
+drumMap["clave"] = 75;
 
 convertToNotes = function(x)
 {
