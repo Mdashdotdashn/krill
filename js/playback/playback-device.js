@@ -22,9 +22,8 @@ var tickPlayer = function(player, events)
 
   player.values_ = events.values.reduce((c,x) => {
      const notes = convertToNotes(x);
-     const mapped = notes.map((n) => { return {note: n, channel: 9}});
-     console.log(mapped);
-     return c.concat(mapped);
+     console.log(notes);
+     return c.concat(notes);
    },[]);
   console.log(player.values_);
 	processNotes(player.values_, 'noteon');

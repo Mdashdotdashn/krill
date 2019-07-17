@@ -14,7 +14,7 @@ convertToNotes = function(x)
   // first let's see if it is a number
   const parsedInt = parseInt(x);
   if (!isNaN(parsedInt)) {
-    notes.push(parsedInt + 36);
+    notes.push({ note: parsedInt + 36, channel: 0});
   }
   else {
     // Then let's ee if it is a note name
@@ -23,11 +23,11 @@ convertToNotes = function(x)
     {
       if (parsedNote.midi)
       {
-        notes.push(parsedNote.midi);
+        notes.push({ note: parsedNote.midi, channel: 0});
       }
       else
       {
-        notes.push(parsedNote.chroma + 62);
+        notes.push({ note: parsedNote.chroma, channel: 0});
       }
     }
     else
@@ -41,7 +41,7 @@ convertToNotes = function(x)
       else
       {
         // is it a drum name
-        if(drumMap[x]) notes.push(drumMap[x]);
+        if(drumMap[x]) notes.push({ note: drumMap[x], channel: 9});
       }
     }
   }
