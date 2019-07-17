@@ -11,6 +11,8 @@ SequencePlayer = function()
   this.cycleReset_ = false;
   // Current sequence
   this.sequence_ = undefined;
+  // Local cycle offset
+  this.cycleOffset_ = math.fraction(0);
 }
 
 SequencePlayer.prototype.setRenderingTree = function(tree)
@@ -23,13 +25,13 @@ SequencePlayer.prototype.cycleLength = function()
   return math.fraction(this.sequence_ ? this.sequence_.cycleLength_ : "1/1");
 }
 
-SequencePlayer.prototype.cycleTimeAndOffset = function(time)
+SequencePlayer.prototype.cycleTimeAndStart = function(time)
 {
-  var f = math.fraction(time);
+  var localTime = math.subtract(math.fraction(time), this.cycleOffset_);
   var cycleLength = this.cycleLength();
-  var cycleTime = math.mod(f,cycleLength);
-  var offset = math.multiply(math.floor(math.divide(f, cycleLength)), cycleLength);
-  return { cycleTime: cycleTime, offset: offset};
+  var cycleTime = math.mod(localTime,cycleLength);
+  var cycleStart = math.multiply(math.floor(math.divide(localTime, cycleLength)), cycleLength) + this.cycleOffset_;
+  return { cycleTime: cycleTime, start: cycleStart};
 }
 
 SequencePlayer.prototype.advance = function(time)
@@ -39,9 +41,9 @@ SequencePlayer.prototype.advance = function(time)
 //  console.log("inner cycle time = "+cycleTime);
 //  console.log("cycle offset = "+offset);
 
-  const cycleTimeAndOffset = this.cycleTimeAndOffset(time);
-  const offset = cycleTimeAndOffset.offset;
-  const cycleTime = cycleTimeAndOffset.cycleTime;
+  const cycleTimeAndStart = this.cycleTimeAndStart(time);
+  const cycleStart = cycleTimeAndStart.start;
+  const cycleTime = cycleTimeAndStart.cycleTime;
   const cycleLength = this.cycleLength();
 
   // If we don't have a sequence, we reply we should be triggered
@@ -49,14 +51,14 @@ SequencePlayer.prototype.advance = function(time)
   // sequence if queued
   if (!this.sequence_)
   {
-    var position = math.add(offset, cycleLength);
+    var position = math.add(cycleStart, cycleLength);
     this.current_ = new Event(position,undefined);
     this.resetCycle_ = true;
   }
   else {
     var nextData = this.sequence_.nextTimeFrom(cycleTime);
     if (!nextData) this.resetCycle_ = true;
-    var position = fracToString(math.add(offset, nextData ? nextData.time() : cycleLength));
+    var position = fracToString(math.add(cycleStart, nextData ? nextData.time() : cycleLength));
     this.current_ = new Event(position, nextData ? nextData.values() : undefined);
   }
   return this.current_.time();
@@ -91,6 +93,7 @@ SequencePlayer.prototype.eventForTime = function(currentTime)
     if (this.renderingTree_)
     {
       this.sequence_ = this.renderingTree_.render();
+      this.cycleOffset_ = currentTime;
       var firstSlice = this.sequence_.dataAtIndex(0);
       this.current_.values_ = math.equal(firstSlice.time_, math.fraction(0)) ? firstSlice.values_ : null;
       this.renderingTree_.tick();
