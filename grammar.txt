@@ -52,7 +52,7 @@ DIGIT  = [0-9]
 
 // ------------------ delimiters ---------------------------
 
-ws "whitespace" = " "*
+ws "whitespace" = [ \n\r\t]*
 comma = ws "," ws;
 quote = '"' / "'"
 

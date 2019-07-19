@@ -36,6 +36,7 @@
     </style>
 
     <script src="js/jquery-1.7.1.min.js"></script>
+    <script src="js/strip-comments.js"></script>
     <script src="js/peg-0.10.0.min.js"></script>
     <script src="js/ace/min/ace.js" type="text/javascript" charset="utf-8"></script>
     <script>
@@ -51,16 +52,15 @@
         : e.message;
     }
 
-    function testParser(string)
+    function returnParserError(string)
     {
       try {
         parser.parse(string);
-        return true;
+        return null;
       }
       catch(e)
       {
-        console.log(buildErrorMessage(e));
-        return false;
+        return buildErrorMessage(e);
       }
     }
 
@@ -88,21 +88,14 @@
       })
     }
 
-    function sendRange(editor, log, range)
-    {
-      for (var i = range.start.row; i<= range.end.row; i++)
-      {
-        var lineText = editor.session.getLine(i);
-        var result =  processCommand(log, lineText);
-      }
-    }
-
     $( document ).ready(function()
     {
       // listen to server events
 
         setTimeout(pollServerEvents, 10);
         console.log( "ready!" );
+
+        var stripper = new CommentStripper();
 
      // Setup editor and log
         var editor = ace.edit("editor");
@@ -117,56 +110,79 @@
           name: 'sendLine',
           bindKey: {win: 'Shift-Enter', mac: 'Shift-Enter'},
           exec: function(editor) {
-            var selection = editor.getSelection();
-            var range = selection.getRange();
-
-            // look for the case were a single line is selected but selection goes to next one.
-            if (range.start.row > range.end.row)
-            {
-              if (range.start.column ==0)
-              {
-                range.start.row -=1;
-              }
+            var p = getParagraph();
+            if (p) {
+              processCommand(log, p.text);              
             }
-            if (range.end.row > range.start.row)
-            {
-              range.end.row -=1;
-            }
-            if (selection.isEmpty())
-            {
-              var currline = editor.getCursorPosition();
-              range =  new Range(currline.row, currline.column, currline.row, currline.column);
-            }
-            sendRange(editor,log, range);
             return true;
           },
           readOnly: true
           });
 
-        var highlightSyntax = function()
+        var reportError = function()
         {
           var currline = editor.getCursorPosition().row;
-          var lineText = editor.session.getLine(currline);
-          if (lineText.trim().length > 0)
+          var paragraph = getParagraph();
+          if (paragraph)
           {
-            var success = testParser(lineText);
-            if (lastMarkerID)
+            var error = returnParserError(paragraph.text);
+            if (error)
             {
-              editor.getSession().removeMarker(lastMarkerID);
+              editor.getSession().setAnnotations([{
+                row: paragraph.from,
+                column: 0,
+                text: error,
+                type: "error" // also "warning" and "information"
+              }]);
             }
-            if (!success)
+            else
             {
-              lastMarkerID = editor.getSession().addMarker(new Range(currline, 0, currline, 1), "warning", "line", true);
+              editor.getSession().clearAnnotations();
             }
+          }
+          else {
+            editor.getSession().clearAnnotations();
           }
         }
 
+        function getParagraph()
+        {
+          const currline = editor.getCursorPosition().row;
+          if (editor.session.getLine(currline).trim() == 0) return null;
+          const lineCount = editor.getSession().getLength();
+          var lowerBound = currline;
+          while (lowerBound > 0)
+          {
+            if (editor.session.getLine(lowerBound - 1).trim() == 0) break;
+            lowerBound--;
+          }
+
+          var upperBound = currline;
+          while (upperBound < lineCount)
+          {
+            if (editor.session.getLine(upperBound + 1).trim() == 0) break;
+            upperBound++;
+          }
+
+          var paragraph = "";
+          for (var l = lowerBound; l <= upperBound; l++)
+          {
+            const text = editor.session.getLine(l);
+            paragraph = paragraph + text + "\n";
+          }
+          // strip any form of comment
+          paragraph = stripper.strip(paragraph);
+          return { from: lowerBound, to:upperBound, text:paragraph};
+//          console.log(lowerBound + ":" + upperBound + "("+ currline +")"+ "=>" +paragraph);
+        }
+
+
         editor.getSession().selection.on('changeCursor', function() {
-          highlightSyntax();
+          reportError();
         });
 
         editor.getSession().getDocument().on('change', function() {
-          highlightSyntax();
+          reportError();
         });
 
       // Setup local parser

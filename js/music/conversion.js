@@ -1,8 +1,10 @@
+const _ = require('lodash');
 var parser = require('note-parser');
 var chord = require('tonal-chord');
 
 var drumMap = new Array();
 drumMap["bd"] = 36;
+drumMap["rim"] = 37;
 drumMap["sd"] = 38;
 drumMap["hh"] = 42;
 drumMap["oh"] = 46;
@@ -27,7 +29,7 @@ convertToNotes = function(x)
       }
       else
       {
-        notes.push({ note: parsedNote.chroma, channel: 0});
+        notes.push({ note: parsedNote.chroma + 62, channel: 0});
       }
     }
     else
@@ -45,5 +47,5 @@ convertToNotes = function(x)
       }
     }
   }
-  return notes;
+  return _.flatten(notes);
 }
