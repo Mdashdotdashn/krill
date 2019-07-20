@@ -74,16 +74,16 @@ slice = step / sub_cycle  / timeline
 
 // slice operator affects the timing/size of a slice (e.g. [a b c]@3)
 // at this point, we assume we can represent them as regular sequence operators
-slice_operator = "@" a:number
+slice_modifier = "@" a:number
   { { return { name: "slow", args :{ amount: a}}} }
 
-// a slice with an operator applied i.e [bd@4 sd@3]@2 hh]
-slice_with_operator = s:slice o:slice_operator?
+// a slice with an modifier applied i.e [bd@4 sd@3]@2 hh]
+slice_with_modifier = s:slice o:slice_modifier?
   { return (o) ? new OperatorStub(o.name,o.args,s) : s;}
 
 // a single cycle is a combination of one or more successive slices (as an array). If we
 // have only one element, we skip the array and return the element itself
-single_cycle = s:(slice_with_operator)+
+single_cycle = s:(slice_with_modifier)+
   { return new SequenceStub(s,"h"); }
 
 // a stack is a serie of vertically aligned single cycles, separated by a comma
