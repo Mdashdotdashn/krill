@@ -41,6 +41,9 @@ function buildOperatorNode(node)
 		case "slow":
 			return makeSlowOperator(source, math.fraction(node.arguments_.amount));
 
+    case "bjorklund":
+			return makeBjorklundOperator(source, math.fraction(node.arguments_.step),math.fraction(node.arguments_.pulse));
+
     case "sequence":
       if (node.arguments_.alignment == "t")
       {

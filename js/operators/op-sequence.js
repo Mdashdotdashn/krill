@@ -34,12 +34,38 @@ Event.prototype.values = function()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// Apply a scaling factor on the element array so all elements
-// fit a 1 cycles length all together
-function ScaleAndOffset(eventArray)
+// Transforms an array of weigthed values in the form { value: , weigth: }
+// into a serie of event
+var computeEventsFromWeightArray = function(weightArray)
 {
+  // Computes the total weigth
+  const totalWeight = weightArray.reduce((t,x) => { return t + x.weight; }, 0);
+  // Initialize the position within the sequence
+  var position = math.fraction("0");
+  // For every step, stretch the events inside
+  const events = weightArray.map((x) => {
+    // render the sequence
+    const sequence = x.sequence.render();
+    // Apply scaling and position to every contained events
+    const scaleFactor = math.fraction(x.weight, totalWeight);
+    const scaled = sequence.events_.map((x) => {
+      // scale them
+      return x.applyTime((t) => { return math.add(math.multiply(t,scaleFactor), position)});
+    },[]);
+    // go to the next position
+    position += scaleFactor;
+    return scaled;
+  });
+
+  // Merge all steps in a single array
+  return _.flatten(events);
 }
 
+makeSequenceFromWeightArray = function(weigthedArray)
+{
+  const eventArray = computeEventsFromWeightArray(weigthedArray);
+  return makeSequenceFromEventArray(eventArray);
+}
 // Horizontal steps are played one after another and are squeezed together
 // to fit in a cycle
 var computeHorizontalSteps = function(nodes)

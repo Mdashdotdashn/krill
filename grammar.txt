@@ -1,3 +1,9 @@
+// Some terminology:
+// a sequence = a serie of elements placed between quotes
+// a stack = a serie of vertically aligned slices sharing the same overall length
+// a slice = a serie of horizontally aligned elements
+
+
 {
   var SequenceStub = function(source, alignment)
   {
@@ -72,10 +78,15 @@ timeline = ws "<" ws sc:single_cycle ws ">" ws
 // a slice is either a single step or a sub cycle
 slice = step / sub_cycle  / timeline
 
-// slice operator affects the timing/size of a slice (e.g. [a b c]@3)
+// slice modifier affects the timing/size of a slice (e.g. [a b c]@3)
 // at this point, we assume we can represent them as regular sequence operators
-slice_modifier = "@" a:number
+slice_modifier = slice_weight / slice_bjorklund
+
+slice_weight =  "@" a:number
   { { return { name: "slow", args :{ amount: a}}} }
+
+slice_bjorklund = "(" ws p:number ws comma ws s:number ws")"
+{ { return { name: "bjorklund", args :{ pulse: p, step:s}}} }
 
 // a slice with an modifier applied i.e [bd@4 sd@3]@2 hh]
 slice_with_modifier = s:slice o:slice_modifier?
@@ -98,10 +109,13 @@ sequence = ws quote s:stack quote
 
 // ------------------ commands ---------------------------
 
-command = slow / target
+command = slow / target / bjorklund
 
 target = "target" ws quote s:step quote
   { return { name: "target", args : { name:s}}}
+
+bjorklund = "e" ws p:int ws s:int
+  { return { name: "bjorklund", args :{ pulse: p, step:s }}}
 
 slow = "slow" ws a:number
   { return { name: "slow", args :{ amount: a}}}

@@ -122,8 +122,25 @@ function testSlowOperator()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+function testBjorklundOperator()
+{
+  var sequence = evaluator.evaluateSequence(quote + "bd" + quote);
+
+  var expected =   [
+      { "0/1" : ["bd"] },
+      { "3/8" : ["bd"] },
+      { "3/4" : ["bd"] }
+    ];
+
+  var operator = makeBjorklundOperator(sequence, 8 ,3);
+  operator.tick();
+  testSequenceMatches(operator.render(), expected);
+}
+////////////////////////////////////////////////////////////////////////////////
+
 testSequenceImplementsOperatorInterface();
 testOperatorsAreRecursive();
 testTimelineOperator();
 testValueWrapperOperator();
 testSlowOperator();
+testBjorklundOperator();
