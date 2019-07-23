@@ -109,12 +109,15 @@ sequence = ws quote s:stack quote
 
 // ------------------ commands ---------------------------
 
-command = slow / target / bjorklund
+command = slow / target / bjorklund / struct
+
+struct = "struct" ws s:sequence_or_command
+  { return { name: "struct", args: { sequence:s }}}
 
 target = "target" ws quote s:step quote
   { return { name: "target", args : { name:s}}}
 
-bjorklund = "e" ws p:int ws s:int
+bjorklund = "euclid" ws p:int ws s:int
   { return { name: "bjorklund", args :{ pulse: p, step:s }}}
 
 slow = "slow" ws a:number

@@ -25,7 +25,7 @@ function runAllTestCases()
     }
   } catch (err)
   {
-    throw "Error trying to execute test case: " + test + "\n" + err;
+    throw err; //"Error trying to execute test case: " + test + "\n" + err;
   }
   }
 }

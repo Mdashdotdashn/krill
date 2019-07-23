@@ -35,6 +35,9 @@ function buildOperatorNode(node)
   // Create the appropriate operator from the current type
 	switch (node.type_)
 	{
+    case "struct":
+      return makeStructOperator(source, buildTreeForNode(node.arguments_.sequence));
+
     case "target":
       return makeTargetOperator(source, node.arguments_.name);
 
