@@ -1,13 +1,13 @@
 var NanoTimer = require("nanotimer");
 var EventEmitter = require('events').EventEmitter;
 var math = require('mathjs');
-require("./sequence-player.js");
+require("./rendering-tree-player.js");
 var util = require('util');
 
 Engine = function()
 {
   this.timer_ = new NanoTimer();
-  this.player_ = new SequencePlayer();
+  this.player_ = new RenderingTreePlayer();
   this.cps_ = 1;
 }
 

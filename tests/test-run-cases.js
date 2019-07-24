@@ -12,7 +12,7 @@ function runAllTestCases()
     var expected = testCases[test];
     console.log("> "+ test);
     const renderingTree = evaluator.evaluateRenderingTree(test);
-    var player = new SequencePlayer();
+    var player = new RenderingTreePlayer();
     player.setRenderingTree(renderingTree);
     var currentTime = "-0.0001";
     for (var expectedTime in expected)

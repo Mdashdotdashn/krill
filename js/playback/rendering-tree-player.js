@@ -1,7 +1,7 @@
 require("../sequence.js");
 var math = require("mathjs");
 
-SequencePlayer = function()
+RenderingTreePlayer = function()
 {
   // current rendering tree
   this.renderingTree_ = undefined;
@@ -15,17 +15,17 @@ SequencePlayer = function()
   this.cycleOffset_ = math.fraction(0);
 }
 
-SequencePlayer.prototype.setRenderingTree = function(tree)
+RenderingTreePlayer.prototype.setRenderingTree = function(tree)
 {
   this.queued_ = tree;
 }
 
-SequencePlayer.prototype.cycleLength = function()
+RenderingTreePlayer.prototype.cycleLength = function()
 {
   return math.fraction(this.sequence_ ? this.sequence_.cycleLength_ : "1/1");
 }
 
-SequencePlayer.prototype.cycleTimeAndStart = function(time)
+RenderingTreePlayer.prototype.cycleTimeAndStart = function(time)
 {
   var localTime = math.subtract(math.fraction(time), this.cycleOffset_);
   var cycleLength = this.cycleLength();
@@ -34,7 +34,7 @@ SequencePlayer.prototype.cycleTimeAndStart = function(time)
   return { cycleTime: cycleTime, start: cycleStart};
 }
 
-SequencePlayer.prototype.advance = function(time)
+RenderingTreePlayer.prototype.advance = function(time)
 {
 //  console.log("-----------------------------"+ time);
 //  console.log("length = "+ cycleLength);
@@ -64,7 +64,7 @@ SequencePlayer.prototype.advance = function(time)
   return this.current_.time();
 }
 
-SequencePlayer.prototype.reset = function()
+RenderingTreePlayer.prototype.reset = function()
 {
   // probably a lot more complex than this
   this.resetCycle_ = true;
@@ -75,7 +75,7 @@ SequencePlayer.prototype.reset = function()
 
 // Returns the event queued for the current time if it matches the time
 
-SequencePlayer.prototype.eventForTime = function(currentTime)
+RenderingTreePlayer.prototype.eventForTime = function(currentTime)
 {
   // If the last advance lead to a cycle end we evaluate possible
   // queueing and set data to the start of the next cycle

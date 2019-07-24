@@ -1,9 +1,9 @@
 var assert = require("assert");
 
-require("../js/playback/sequence-player.js");
+require("../js/playback/rendering-tree-player.js");
 require("./base.js");
 
-var player = new SequencePlayer();
+var player = new RenderingTreePlayer();
 
 var testAdvance = function(time, expectedTime, expectedValues)
 {
