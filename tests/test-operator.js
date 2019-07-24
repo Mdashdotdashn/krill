@@ -136,11 +136,29 @@ function testBjorklundOperator()
   operator.tick();
   testSequenceMatches(operator.render(), expected);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 
+function testScaleOperator()
+{
+  var sequence = evaluator.evaluateSequence("'0 7 -2 6'");
+
+  var expected = [
+    { "0/1" : ["0"] },
+    { "1/4" : ["12"] },
+    { "1/2" : ["-3"] },
+    { "3/4" : ["11"] }
+  ]
+
+  var operator = makeScaleOperator(sequence, "major");
+  testSequenceMatches(operator.render(), expected);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 testSequenceImplementsOperatorInterface();
 testOperatorsAreRecursive();
 testTimelineOperator();
 testValueWrapperOperator();
 testSlowOperator();
 testBjorklundOperator();
+testScaleOperator();

@@ -109,7 +109,7 @@ sequence = ws quote s:stack quote
 
 // ------------------ commands ---------------------------
 
-command = slow / target / bjorklund / struct
+command = scale / slow / target / bjorklund / struct
 
 struct = "struct" ws s:sequence_or_command
   { return { name: "struct", args: { sequence:s }}}
@@ -122,6 +122,9 @@ bjorklund = "euclid" ws p:int ws s:int
 
 slow = "slow" ws a:number
   { return { name: "slow", args :{ amount: a}}}
+
+scale = "scale" ws quote s:(step_char)+ quote
+{ return { name: "scale", args :{ scale: s.join("")}}}
 
 comment = '//' p:([^\n]*)
 
