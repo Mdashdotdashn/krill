@@ -1,10 +1,10 @@
 var math = require("mathjs");
 require("./base.js");
-require('../js/sequence.js');
+require('../js/pattern.js');
 
 function testNextTime(string, time, expected)
 {
-  var sequence = evaluator.evaluateSequence(quote + string + quote);
+  var sequence = evaluator.evaluatePattern(quote + string + quote);
   // Test we've got either the expected value or 'undefined' (meaning the cycle finishing)
   var next = sequence.nextTimeFrom(math.fraction(time));
   var nextTime = next ? next.time_ : undefined;

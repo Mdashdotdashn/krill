@@ -14,7 +14,7 @@ function testSequenceImplementsOperatorInterface()
       { "2/3" : ["3"] },
     ];
 
-  var sequence = evaluator.evaluateSequence(source);
+  var sequence = evaluator.evaluatePattern(source);
 
   // Construct an identity function operator that returns the sequence
 
@@ -41,7 +41,7 @@ function testOperatorsAreRecursive()
       { "2/3" : ["3"] },
     ];
 
-  var sequence = evaluator.evaluateSequence(source);
+  var sequence = evaluator.evaluatePattern(source);
 
   // Construct an identity function operator that returns the sequence
 
@@ -64,8 +64,8 @@ function testOperatorsAreRecursive()
 
 function testTimelineOperator()
 {
-  var sequence1 = evaluator.evaluateSequence(quote + "1 2 3" + quote);
-  var sequence2 = evaluator.evaluateSequence("slow 2 $ " + quote + "4 5 6 7" + quote);
+  var sequence1 = evaluator.evaluatePattern(quote + "1 2 3" + quote);
+  var sequence2 = evaluator.evaluatePattern("slow 2 $ " + quote + "4 5 6 7" + quote);
 
   var expected1 =   [
       { "0/1" : ["1"] },
@@ -106,7 +106,7 @@ function testValueWrapperOperator()
 
 function testSlowOperator()
 {
-  var sequence = evaluator.evaluateSequence(quote + "1 2 3" + quote);
+  var sequence = evaluator.evaluatePattern(quote + "1 2 3" + quote);
 
   var expected =   [
       { "0/1" : ["1"] },
@@ -124,7 +124,7 @@ function testSlowOperator()
 
 function testBjorklundOperator()
 {
-  var sequence = evaluator.evaluateSequence(quote + "bd" + quote);
+  var sequence = evaluator.evaluatePattern(quote + "bd" + quote);
 
   var expected =   [
       { "0/1" : ["bd"] },
@@ -141,7 +141,7 @@ function testBjorklundOperator()
 
 function testScaleOperator()
 {
-  var sequence = evaluator.evaluateSequence("'0 7 -2 6'");
+  var sequence = evaluator.evaluatePattern("'0 7 -2 6'");
 
   var expected = [
     { "0/1" : ["0"] },

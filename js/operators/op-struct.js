@@ -60,7 +60,7 @@ weaveSequences = function(leftSequence, rightSequence, mode, operation)
     const applied = applyOperation(leftValues, rightValues, operation);
     return new Event(t, applied);
   });
-  return makeSequenceFromEventArray(eventsArray);
+  return makePatternFromEventArray(eventsArray);
 }
 
 var boolValue = function(b)

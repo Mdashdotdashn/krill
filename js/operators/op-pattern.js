@@ -1,7 +1,7 @@
 const math = require("mathjs");
 const _ = require("lodash");
 
-require("../sequence.js");
+require("../pattern.js");
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -61,10 +61,10 @@ var computeEventsFromWeightArray = function(weightArray)
   return _.flatten(events);
 }
 
-makeSequenceFromWeightArray = function(weigthedArray)
+makePatternFromWeightArray = function(weigthedArray)
 {
   const eventArray = computeEventsFromWeightArray(weigthedArray);
-  return makeSequenceFromEventArray(eventArray);
+  return makePatternFromEventArray(eventArray);
 }
 // Horizontal steps are played one after another and are squeezed together
 // to fit in a cycle
@@ -141,12 +141,12 @@ SequenceRenderingOperator.prototype.render = function()
   });
 
 //  console.log('returning ' + JSON.stringify(ordered));
-  return makeSequenceFromEventArray(ordered);
+  return makePatternFromEventArray(ordered);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-makeSequenceRenderingOperator = function(childArray, alignment)
+makePatternyRenderingOperator = function(childArray, alignment)
 {
   if (!Array.isArray(childArray)) throw ("Unexpected child data type");
   return new SequenceRenderingOperator(childArray, alignment);

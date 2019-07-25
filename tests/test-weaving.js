@@ -2,8 +2,8 @@ require("./base.js");
 
 var testWeaving = function(leftSequenceString, rightSequenceString, mode, operation, expected)
 {
-  var sequenceL = evaluator.evaluateSequence(quote + leftSequenceString + quote);
-  var sequenceR = evaluator.evaluateSequence(quote + rightSequenceString + quote);
+  var sequenceL = evaluator.evaluatePattern(quote + leftSequenceString + quote);
+  var sequenceR = evaluator.evaluatePattern(quote + rightSequenceString + quote);
   var result = weaveSequences(sequenceL, sequenceR, mode, operation);
   testSequenceMatches(result, expected);
 }

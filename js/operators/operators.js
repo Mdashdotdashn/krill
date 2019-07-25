@@ -37,7 +37,7 @@ makeValueWrapperOperator = function(v)
 }
 
 require("./op-bjorklund.js");
-require("./op-sequence.js");
+require("./op-pattern.js");
 require("./op-scale.js");
 require("./op-slow.js");
 require("./op-struct.js");

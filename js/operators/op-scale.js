@@ -1,5 +1,5 @@
 const math = require("mathjs");
-require("./op-sequence.js");
+require("./op-pattern.js");
 const Scale = require("tonal-scale");
 const Interval = require("tonal-interval");
 
@@ -25,7 +25,7 @@ makeScaleOperator = function(source, scale)
       return new Event(e.time_, values);
     })
 //    Dump(eventArray);
-    return makeSequenceFromEventArray(eventArray);
+    return makePatternFromEventArray(eventArray);
   }
 
   return new Operator(scaleFn,[source]);

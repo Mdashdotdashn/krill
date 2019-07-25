@@ -1,5 +1,5 @@
 const math = require("mathjs");
-require("./op-sequence.js");
+require("./op-pattern.js");
 
 function bjorklund(steps, pulses) {
 
@@ -73,9 +73,9 @@ var buildWeightArray = function(step, pulse, source)
   }, result);
 
   // For every step, insert either a rest sequence or the source one
-  const restSequence = makeSequenceFromEventArray([new Event(math.fraction(0),["~"])]);
+  const restPattern = makePatternFromEventArray([new Event(math.fraction(0),["~"])]);
   const weightArray = result.map(x => {
-     const v = x.value == 0 ? restSequence : source;
+     const v = x.value == 0 ? restPattern : source;
      return { sequence: v, weight: x.weight};
    });
 
@@ -90,7 +90,7 @@ makeBjorklundOperator = function(source, step, pulse)
     const step = args[1];
     const pulse = args[2];
     const weightArray = buildWeightArray(step, pulse, source);
-    return makeSequenceFromWeightArray(weightArray);
+    return makePatternFromWeightArray(weightArray);
   }
 
   return new Operator(bjorklundFn,

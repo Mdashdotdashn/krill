@@ -11,59 +11,59 @@ fracToString = function(f)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-var Sequence = function()
+var Pattern = function()
 {
   this.cycleLength_ = math.fraction(1);
   this.events_ = [];
   this.targetName_ = "";
 }
 
-Sequence.prototype.clone = function()
+Pattern.prototype.clone = function()
 {
-  var clone = new Sequence();
+  var clone = new Pattern();
   clone.events_ = this.events_.slice(0);
   clone.cycleLength_ = this.cycleLength_;
   clone.targetName_ = CloneString(this.targetName_);
   return clone;
 }
 
-Sequence.prototype.setEventArray = function(eventArray)
+Pattern.prototype.setEventArray = function(eventArray)
 {
   this.events_ = eventArray;
 }
 
-Sequence.prototype.setTargetName = function(targetName)
+Pattern.prototype.setTargetName = function(targetName)
 {
   this.targetName_  = targetName;
 }
 
-Sequence.prototype.tick = function()
+Pattern.prototype.tick = function()
 {
 }
 
-Sequence.prototype.render = function()
+Pattern.prototype.render = function()
 {
   return this;
 }
 
-Sequence.prototype.size = function()
+Pattern.prototype.size = function()
 {
   return this.events_.length;
 }
 
-Sequence.prototype.dataAtIndex = function(index)
+Pattern.prototype.dataAtIndex = function(index)
 {
   return this.events_[index];
 }
 
 
-Sequence.prototype.timeAtIndex = function(index)
+Pattern.prototype.timeAtIndex = function(index)
 {
   return this.events_[index].time();
 }
 
 // This could be nicely replaced by a binary search
-Sequence.prototype.nextTimeFrom = function(searchTime)
+Pattern.prototype.nextTimeFrom = function(searchTime)
 {
   var minIndex = 0;
   var minTime = this.timeAtIndex(minIndex);
@@ -79,7 +79,7 @@ Sequence.prototype.nextTimeFrom = function(searchTime)
   }
 }
 
-Sequence.prototype.valueAtTime = function(time)
+Pattern.prototype.valueAtTime = function(time)
 {
   var searchTime = math.mod(time,this.cycleLength_);
 
@@ -95,9 +95,9 @@ Sequence.prototype.valueAtTime = function(time)
   }
 }
 
-makeSequenceFromEventArray = function(array)
+makePatternFromEventArray = function(array)
 {
-  var sequence = new Sequence();
-  sequence.setEventArray(array);
-  return sequence;
+  var pattern = new Pattern();
+  pattern.setEventArray(array);
+  return pattern;
 }

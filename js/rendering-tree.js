@@ -21,7 +21,7 @@ function buildTreeForNode(node)
 
   // make a single sequence out of the event
   var sequenceArray = [new Event("0", [node])];
-  return makeSequenceFromEventArray(sequenceArray);
+  return makePatternFromEventArray(sequenceArray);
 }
 
 // Builds a rendering tree composed of operator nodes that can be
@@ -55,7 +55,7 @@ function buildOperatorNode(node)
       {
         return makeTimelineOperator(source);
       }
-      return makeSequenceRenderingOperator(source, node.arguments_.alignment);
+      return makePatternyRenderingOperator(source, node.arguments_.alignment);
 	}
 	throw "Unknown model node type: " + node.type_;
 }
