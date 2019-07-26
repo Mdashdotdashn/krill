@@ -24,15 +24,9 @@ TestEvaluator.prototype.evaluatePattern = function(s)
 evaluator = new TestEvaluator();
 quote ="\"";
 
-convertSequenceToString = function(sequence)
-{
-  return sequence.events_.reduce(function(a,x) { var o = new Object() ; o[x.timeString()] = x.values(); a.push(o); return a;}, []);
-}
-
 testSequenceMatches = function(sequence, expected, cycleLength)
 {
-  var output = convertSequenceToString(sequence);
+  var output = convertPatternToString(sequence);
   assert.deepEqual(output,expected);
   if (cycleLength) assert.equal(math.format(sequence.cycleLength_), cycleLength);
-
 }
