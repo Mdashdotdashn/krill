@@ -6,11 +6,18 @@
     <meta name="Description" content=""/>
     <link rel="shortcut icon" href=""/>
     <style>
-      body {
-          background-color: #B9B7AA;
+      html {
+        background: url("images/krill.jpg") no-repeat center center fixed;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
       }
 
       #editor {
+          top: 150px;
+          display:block;
+          margin: auto;
           height: 275px;
           width: 600px;
           border: 1px solid #DDD;
@@ -19,12 +26,13 @@
           margin-top: 5px;
       }
       #log {
-          height: 275px;
+          height: 0px;
           width: 600px;
           border: 1px solid #DDD;
           border-radius: 4px;
           border-bottom-right-radius: 0px;
           margin-top: 5px;
+          visibility: hidden;
       }
       .warning
       {
@@ -112,7 +120,7 @@
           exec: function(editor) {
             var p = getParagraph();
             if (p) {
-              processCommand(log, p.text);              
+              processCommand(log, p.text);
             }
             return true;
           },
