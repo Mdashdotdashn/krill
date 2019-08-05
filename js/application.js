@@ -10,8 +10,8 @@ var Application = function()
 	this.engine_ = new Engine();
 	this.engine_.start();
 	this.engine_.connect(this);
-  this.playbackDevice_ = new GMDevice('loopMIDI Port 1');
-//  this.playbackDevice_ = new GMDevice('Microsoft GS Wavetable Synth 0');
+//  this.playbackDevice_ = new GMDevice('loopMIDI Port 1');
+  this.playbackDevice_ = new GMDevice('Microsoft GS Wavetable Synth 0');
 //  this.playbackDevice_ = new VCVDevice('loopMIDI Port 1');
 }
 
