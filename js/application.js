@@ -18,7 +18,6 @@ var Application = function()
 Application.prototype.parse = function(command)
 {
 	var result = this.evaluator_.evaluate(command);
-  Dump(result);
   var renderingTree = this.renderingTreeBuilder_.rebuild(result);
 	this.engine_.setRenderingTree(renderingTree);
 	return JSON.stringify(result, undefined, 1);
