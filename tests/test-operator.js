@@ -62,35 +62,35 @@ function testOperatorsAreRecursive()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function testTimelineOperator()
-{
-  var sequence1 = evaluator.evaluatePattern(quote + "1 2 3" + quote);
-  var sequence2 = evaluator.evaluatePattern("slow 2 $ " + quote + "4 5 6 7" + quote);
-
-  var expected1 =   [
-      { "0/1" : ["1"] },
-      { "1/3" : ["2"] },
-      { "2/3" : ["3"] },
-    ];
-
-  var expected2 =   [
-      { "0/1" : ["4"] },
-      { "1/2" : ["5"] },
-      { "1/1" : ["6"] },
-      { "3/2" : ["7"] },
-    ];
-
-  var operator = makeTimelineOperator([sequence1, sequence2]);
-  var testAdvance = function(expected)
-  {
-    testSequenceMatches(operator.render(), expected);
-    operator.tick();
-  }
-
-  testAdvance(expected1);
-  testAdvance(expected2);
-  testAdvance(expected1);
-}
+// function testTimelineOperator()
+// {
+//   var sequence1 = evaluator.evaluatePattern(quote + "1 2 3" + quote);
+//   var sequence2 = evaluator.evaluatePattern("slow 2 $ " + quote + "4 5 6 7" + quote);
+//
+//   var expected1 =   [
+//       { "0/1" : ["1"] },
+//       { "1/3" : ["2"] },
+//       { "2/3" : ["3"] },
+//     ];
+//
+//   var expected2 =   [
+//       { "0/1" : ["4"] },
+//       { "1/2" : ["5"] },
+//       { "1/1" : ["6"] },
+//       { "3/2" : ["7"] },
+//     ];
+//
+//   var operator = makeTimelineOperator([sequence1, sequence2]);
+//   var testAdvance = function(expected)
+//   {
+//     testSequenceMatches(operator.render(), expected);
+//     operator.tick();
+//   }
+//
+//   testAdvance(expected1);
+//   testAdvance(expected2);
+//   testAdvance(expected1);
+// }
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -157,7 +157,7 @@ function testScaleOperator()
 ////////////////////////////////////////////////////////////////////////////////
 testSequenceImplementsOperatorInterface();
 testOperatorsAreRecursive();
-testTimelineOperator();
+//testTimelineOperator();
 testValueWrapperOperator();
 testSlowOperator();
 testBjorklundOperator();

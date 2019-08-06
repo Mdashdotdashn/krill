@@ -33,6 +33,34 @@ Event.prototype.values = function()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+//! holds information about characteristics (like weigth a pattern step has)
+
+var PatternStep = function(content)
+{
+  return { content: content, weight: 1};
+}
+
+buildPatternStep = function(content, option)
+{
+  var step = new PatternStep(content);
+
+  // One option can be of applying an operator (bjorklund for example)
+  if (option)
+  {
+    if (option.operator)
+    {
+      const operator = option.operator;
+      step.content = buildOperator(operator.type_, operator.arguments_, content);
+    }
+    if (option.weight)
+    {
+      step.weight = option.weight;
+    }
+  }
+  return step;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 // Transforms an array of weigthed values in the form { value: , weigth: }
 // into a serie of event
@@ -45,7 +73,7 @@ var computeEventsFromWeightArray = function(weightArray)
   // For every step, stretch the events inside
   const events = weightArray.map((x) => {
     // render the sequence
-    const sequence = x.sequence.render();
+    const sequence = x.content.render();
     // Apply scaling and position to every contained events
     const scaleFactor = math.fraction(x.weight, totalWeight);
     const scaled = sequence.events_.map((x) => {
@@ -66,32 +94,6 @@ makePatternFromWeightArray = function(weigthedArray)
   const eventArray = computeEventsFromWeightArray(weigthedArray);
   return makePatternFromEventArray(eventArray);
 }
-// Horizontal steps are played one after another and are squeezed together
-// to fit in a cycle
-var computeHorizontalSteps = function(nodes)
-{
-  // render the nodes
-  const renders = nodes.map((x) => x.render());
-
-  // since there can be complex operations here, we use the length of
-  // the sequence as a weighting factor. That way, we can use the length
-  // to implement "bd@3 sd"
-
-  const totalWeigth = renders.reduce((total, x) => total + x.cycleLength_, 0);
-
-  var offset = math.fraction(0);
-  // every step is an array whose elements need to be scaled
-  return scaled = renders.map((s) => {
-    // Walk the render's event element
-    const scaleFactor = math.fraction(s.cycleLength_ + "/" + totalWeigth);
-    result = s.events_.map((x) => {
-      // scale them
-      return x.applyTime((t) => { return math.add(math.multiply(t,scaleFactor), offset)});
-    },[]);
-    offset = math.add(offset ,scaleFactor);
-    return result;
-  })
-}
 
 // Vertical steps are played alongside with no
 // weighting
@@ -111,14 +113,18 @@ var SequenceRenderingOperator = function(operatorArray, alignment)
 SequenceRenderingOperator.prototype.tick = function()
 {
   this.current_ = (this.current_ + 1) % this.nodes_.length;
-  this.nodes_.forEach((x) => x.tick());
+  // Horizontal contains PatternStep while vertical contains direct nodes
+  // this is not optimal because the two aren't equivalent anymore. We temporarily(?)
+  // cope with the situation by testing the step. Ideally H/V should be split
+  // in pattern and stack
+  this.nodes_.forEach((x) => x.content ? x.content.tick() : x.tick() );
 }
 
 SequenceRenderingOperator.prototype.render = function()
 {
   // Renders concatenate sub steps as full cycles
   const steps = (this.alignment_ == "h")
-      ? computeHorizontalSteps(this.nodes_)
+      ? computeEventsFromWeightArray(this.nodes_)
       : computeVerticalSteps(this.nodes_);
 
   // Merge all data in a single array
@@ -146,7 +152,7 @@ SequenceRenderingOperator.prototype.render = function()
 
 //////////////////////////////////////////////////////////////////////////////
 
-makePatternyRenderingOperator = function(childArray, alignment)
+makePatternRenderingOperator = function(childArray, alignment)
 {
   if (!Array.isArray(childArray)) throw ("Unexpected child data type");
   return new SequenceRenderingOperator(childArray, alignment);

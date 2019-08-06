@@ -76,7 +76,7 @@ var buildWeightArray = function(step, pulse, source)
   const restPattern = makePatternFromEventArray([new Event(math.fraction(0),["~"])]);
   const weightArray = result.map(x => {
      const v = x.value == 0 ? restPattern : source;
-     return { sequence: v, weight: x.weight};
+     return { content: v, weight: x.weight};
    });
 
    return weightArray;

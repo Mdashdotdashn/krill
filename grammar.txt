@@ -18,9 +18,16 @@
     this.arguments_ = args;
     this.source_ = source;
   }
+
+  var ElementStub = function(source, options)
+  {
+    this.type_ = "element";
+    this.source_ = source;
+    this.options_ = options;
+  }
 }
 
-start = input
+start = statement
 
 // ----- Numbers -----
 
@@ -83,14 +90,14 @@ slice = step / sub_cycle  / timeline
 slice_modifier = slice_weight / slice_bjorklund
 
 slice_weight =  "@" a:number
-  { { return { name: "slow", args :{ amount: a}}} }
+  { return { weight: a} }
 
 slice_bjorklund = "(" ws p:number ws comma ws s:number ws")"
-{ { return { name: "bjorklund", args :{ pulse: p, step:s}}} }
+  { return { operator : { type_: "bjorklund", arguments_ :{ pulse: p, step:s } } } }
 
 // a slice with an modifier applied i.e [bd@4 sd@3]@2 hh]
 slice_with_modifier = s:slice o:slice_modifier?
-  { return (o) ? new OperatorStub(o.name,o.args,s) : s;}
+  { return new ElementStub(s, o);}
 
 // a single cycle is a combination of one or more successive slices (as an array). If we
 // have only one element, we skip the array and return the element itself
@@ -136,7 +143,7 @@ group_command = cat
 cat = "cat" ws "[" ws  s:sequence_or_command ss:(comma v:sequence_or_command { return v})* ws "]"
   { ss.unshift(s); return new SequenceStub(ss,"t"); }
 
-// ------------------ high level  ---------------------------
+// ------------------ high level sequence ---------------------------
 
 sequence_or_group =
   group_command /
@@ -153,4 +160,8 @@ sequ_or_command_or_comment =
     { return sc }
    / comment
 
-input = s:sequ_or_command_or_comment
+sequence_definition = s:sequ_or_command_or_comment
+
+// ---------------------- statements ----------------------------
+
+statement = sequence_definition

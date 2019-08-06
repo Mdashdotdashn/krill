@@ -1,7 +1,7 @@
 
-var TimelineOperator = function(operatorArray)
+var TimelineOperator = function(elementArray)
 {
-  this.nodes_ = operatorArray;
+  this.nodes_ = elementArray.map(e => { return e.content ? e.content : e}  );
   this.current_ = 0;
 }
 
