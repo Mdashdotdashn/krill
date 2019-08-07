@@ -125,7 +125,7 @@ target = "target" ws quote s:step quote
   { return { name: "target", args : { name:s}}}
 
 bjorklund = "euclid" ws p:int ws s:int
-  { return { name: "bjorklund", args :{ pulse: p, step:s }}}
+  { return { name: "bjorklund", args :{ pulse: parseInt(p), step:parseInt(s) }}}
 
 slow = "slow" ws a:number
   { return { name: "slow", args :{ amount: a}}}
