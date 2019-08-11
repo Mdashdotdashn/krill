@@ -29,7 +29,7 @@ convertToNotes = function(x)
       }
       else
       {
-        notes.push({ note: parsedNote.chroma + 62, channel: 0});
+        notes.push({ note: parsedNote.chroma + 60, channel: 0});
       }
     }
     else
