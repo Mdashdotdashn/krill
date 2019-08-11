@@ -3,6 +3,11 @@ Dump = function(o)
   console.log(JSON.stringify(o, undefined,1));
 }
 
+Log = function(text, o)
+{
+  console.log(text + ": " + JSON.stringify(o, undefined,1));
+}
+
 CHECK_TYPE = function(value, expectedType)
 {
   var objectType = typeof value;

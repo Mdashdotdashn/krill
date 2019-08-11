@@ -33,29 +33,69 @@ Event.prototype.values = function()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+// This operator is used to slice a sequence in 1 cycle chunks everytime
+// render is called. It wraps every pattern step content so that the pattern
+// content can properly be rendered at every step
+
+var PatternStepOperator = function(content)
+{
+    this.content_ = content; // the underlying content
+    this.pattern_ = makeEmptyPattern();
+    this.tick();
+}
+
+PatternStepOperator.prototype.tick = function()
+{
+  // continue to evaluate the underlying content until we have one cycle of data
+  // from the current position
+  while (math.compare(this.pattern_.cycleLength_, math.fraction(1)) < 0)
+  {
+    const pattern = this.content_.render();
+    this.pattern_ = joinPattern(this.pattern_, pattern);
+    this.content_.tick();
+  }
+}
+
+PatternStepOperator.prototype.render = function()
+{
+  const slice = slicePattern(this.pattern_, math.fraction(0), math.fraction(1));
+  this.pattern_ = slicePattern(this.pattern_, math.fraction(1), this.pattern_.cycleLength_);
+  return slice;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 //! holds information about characteristics (like weigth a pattern step has)
 
 WeightedStep = function(content, weight)
 {
-  this.content = content;
-  this.weight = weight ? weight : 1;
+  this.operator_ = new PatternStepOperator(content);
+  this.weight_ = weight ? weight : 1;
+}
+
+WeightedStep.prototype.tick = function()
+{
+  this.operator_.tick();
+}
+
+WeightedStep.prototype.render = function()
+{
+  return this.operator_.render();
 }
 
 buildPatternStep = function(content, option)
 {
-  var step = new WeightedStep(content);
+  // apply any step based operator
+  var stepContent = (option && option.operator) ? buildOperator(option.operator.type_, option.operator.arguments_, content) : content;
 
-  // One option can be of applying an operator (bjorklund for example)
+  var step = new WeightedStep(stepContent);
+
+  // apply scaling options
   if (option)
   {
-    if (option.operator)
-    {
-      const operator = option.operator;
-      step.content = buildOperator(operator.type_, operator.arguments_, content);
-    }
     if (option.weight)
     {
-      step.weight = option.weight;
+      step.weight_ = option.weight;
     }
   }
   return step;
@@ -68,16 +108,16 @@ buildPatternStep = function(content, option)
 var computeEventsFromWeightArray = function(weightArray)
 {
   // Computes the total weigth
-  const totalWeight = weightArray.reduce((t,x) => { return t + x.weight; }, 0);
+  const totalWeight = weightArray.reduce((t,x) => { return t + x.weight_; }, 0);
   // Initialize the position within the sequence
   var position = math.fraction("0");
   // For every step, stretch the events inside
   const events = weightArray.map((x) => {
     CHECK_TYPE(x, WeightedStep);
     // render the sequence
-    const sequence = x.content.render();
+    const sequence = x.render();
     // Apply scaling and position to every contained events
-    const scaleFactor = math.fraction(x.weight, totalWeight);
+    const scaleFactor = math.fraction(x.weight_, totalWeight);
     const scaled = sequence.events_.map((x) => {
       // scale them
       return x.applyTime((t) => { return math.add(math.multiply(t,scaleFactor), position)});
@@ -115,11 +155,7 @@ var SequenceRenderingOperator = function(operatorArray, alignment)
 SequenceRenderingOperator.prototype.tick = function()
 {
   this.current_ = (this.current_ + 1) % this.nodes_.length;
-  // Horizontal contains PatternStep while vertical contains direct nodes
-  // this is not optimal because the two aren't equivalent anymore. We temporarily(?)
-  // cope with the situation by testing the step. Ideally H/V should be split
-  // in pattern and stack
-  this.nodes_.forEach((x) => x.content ? x.content.tick() : x.tick() );
+  this.nodes_.forEach((x) => x.tick());
 }
 
 SequenceRenderingOperator.prototype.render = function()
@@ -148,7 +184,6 @@ SequenceRenderingOperator.prototype.render = function()
     ordered.push(new Event(key,_.flattenDeep(grouped[key])));
   });
 
-//  console.log('returning ' + JSON.stringify(ordered));
   return makePatternFromEventArray(ordered);
 }
 

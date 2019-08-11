@@ -121,7 +121,7 @@ makePatternFromEventArray = function(array)
 joinPattern = function(p1, p2)
 {
   var result = p1.clone();
-  var offsetFn = function(t) { return math.add(t, p2.cycleLength_);};
+  var offsetFn = function(t) { return math.add(t, p1.cycleLength_);};
   p2.events_.reduce((c,x) => { c.push(x.applyTime(offsetFn)); return c;}, result.events_);
   result.cycleLength_ = math.add(p1.cycleLength_, p2.cycleLength_);
   return result;
@@ -129,7 +129,7 @@ joinPattern = function(p1, p2)
 
 slicePattern = function(pattern, position, length)
 {
-  var start = math.mod(position, pattern.cycleLength_);
+  var start = position;
   var end = math.add(start, length);
 
   var p = pattern.clone();
@@ -155,4 +155,11 @@ slicePattern = function(pattern, position, length)
   const offsetFn = function(t) { return math.subtract(t, start);};
   const resultArray = eventArray.slice(startIndex, endIndex);
   return makePatternFromEventArray(resultArray.map(x => x.applyTime(offsetFn)), length);
+}
+
+makeEmptyPattern = function()
+{
+  var pattern = new Pattern();
+  pattern.cycleLength_ = math.fraction(0);
+  return pattern;
 }
