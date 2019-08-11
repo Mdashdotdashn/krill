@@ -35,14 +35,15 @@ Event.prototype.values = function()
 ////////////////////////////////////////////////////////////////////////////////
 //! holds information about characteristics (like weigth a pattern step has)
 
-var PatternStep = function(content)
+WeightedStep = function(content, weight)
 {
-  return { content: content, weight: 1};
+  this.content = content;
+  this.weight = weight ? weight : 1;
 }
 
 buildPatternStep = function(content, option)
 {
-  var step = new PatternStep(content);
+  var step = new WeightedStep(content);
 
   // One option can be of applying an operator (bjorklund for example)
   if (option)
@@ -62,7 +63,7 @@ buildPatternStep = function(content, option)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// Transforms an array of weigthed values in the form { value: , weigth: }
+// Transforms an array of WeightedStep
 // into a serie of event
 var computeEventsFromWeightArray = function(weightArray)
 {
@@ -72,6 +73,7 @@ var computeEventsFromWeightArray = function(weightArray)
   var position = math.fraction("0");
   // For every step, stretch the events inside
   const events = weightArray.map((x) => {
+    CHECK_TYPE(x, WeightedStep);
     // render the sequence
     const sequence = x.content.render();
     // Apply scaling and position to every contained events

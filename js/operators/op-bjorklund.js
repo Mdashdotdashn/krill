@@ -11,9 +11,9 @@ function bjorklund(steps, pulses) {
 	}
 
 	pattern = [];
-	   counts = [];
-	   remainders = [];
-	   divisor = steps - pulses;
+	counts = [];
+	remainders = [];
+	divisor = steps - pulses;
 	remainders.push(pulses);
 	level = 0;
 
@@ -76,9 +76,8 @@ var buildWeightArray = function(step, pulse, source)
   const restPattern = makePatternFromEventArray([new Event(math.fraction(0),["~"])]);
   const weightArray = result.map(x => {
      const v = x.value == 0 ? restPattern : source;
-     return { content: v, weight: x.weight};
+     return new WeightedStep(v,x.weight);
    });
-
    return weightArray;
 }
 
