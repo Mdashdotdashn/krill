@@ -94,8 +94,15 @@ RenderingTreePlayer.prototype.eventForTime = function(currentTime)
     {
       this.sequence_ = this.renderingTree_.render();
       this.cycleOffset_ = currentTime;
-      var firstSlice = this.sequence_.dataAtIndex(0);
-      this.current_.values_ = math.equal(firstSlice.time_, math.fraction(0)) ? firstSlice.values_ : null;
+      if (this.sequence_.size() > 0)
+      {
+        var firstSlice = this.sequence_.dataAtIndex(0);
+        this.current_.values_ = math.equal(firstSlice.time_, math.fraction(0)) ? firstSlice.values_ : null;
+      }
+      else
+      {
+        this.current_.values_ = null;
+      }
       this.renderingTree_.tick();
     }
     else

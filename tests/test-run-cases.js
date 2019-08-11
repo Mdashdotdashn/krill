@@ -17,11 +17,16 @@ function runAllTestCases()
     var currentTime = "-0.0001";
     for (var expectedTime in expected)
     {
-      var nextTime = player.advance(currentTime);
+      // Look for the next event
+      var event = undefined;
+      while (!event)
+      {
+        var nextTime = player.advance(currentTime);
+        event = player.eventForTime(nextTime);
+        currentTime = fracToString(nextTime);
+      }
       assert.equal(fracToString(nextTime), expectedTime);
-      const event = player.eventForTime(nextTime);
       assert.deepEqual(expected[expectedTime], event.values);
-      currentTime = expectedTime;
     }
   } catch (err)
   {

@@ -78,17 +78,20 @@ Pattern.prototype.timeAtIndex = function(index)
 // This could be nicely replaced by a binary search
 Pattern.prototype.nextTimeFrom = function(searchTime)
 {
-  var minIndex = 0;
-  var minTime = this.timeAtIndex(minIndex);
-
-  while (minIndex < this.events_.length)
+  if (this.events_.length > 0)
   {
+    var minIndex = 0;
     var minTime = this.timeAtIndex(minIndex);
-    if (math.compare(minTime, searchTime) > 0)
+
+    while (minIndex < this.events_.length)
     {
-      return this.events_[minIndex];
+      var minTime = this.timeAtIndex(minIndex);
+      if (math.compare(minTime, searchTime) > 0)
+      {
+        return this.events_[minIndex];
+      }
+      minIndex++;
     }
-    minIndex++;
   }
 }
 
@@ -108,10 +111,10 @@ Pattern.prototype.valueAtTime = function(time)
   }
 }
 
-makePatternFromEventArray = function(array)
+makePatternFromEventArray = function(array, length)
 {
   var pattern = new Pattern();
-  pattern.setEventArray(array);
+  pattern.setEventArray(array, length);
   return pattern;
 }
 
@@ -138,12 +141,22 @@ slicePattern = function(pattern, position, length)
     p = joinPattern(p,p);
   }
 
-  var startIndex = 0;
   const eventArray = p.events_;
-  while (math.compare(eventArray[startIndex].time_, start) <0)
+
+  var startIndex = 0;
+  while ((startIndex < eventArray.length) && (math.compare(eventArray[startIndex].time_, start) <0))
   {
     startIndex++;
   }
+
+  // Didin't find any event
+  if (startIndex == eventArray.length)
+  {
+    var emptyPattern = new Pattern();
+    emptyPattern.cycleLength_ = length;
+    return emptyPattern;
+  }
+
 
   var endIndex = startIndex;
 
@@ -151,7 +164,6 @@ slicePattern = function(pattern, position, length)
   {
     endIndex++;
   }
-
   const offsetFn = function(t) { return math.subtract(t, start);};
   const resultArray = eventArray.slice(startIndex, endIndex);
   return makePatternFromEventArray(resultArray.map(x => x.applyTime(offsetFn)), length);

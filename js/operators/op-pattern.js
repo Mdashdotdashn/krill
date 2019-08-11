@@ -59,8 +59,19 @@ PatternStepOperator.prototype.tick = function()
 
 PatternStepOperator.prototype.render = function()
 {
+//  Log("source", this.pattern_);
   const slice = slicePattern(this.pattern_, math.fraction(0), math.fraction(1));
-  this.pattern_ = slicePattern(this.pattern_, math.fraction(1), this.pattern_.cycleLength_);
+//  Log("slice", slice);
+  if (math.compare(this.pattern_.cycleLength_, math.fraction(1)) > 0)
+  {
+    var remainingLength = math.subtract(this.pattern_.cycleLength_, math.fraction(1));
+    this.pattern_ = slicePattern(this.pattern_, math.fraction(1), remainingLength);
+  }
+  else
+  {
+    this.pattern_ = makeEmptyPattern();
+  }
+//  Log("remainder", this.pattern_);
   return slice;
 }
 
@@ -116,6 +127,7 @@ var computeEventsFromWeightArray = function(weightArray)
     CHECK_TYPE(x, WeightedStep);
     // render the sequence
     const sequence = x.render();
+//    Log("sequence render",sequence);
     // Apply scaling and position to every contained events
     const scaleFactor = math.fraction(x.weight_, totalWeight);
     const scaled = sequence.events_.map((x) => {
