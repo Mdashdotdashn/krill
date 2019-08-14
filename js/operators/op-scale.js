@@ -22,7 +22,7 @@ makeScaleOperator = function(source, scale)
           const octave = (v < 0 ? remainder -1 : remainder) * 12;
           return intervals[interval] + octave;
       });
-      return new Event(e.time_, values);
+      return new PatternEvent(e.time_, values);
     })
 //    Dump(eventArray);
     return makePatternFromEventArray(eventArray);

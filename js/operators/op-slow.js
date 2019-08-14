@@ -12,7 +12,7 @@ var stretchSequence = function(sequence, factor)
   var clone = sequence.clone();
   clone.cycleLength_ = multTime(clone.cycleLength_);
   clone.events_ = clone.events_.map(function(x) {
-    return new Event(multTime(x.time()),x.values());
+    return new PatternEvent(multTime(x.time()),x.values());
   })
   return clone;
 }

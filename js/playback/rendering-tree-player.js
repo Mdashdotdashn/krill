@@ -52,14 +52,14 @@ RenderingTreePlayer.prototype.advance = function(time)
   if (!this.sequence_)
   {
     var position = math.add(cycleStart, cycleLength);
-    this.current_ = new Event(position,undefined);
+    this.current_ = new PatternEvent(position,undefined);
     this.resetCycle_ = true;
   }
   else {
     var nextData = this.sequence_.nextTimeFrom(cycleTime);
     if (!nextData) this.resetCycle_ = true;
     var position = fracToString(math.add(cycleStart, nextData ? nextData.time() : cycleLength));
-    this.current_ = new Event(position, nextData ? nextData.values() : undefined);
+    this.current_ = new PatternEvent(position, nextData ? nextData.values() : undefined);
   }
   return this.current_.time();
 }
@@ -70,7 +70,7 @@ RenderingTreePlayer.prototype.reset = function()
   this.resetCycle_ = true;
   this.sequence_ = undefined;
   this.queued_ = undefined;
-  this.current_ = new Event("0", null);
+  this.current_ = new PatternEvent("0", null);
 }
 
 // Returns the event queued for the current time if it matches the time

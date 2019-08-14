@@ -58,7 +58,7 @@ weaveSequences = function(leftSequence, rightSequence, mode, operation)
     const leftValues = sampleSequence(leftSequence, t);
     const rightValues = sampleSequence(rightSequence, t);
     const applied = applyOperation(leftValues, rightValues, operation);
-    return new Event(t, applied);
+    return new PatternEvent(t, applied);
   });
   return makePatternFromEventArray(eventsArray);
 }

@@ -193,7 +193,7 @@ SequenceRenderingOperator.prototype.render = function()
   const ordered = [];
   const fractionCompareFn = (a,b) => { return math.compare(math.fraction(a), math.fraction(b))};
   Object.keys(grouped).sort(fractionCompareFn).forEach(function(key) {
-    ordered.push(new Event(key,_.flattenDeep(grouped[key])));
+    ordered.push(new PatternEvent(key,_.flattenDeep(grouped[key])));
   });
 
   return makePatternFromEventArray(ordered);

@@ -1,6 +1,6 @@
 const math = require("mathjs");
 const _ = require("lodash");
-
+require("./pattern-event.js");
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -21,6 +21,7 @@ DumpPattern = function(s)
   console.log(s.cycleLength_);
   console.log(JSON.stringify(convertPatternToString(s)));
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 
 var Pattern = function()

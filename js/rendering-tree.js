@@ -20,7 +20,7 @@ function buildTreeForNode(node)
   }
 
   // make a single sequence out of the event
-  var patternArray = [new Event("0", [node])];
+  var patternArray = [new PatternEvent("0", [node])];
   return makePatternFromEventArray(patternArray);
 }
 
