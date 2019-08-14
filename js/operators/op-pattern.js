@@ -38,14 +38,14 @@ Event.prototype.values = function()
 // render is called. It wraps every pattern step content so that the pattern
 // content can properly be rendered at every step
 
-var PatternStepOperator = function(content)
+var PatternSliceOperator = function(content)
 {
     this.content_ = content; // the underlying content
     this.pattern_ = makeEmptyPattern();
     this.tick();
 }
 
-PatternStepOperator.prototype.tick = function()
+PatternSliceOperator.prototype.tick = function()
 {
   // continue to evaluate the underlying content until we have one cycle of data
   // from the current position
@@ -57,7 +57,7 @@ PatternStepOperator.prototype.tick = function()
   }
 }
 
-PatternStepOperator.prototype.render = function()
+PatternSliceOperator.prototype.render = function()
 {
 //  Log("source", this.pattern_);
   const slice = slicePattern(this.pattern_, math.fraction(0), math.fraction(1));
@@ -80,7 +80,7 @@ PatternStepOperator.prototype.render = function()
 
 WeightedStep = function(content, weight)
 {
-  this.operator_ = new PatternStepOperator(content);
+  this.operator_ = new PatternSliceOperator(content);
   this.weight_ = weight ? weight : 1;
 }
 
