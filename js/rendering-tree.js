@@ -44,12 +44,17 @@ buildOperator = function(type, arguments, source)
   			return makeBjorklundOperator(source, math.fraction(arguments.step),math.fraction(arguments.pulse));
 
       case "sequence":
-        if (arguments.alignment == "t")
+        switch(arguments.alignment)
         {
-          return makeTimelineOperator(source);
-        }
-        return makePatternRenderingOperator(source, arguments.alignment);
+          case "h":
+            return makePatternRenderingOperator(source);
 
+          case "v":
+            return makeStackRenderingOperator(source);
+
+          case "t":
+            return makeTimelineOperator(source);
+        }
   	}
   	throw "Unknown operator type: " + type;
 }

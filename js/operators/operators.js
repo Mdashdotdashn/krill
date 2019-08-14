@@ -40,6 +40,7 @@ require("./op-bjorklund.js");
 require("./op-pattern.js");
 require("./op-scale.js");
 require("./op-slow.js");
+require("./op-stack.js");
 require("./op-struct.js");
 require("./op-target.js");
 require("./op-timeline.js");

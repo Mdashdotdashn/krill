@@ -17,6 +17,7 @@ TestEvaluator.prototype.evaluateRenderingTree = function(s)
 
 TestEvaluator.prototype.evaluatePattern = function(s)
 {
+  console.log(s + ".....");
   const renderingTree = this.evaluateRenderingTree(s);
   return renderingTree.render();
 }

@@ -5,35 +5,6 @@ require("../pattern.js");
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// Events are container for a step happening at a given time in a sequence
-Event = function(time, values)
-{
-  this.time_ = (typeof time == 'string') ? math.fraction(time) : time;
-  this.values_ = values;
-}
-
-Event.prototype.time = function()
-{
-  return this.time_;
-}
-
-Event.prototype.applyTime = function(f)
-{
-  return new Event(f(this.time_),this.values_);
-}
-
-Event.prototype.timeString = function()
-{
-    return math.format(this.time_);
-}
-
-Event.prototype.values = function()
-{
-  return this.values_;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 // This operator is used to slice a sequence in 1 cycle chunks everytime
 // render is called. It wraps every pattern step content so that the pattern
 // content can properly be rendered at every step
@@ -149,60 +120,49 @@ makePatternFromWeightArray = function(weigthedArray)
   return makePatternFromEventArray(eventArray);
 }
 
-// Vertical steps are played alongside with no
-// weighting
-var computeVerticalSteps = function(nodes)
-{
-  return nodes.map((x) => x.render().events_);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 
-var SequenceRenderingOperator = function(operatorArray, alignment)
+var SequenceRenderingOperator = function(operatorArray)
 {
   this.nodes_ = operatorArray;
-  this.alignment_ = alignment;
 }
 
 SequenceRenderingOperator.prototype.tick = function()
 {
-  this.current_ = (this.current_ + 1) % this.nodes_.length;
   this.nodes_.forEach((x) => x.tick());
 }
 
 SequenceRenderingOperator.prototype.render = function()
 {
-  // Renders concatenate sub steps as full cycles
-  const steps = (this.alignment_ == "h")
-      ? computeEventsFromWeightArray(this.nodes_)
-      : computeVerticalSteps(this.nodes_);
+  const steps = computeEventsFromWeightArray(this.nodes_);
 
-  // Merge all data in a single array
-  const merged = steps.reduce(function(collection,x) {
-     return collection.concat(x);
-  }, []);
+  // // Merge all data in a single array
+  // const merged = steps.reduce(function(collection,x) {
+  //    return collection.concat(x);
+  // }, []);
+  //
+  // // Collect all result in a single, sorted array
+  // var grouped = merged.reduce(function(collection, x) {
+  //   // push and create if necessary
+  //   var t = x.timeString();
+  //   (collection[t] = collection[t] ? collection[t]: []).push(x.values_);
+  //    return collection;}
+  // ,{});
+  //
+  // const ordered = [];
+  // const fractionCompareFn = (a,b) => { return math.compare(math.fraction(a), math.fraction(b))};
+  // Object.keys(grouped).sort(fractionCompareFn).forEach(function(key) {
+  //   ordered.push(new PatternEvent(key,_.flattenDeep(grouped[key])));
+  // });
+  //
 
-  // Collect all result in a single, sorted array
-  var grouped = merged.reduce(function(collection, x) {
-    // push and create if necessary
-    var t = x.timeString();
-    (collection[t] = collection[t] ? collection[t]: []).push(x.values_);
-     return collection;}
-  ,{});
-
-  const ordered = [];
-  const fractionCompareFn = (a,b) => { return math.compare(math.fraction(a), math.fraction(b))};
-  Object.keys(grouped).sort(fractionCompareFn).forEach(function(key) {
-    ordered.push(new PatternEvent(key,_.flattenDeep(grouped[key])));
-  });
-
-  return makePatternFromEventArray(ordered);
+  return makePatternFromEventArray(steps);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-makePatternRenderingOperator = function(childArray, alignment)
+makePatternRenderingOperator = function(childArray)
 {
   if (!Array.isArray(childArray)) throw ("Unexpected child data type");
-  return new SequenceRenderingOperator(childArray, alignment);
+  return new SequenceRenderingOperator(childArray);
 }
