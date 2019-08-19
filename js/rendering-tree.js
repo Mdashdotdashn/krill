@@ -43,6 +43,9 @@ buildOperator = function(type, arguments, source)
       case "bjorklund":
   			return makeBjorklundOperator(source, math.fraction(arguments.step),math.fraction(arguments.pulse));
 
+      case "fixed-step":
+      return makeFixedStepOperator(source, math.fraction(arguments.amount));
+
       case "sequence":
         switch(arguments.alignment)
         {

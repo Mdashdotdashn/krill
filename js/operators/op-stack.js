@@ -32,6 +32,11 @@ var StackRenderingOperator = function(contentArray)
   this.content_ =contentArray;
 }
 
+StackRenderingOperator.prototype.getWeight = function()
+{
+  return this.content_[0].getWeight();
+}
+
 StackRenderingOperator.prototype.tick = function()
 {
   this.content_.forEach((x) => x.tick());

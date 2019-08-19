@@ -17,8 +17,25 @@ var stretchSequence = function(sequence, factor)
   return clone;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 makeSlowOperator = function(source, stretchFactor)
 {
+  var stretchFn = function(args)
+  {
+    return stretchSequence(args[0], args[1]);
+  }
+
+  return new Operator(stretchFn, [source, makeValueWrapperOperator(stretchFactor)]);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+makeFixedStepOperator = function(source, stepDivision)
+{
+  var sourceWeight = source.getWeight();
+  var stretchFactor = math.divide(sourceWeight, stepDivision);
+
   var stretchFn = function(args)
   {
     return stretchSequence(args[0], args[1]);

@@ -127,6 +127,12 @@ var SequenceRenderingOperator = function(operatorArray)
   this.nodes_ = operatorArray;
 }
 
+SequenceRenderingOperator.prototype.getWeight = function()
+{
+  const totalWeight = this.nodes_.reduce((t,x) => { return t + x.weight_; }, 0);
+  return totalWeight;  
+}
+
 SequenceRenderingOperator.prototype.tick = function()
 {
   this.nodes_.forEach((x) => x.tick());
