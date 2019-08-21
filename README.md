@@ -1,17 +1,23 @@
 Krill
 =====
-Krill is a NodeJS implementation of a [Tidal Cycle](tidalcycles.org) style live coding interpreter. The main motivation was to keep Tidal's wonderful flexibility while allowing an easiest way to hack it because it's javascript based, not Haskell.
+Krill is a livecoding environment inspired from [TidalCycles](https://tidalcycles.org). 
 
-It is under development and therefore constantly in flux and misses tons of features.
+The aim of this project is preserve Tidal's wonderful flexibility while allowing an faster way to hack at it in Javascript. At this moment, Krill only sequences note-events via midi, there is no equivalent to Tida's superdirt(although there's some plan in the future to allow things along that line).
 
-Right now Krill only sequences note event through midi, there is no equivalent to superdirt (although there's some plan in the future to allow things along that line)
+It is presently under active development.
 
-## installation
+## Installation
+
 Installing krill is pretty much your standard nodejs install:
-* clone this repository
-* run `npm install` in the cloned repository
 
-You can then run krill using `node main`. This will start a web server listening on port 3000. You can then connect to it using a web browser at `localhost:3000`
+```
+git clone https://github.com/Mdashdotdashn/krill.git
+cd krill
+npm install
+node main
+```
+
+This will start a web server listening on port 3000, you can then connect to it using a web browser at `localhost:3000`.
 
 A note on midi configuration: there is no form of auto-detection of midi interfaces nor any command line argument for it. You need to edit the file in `js/application.js` and modify the line
 
@@ -19,7 +25,7 @@ A note on midi configuration: there is no form of auto-detection of midi interfa
 
 Replacing the string by the interface you'd like to use. Annoyingly this is case sensitive and you need to fully type the interface name. Krill will bail out if it can't open the specified interface, but will list the detected interface too so you can copy paste.
 
-## usage
+## Usage
 
 Everything is done by typing in the edit window of a browser pointed at `localhost:3000`. You need to type a sequence (see later for a description of the supported syntax but you can try `"2 3 4"` - including the quotes) followed by Shift-Enter. Sequences are written over paragraphs. If the paragraph contains syntaxic errors, a little sign will be displayed in the gutter of the editor.
 
