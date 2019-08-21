@@ -1,3 +1,4 @@
+const math = require("mathjs")
 
 // PatternEvents are container for a step happening at a given time in a sequence
 
