@@ -1,6 +1,6 @@
 Krill
 =====
-Krill is a livecoding environment inspired from [TidalCycles](https://tidalcycles.org). 
+Krill is a livecoding environment inspired from [TidalCycles](https://tidalcycles.org).
 
 The aim of this project is preserve Tidal's wonderful flexibility while allowing an faster way to hack at it in Javascript. At this moment, Krill only sequences note-events via midi, there is no equivalent to Tida's superdirt(although there's some plan in the future to allow things along that line).
 
@@ -27,9 +27,9 @@ Replacing the string by the interface you'd like to use. Annoyingly this is case
 
 ## Usage
 
-Everything is done by typing in the edit window of a browser pointed at `localhost:3000`. You need to type a sequence (see later for a description of the supported syntax but you can try `"2 3 4"` - including the quotes) followed by Shift-Enter. Sequences are written over paragraphs. If the paragraph contains syntaxic errors, a little sign will be displayed in the gutter of the editor.
+Everything is done by typing in the edit window of a browser pointed at `localhost:3000`. You need to type a pattern (see later for a description of the supported syntax but you can try `"2 3 4"` - including the quotes) followed by Shift-Enter. Patterns are written over paragraphs. If the paragraph contains syntaxic errors, a little sign will be displayed in the gutter of the editor.
 
-To stop the playback, send a sequence containing a single rest, like `"~"`.
+To stop the playback, send a pattern containing a single rest, like `"~"`.
 
 ## data
 
@@ -107,7 +107,7 @@ Note that although you don't need to write it, specifying a top-level pattern as
 
 ## patterns - a more traditional approach
 
-Usually, pattern elements are written consequently and one wouldn't expect timing to change as you add more steps. If you want to achieve this, you can opt for forcing the default length of a step within a sequence using the `%` modifier. For example:
+Usually, pattern elements are written consequently and one wouldn't expect timing to change as you add more steps. If you want to achieve this, you can opt for forcing the default length of a step within a pattern using the `%` modifier. For example:
 
 ```
 "[1 2 3]%2"
@@ -126,3 +126,91 @@ You can contract it by using the following:
 ```
 "[c@2 e@3 c@2 g]"
 ```
+
+## patterns - modifiers
+
+Modifiers can be viewed as operation applied to patterns or pattern steps. We've already seen a couple of them like `%` or `@`. Here's a more extensive list of all modifiers:
+
+**@n:** step weight - assign a weight `n` to a step. In some conditions you can also see it as a step length.
+
+`"[c@2 e@3 c@2 g]"`
+
+**%n:**: assigns the step division to be a ratio of a cycle , rather than being computed from the amount of steps inside the pattern
+
+`"[c e c g]%3"`
+
+**/n:**: stretches the pattern by the specified factor. this can also be seen as multiplying the pattern length or slowing it down.
+`"[c e c g]/2"`
+
+**(s,p)**: repeat the step according to a bjorklund/euclidian pattern made of `s` steps and `p` pulses
+
+`"bd(5,8)"`
+
+## patterns - inception (deeper level)
+
+In the previous chapter, we've seen we can define patterns as step within a given pattern:
+```
+[1 [a b] 3 4]
+```
+
+with the introduction of modifiers, we can now alter inner pattern in ways that they become longer than one cycle. Two typical examples would be
+```
+[1 [a b]%1 3 4]
+```
+or
+```
+[1 [a b]/2 3 4]
+```
+
+(these two are actually equivalent)
+
+In these cases, only one cycle worth of the inner pattern will be used at a time. This means the two examples above lead to the following:
+
+```
+[1 a 3 4] followed by [1 b 3 4]
+```
+
+Alternatively, if you change the pattern length to be smaller than one cycle, the pattern content will be repeated until a cycle's worth of data is produced. So for example
+```
+"bd [hh]/0.5 sd bd
+```
+will lead to something equivalent to
+```
+"bd [hh hh] sd bd
+```
+
+This can be used at you advantage to introduce variation of content / rhythm within a pattern.
+
+## operators
+
+Operators are applied to a pattern and result to another pattern. A typical example would be
+```
+slow 2 $ "1 2 3"
+```
+where the output of the slow operator is the same pattern as the input but stretched by a factor 2 (or slowed down)
+
+Here's a list of the existing operators:
+
+**slow n** slows down or stretches - assign a weight `n` to a step. In some conditions you can also see it as a step length.
+
+`"[c@2 e@3 c@2 g]"`
+
+**struct p** applies the structure of the boolean pattern p to the content of the input sequence
+
+`struct "t f f t" $ "bd"`  =>  `"bd ~ ~ bd"`
+
+`struct "t f f t" $ "[Cm Em]%1"` => `"[Cm ~ ~ Cm Em ~ ~ Em]%1"`
+
+`struct "t t [t t] t" $ "bd sd"` => `"bd bd [sd sd] sd"`
+
+**scale s** interpretes the numbers from the input sequence as intervals of the scale `s` and outputs the corresponding notes. The scales are handled by tonaljs, see the [list of available scales](https://github.com/tonaljs/v2/blob/master/packages/dictionary/data/scales.json)
+
+`slow 0.25 $ scale "major" $ "0 2 4 6 7 6 4 2"` // Plays the strange days theme
+
+## grouping operators
+
+Grouping operators bundles sequences (including operators) together into one. The only current grouping operator is `cat`
+
+**cat [s1, ..]**: concatenates two or more sequences so that they are played one after the other
+
+`cat [ slow 2 $ "1 12", slow 4 $ "5 17"]`
