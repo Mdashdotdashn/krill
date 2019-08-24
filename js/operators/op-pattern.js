@@ -106,7 +106,7 @@ var computeEventsFromWeightArray = function(weightArray)
       return x.applyTime((t) => { return math.add(math.multiply(t,scaleFactor), position)});
     },[]);
     // go to the next position
-    position += scaleFactor;
+    position = math.add(position, scaleFactor);
     return scaled;
   });
 
