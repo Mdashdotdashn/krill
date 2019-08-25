@@ -1,13 +1,15 @@
 'use strict';
 const Hapi = require('@hapi/hapi');
+const program = require('commander');
 
 if ( global.v8debug) {
 	global.v8debug.Debug.setBreakOnException(); // enable it, global.v8debug is only defined when the --debug or --debug-brk flag is set
 }
 
-async function start()
+async function start(options)
 {
 	var app = require('./js/application.js');
+  app.init(options);
 	const server = new Hapi.Server({ port: 3000});
 
   server.application_ = app;
@@ -68,4 +70,10 @@ async function start()
 	console.log('Server running at:', server.info.uri);
 }
 
-start();
+// Initialisation
+program
+  .version('0.0.1')
+  .option('-m, --midi-device <midiDevice>', 'selects a midi interface');
+
+program.parse(process.argv);
+start(program.opts());

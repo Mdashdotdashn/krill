@@ -19,11 +19,22 @@ node main
 
 This will start a web server listening on port 3000, you can then connect to it using a web browser at `localhost:3000`.
 
-A note on midi configuration: there is no form of auto-detection of midi interfaces nor any command line argument for it. You need to edit the file in `js/application.js` and modify the line
+By default, Krill is configured to connect to loopback interfaces so you can send midi to other programs:
+* on Windows - loopMidi
+* on MacOS - IAC
+* on Linux - Midi through
 
->   this.playbackDevice_ = new GMDevice('Microsoft GS Wavetable Synth 0');
+If you want to use another interface (or if the auto detection fails, you can specify another interface using `--midi-device`). Any string matching will work.
 
-Replacing the string by the interface you'd like to use. Annoyingly this is case sensitive and you need to fully type the interface name. Krill will bail out if it can't open the specified interface, but will list the detected interface too so you can copy paste.
+For example if you (really) want to connect the Microsoft GM synth on windows:
+
+```
+$ node main --midi-device GS
+Using midi interface Microsoft GS Wavetable Synth 0
+Server running at: http://localhost:3000
+```
+
+
 
 ## Usage
 

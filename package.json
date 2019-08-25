@@ -22,6 +22,7 @@
     "@hapi/hapi": "^18.3.1",
     "@hapi/inert": "^5.2.0",
     "assert": "^2.0.0",
+    "commander": "^3.0.0",
     "easymidi": "^1.0.1",
     "hapi": "^18.1.0",
     "lodash": "^4.17.15",
