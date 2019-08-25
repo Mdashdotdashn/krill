@@ -87,7 +87,7 @@ slice = step / sub_cycle  / timeline
 
 // slice modifier affects the timing/size of a slice (e.g. [a b c]@3)
 // at this point, we assume we can represent them as regular sequence operators
-slice_modifier = slice_weight / slice_bjorklund / slice_slow / slice_fixed_step
+slice_modifier = slice_weight / slice_bjorklund / slice_slow / slice_fast / slice_fixed_step
 
 slice_weight =  "@" a:number
   { return { weight: a} }
@@ -97,6 +97,9 @@ slice_bjorklund = "(" ws p:number ws comma ws s:number ws")"
 
 slice_slow = "/"a:number
   { return { operator : { type_: "stretch", arguments_ :{ amount:a } } } }
+
+slice_fast = "*"a:number
+  { return { operator : { type_: "stretch", arguments_ :{ amount:"1/"+a } } } }
 
 slice_fixed_step = "%"a:number
   { return { operator : { type_: "fixed-step", arguments_ :{ amount:a } } } }
