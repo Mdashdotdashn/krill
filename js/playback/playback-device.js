@@ -1,7 +1,39 @@
 var easymidi = require('easymidi');
-require('../music/conversion.js');
 
-console.log(easymidi.getOutputs());
+var defaultLoopback = function()
+{
+  var devices =
+  {
+  	dar: "iac",
+  	win: "loop",
+  	lin: "through"
+  }
+
+  var platformKey = process.platform.substring(0, 3);
+  return devices[platformKey];
+}
+
+var findMidiDevice = function(name)
+{
+  const deviceName = (name ? name : defaultLoopback()).toLowerCase();
+
+  const devices = easymidi.getOutputs();
+  var device = devices.reduce((c,d) => {
+    if (!c && (d.toLowerCase().includes(deviceName)))
+    {
+      console.log("Using midi interface "+ d);
+      return new easymidi.Output(d);
+    }
+    return c;
+  }, null);
+
+  if (device) return device;
+
+  console.log("ERR: cannot find midi device " + deviceName);
+  console.log("Use one of the following:");
+  console.log(easymidi.getOutputs());
+  process.exit();
+}
 
 var tickPlayer = function(player, events)
 {
@@ -33,22 +65,11 @@ var tickPlayer = function(player, events)
 
 GMDevice = function(midiDeviceName)
 {
-  this.midiDevice_ = new easymidi.Output(midiDeviceName);
+  this.midiDevice_ = findMidiDevice(midiDeviceName);
   this.values_ = undefined;
 }
 
 GMDevice.prototype.tick = function(events)
-{
-  tickPlayer(this, events);
-}
-
-VCVDevice = function(midiDeviceName)
-{
-  this.midiDevice_ = new easymidi.Output(midiDeviceName);
-  this.values_ = undefined;
-}
-
-VCVDevice.prototype.tick = function(events)
 {
   tickPlayer(this, events);
 }
