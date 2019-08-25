@@ -153,6 +153,9 @@ Modifiers can be viewed as operation applied to patterns or pattern steps. We've
 **/n:**: stretches the pattern by the specified factor. this can also be seen as multiplying the pattern length or slowing it down.
 `"[c e c g]/2"`
 
+**\*n:**: contracts the pattern by the specified factor. this can also be seen as dividing the pattern length or speeding it up.
+`"[c e c g]/2"`
+
 **(s,p)**: repeat the step according to a bjorklund/euclidian pattern made of `s` steps and `p` pulses
 
 `"bd(5,8)"`
@@ -183,7 +186,7 @@ In these cases, only one cycle worth of the inner pattern will be used at a time
 
 Alternatively, if you change the pattern length to be smaller than one cycle, the pattern content will be repeated until a cycle's worth of data is produced. So for example
 ```
-"bd [hh]/0.5 sd bd
+"bd [hh]*2 sd bd
 ```
 will lead to something equivalent to
 ```
@@ -202,9 +205,13 @@ where the output of the slow operator is the same pattern as the input but stret
 
 Here's a list of the existing operators:
 
-**slow n** slows down or stretches - assign a weight `n` to a step. In some conditions you can also see it as a step length.
+**slow n** slows down or stretches the sequence in time.
 
-`"[c@2 e@3 c@2 g]"`
+`slow 4 $ "c e c g"`
+
+**fast n** speeds up or contracts the sequence in time.
+
+`"hh*8" // build a sequence of 8 hh steps`
 
 **struct p** applies the structure of the boolean pattern p to the content of the input sequence
 
