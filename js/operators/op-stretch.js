@@ -19,7 +19,7 @@ var stretchSequence = function(sequence, factor)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-makeSlowOperator = function(source, stretchFactor)
+makeStrechOperator = function(source, stretchFactor)
 {
   var stretchFn = function(args)
   {

@@ -114,7 +114,7 @@ function testSlowOperator()
       { "4/3" : ["3"] },
     ];
 
-  var operator = makeSlowOperator(sequence, 2);
+  var operator = makeStrechOperator(sequence, 2);
 
   operator.tick();
   testSequenceMatches(operator.render(), expected);

@@ -37,8 +37,8 @@ buildOperator = function(type, arguments, source)
       case "target":
         return makeTargetOperator(source, arguments.name);
 
-  		case "slow":
-  			return makeSlowOperator(source, math.fraction(arguments.amount));
+  		case "stretch":
+  			return makeStrechOperator(source, math.fraction(arguments.amount));
 
       case "bjorklund":
   			return makeBjorklundOperator(source, math.fraction(arguments.step),math.fraction(arguments.pulse));

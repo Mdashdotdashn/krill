@@ -96,7 +96,7 @@ slice_bjorklund = "(" ws p:number ws comma ws s:number ws")"
   { return { operator : { type_: "bjorklund", arguments_ :{ pulse: p, step:s } } } }
 
 slice_slow = "/"a:number
-  { return { operator : { type_: "slow", arguments_ :{ amount:a } } } }
+  { return { operator : { type_: "stretch", arguments_ :{ amount:a } } } }
 
 slice_fixed_step = "%"a:number
   { return { operator : { type_: "fixed-step", arguments_ :{ amount:a } } } }
@@ -134,7 +134,7 @@ bjorklund = "euclid" ws p:int ws s:int
   { return { name: "bjorklund", args :{ pulse: parseInt(p), step:parseInt(s) }}}
 
 slow = "slow" ws a:number
-  { return { name: "slow", args :{ amount: a}}}
+  { return { name: "stretch", args :{ amount: a}}}
 
 scale = "scale" ws quote s:(step_char)+ quote
 { return { name: "scale", args :{ scale: s.join("")}}}
