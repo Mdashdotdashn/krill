@@ -2,7 +2,7 @@ Krill
 =====
 Krill is a livecoding environment inspired from [TidalCycles](https://tidalcycles.org).
 
-The aim of this project is preserve Tidal's wonderful flexibility while allowing an faster way to hack at it in Javascript. At this moment, Krill only sequences note-events via midi, there is no equivalent to Tida's superdirt(although there's some plan in the future to allow things along that line).
+The aim of this project is preserve Tidal's wonderful flexibility while allowing an faster way to hack at it in Javascript. At this moment, Krill only sequences note-events via midi, there is no equivalent to Tidal's superdirt (although there's some plan in the future to allow things along that line).
 
 It is presently under active development.
 
