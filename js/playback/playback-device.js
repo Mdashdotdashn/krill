@@ -1,4 +1,5 @@
 var easymidi = require('easymidi');
+require('../music/conversion.js');
 
 var defaultLoopback = function()
 {
