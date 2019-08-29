@@ -1,0 +1,9 @@
+
+Hush
+setCps
+
+// Play a sequence every 8 bar:
+d1 $ every' 8 0 (const (s "cc")) $ silence
+
+// Reich's It's going to rain
+d1 $ jux (slow 1.005) $ s "its_gonna_rain"
