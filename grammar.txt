@@ -123,11 +123,11 @@ stack = c:single_cycle cs:(comma v:single_cycle { return v})*
 sequence = ws quote s:stack quote
   { return s; }
 
-// ------------------ commands ---------------------------
+// ------------------ operators ---------------------------
 
-command = scale / slow / fast / target / bjorklund / struct
+operator = scale / slow / fast / target / bjorklund / struct
 
-struct = "struct" ws s:sequence_or_command
+struct = "struct" ws s:sequence_or_operator
   { return { name: "struct", args: { sequence:s }}}
 
 target = "target" ws quote s:step quote
@@ -149,30 +149,30 @@ comment = '//' p:([^\n]*)
 
 // ---------------- grouping --------------------------------
 
-group_command = cat
+group_operator = cat
 
 // cat is another form of timeline
-cat = "cat" ws "[" ws  s:sequence_or_command ss:(comma v:sequence_or_command { return v})* ws "]"
+cat = "cat" ws "[" ws  s:sequence_or_operator ss:(comma v:sequence_or_operator { return v})* ws "]"
   { ss.unshift(s); return new SequenceStub(ss,"t"); }
 
 // ------------------ high level sequence ---------------------------
 
 sequence_or_group =
-  group_command /
+  group_operator /
   sequence
 
-sequence_or_command =
+sequence_or_operator =
   sg:sequence_or_group ws (comment)*
     {return sg}
-  / c:command ws "$" ws soc:sequence_or_command
-    { return new OperatorStub(c.name,c.args,soc)}
+  / o:operator ws "$" ws soc:sequence_or_operator
+    { return new OperatorStub(o.name,o.args,soc)}
 
-sequ_or_command_or_comment =
-  sc: sequence_or_command
+sequ_or_operator_or_comment =
+  sc: sequence_or_operator
     { return sc }
    / comment
 
-sequence_definition = s:sequ_or_command_or_comment
+sequence_definition = s:sequ_or_operator_or_comment
 
 // ---------------------- statements ----------------------------
 
