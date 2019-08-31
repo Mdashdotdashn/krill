@@ -16,16 +16,28 @@ Application.prototype.init = function(options)
 {
   this.engine_.start();
 	this.engine_.connect(this);
-  this.playbackDevice_ = new GMDevice(options.midiDevice);  
+  this.playbackDevice_ = new GMDevice(options.midiDevice);
 }
 
-Application.prototype.parse = function(command)
+Application.prototype.parse = function(commandString)
 {
-	var result = this.evaluator_.evaluate(command);
-  var renderingTree = this.renderingTreeBuilder_.rebuild(result);
-	this.engine_.setRenderingTree(renderingTree);
-	return JSON.stringify(result, undefined, 1);
+	var result = this.evaluator_.evaluate(commandString);
+  if (result.type_ == "command")
+  {
+    this.processCommand(result);
+  }
+  else
+  {
+    var renderingTree = this.renderingTreeBuilder_.rebuild(result);
+  	this.engine_.setRenderingTree(renderingTree);
+  	return JSON.stringify(result, undefined, 1);
+  }
 };
+
+Application.prototype.processCommand = function(command)
+{
+    console.log("command: " + JSON.stringify(command));
+}
 
 Application.prototype.tick = function(event)
 {

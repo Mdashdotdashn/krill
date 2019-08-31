@@ -25,6 +25,14 @@
     this.source_ = source;
     this.options_ = options;
   }
+
+  var CommandStub = function(name, options)
+  {
+    this.type_ = "command";
+    this.name_ = name;
+    this.options_ = options;
+  }
+
 }
 
 start = statement
@@ -176,4 +184,15 @@ sequence_definition = s:sequ_or_operator_or_comment
 
 // ---------------------- statements ----------------------------
 
-statement = sequence_definition
+command = ws c:(setcps / hush) ws
+  { return c }
+
+setcps = "setcps" ws v:number
+  { return new CommandStub("setcps", { value: v})}
+
+hush = "hush"
+  { return new CommandStub("hush")}
+
+// ---------------------- statements ----------------------------
+
+statement = sequence_definition / command
