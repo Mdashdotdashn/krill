@@ -70,6 +70,11 @@ GMDevice = function(midiDeviceName)
   this.values_ = undefined;
 }
 
+GMDevice.prototype.hush = function()
+{
+  tickPlayer(this,{values: []});
+}
+
 GMDevice.prototype.tick = function(events)
 {
   tickPlayer(this, events);

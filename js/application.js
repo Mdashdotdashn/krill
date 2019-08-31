@@ -36,7 +36,18 @@ Application.prototype.parse = function(commandString)
 
 Application.prototype.processCommand = function(command)
 {
-    console.log("command: " + JSON.stringify(command));
+  switch(command.name_)
+  {
+    case "setcps":
+      this.engine_.setCps(parseFloat(command.options_.value));
+      break;
+    case "hush":
+      this.engine_.hush();
+      this.playbackDevice_.hush();
+      break;
+    default:
+      console.log("unknown command: " + JSON.stringify(command));
+  }
 }
 
 Application.prototype.tick = function(event)

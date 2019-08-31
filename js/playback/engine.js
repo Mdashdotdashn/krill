@@ -28,6 +28,16 @@ Engine.prototype.connect = function(target)
   }
 }
 
+Engine.prototype.setCps = function(cps)
+{
+  this.cps_ = cps;
+}
+
+Engine.prototype.hush = function()
+{
+  this.player_.reset();
+}
+
 Engine.prototype.start = function()
 {
   this.currentTime_ = math.fraction("0");

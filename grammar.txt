@@ -184,11 +184,14 @@ sequence_definition = s:sequ_or_operator_or_comment
 
 // ---------------------- statements ----------------------------
 
-command = ws c:(setcps / hush) ws
+command = ws c:(setcps / setbpm / hush) ws
   { return c }
 
 setcps = "setcps" ws v:number
   { return new CommandStub("setcps", { value: v})}
+
+setbpm = "setbpm" ws v:number
+  { return new CommandStub("setcps", { value: (v/160/4)})}
 
 hush = "hush"
   { return new CommandStub("hush")}

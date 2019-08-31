@@ -69,7 +69,9 @@ RenderingTreePlayer.prototype.reset = function()
   // probably a lot more complex than this
   this.resetCycle_ = true;
   this.sequence_ = undefined;
+  this.renderingTree_ = undefined;
   this.queued_ = undefined;
+  this.cycleOffset_ = math.fraction(0);
   this.current_ = new PatternEvent("0", null);
 }
 
