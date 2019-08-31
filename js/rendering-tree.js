@@ -46,7 +46,7 @@ buildOperator = function(type, arguments, source)
       case "fixed-step":
       return makeFixedStepOperator(source, math.fraction(arguments.amount));
 
-      case "sequence":
+      case "pattern":
         switch(arguments.alignment)
         {
           case "h":

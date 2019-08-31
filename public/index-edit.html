@@ -178,8 +178,11 @@
             const text = editor.session.getLine(l);
             paragraph = paragraph + text + "\n";
           }
+
           // strip any form of comment
           paragraph = stripper.strip(paragraph);
+          // remove endline
+          paragraph = paragraph.replace(/\n$/g, "")
           return { from: lowerBound, to:upperBound, text:paragraph};
 //          console.log(lowerBound + ":" + upperBound + "("+ currline +")"+ "=>" +paragraph);
         }

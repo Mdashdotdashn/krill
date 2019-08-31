@@ -5,9 +5,9 @@
 
 
 {
-  var SequenceStub = function(source, alignment)
+  var PatternStub = function(source, alignment)
   {
-    this.type_ = "sequence";
+    this.type_ = "pattern";
     this.arguments_ = { alignment : alignment};
     this.source_ = source;
   }
@@ -111,13 +111,13 @@ slice_with_modifier = s:slice o:slice_modifier?
 // a single cycle is a combination of one or more successive slices (as an array). If we
 // have only one element, we skip the array and return the element itself
 single_cycle = s:(slice_with_modifier)+
-  { return new SequenceStub(s,"h"); }
+  { return new PatternStub(s,"h"); }
 
 // a stack is a serie of vertically aligned single cycles, separated by a comma
 // if the stack contains only one element, we don't create a stack but return the
 // underlying element
 stack = c:single_cycle cs:(comma v:single_cycle { return v})*
-  { if (cs.length == 0 && c instanceof Object) { return c;} else { cs.unshift(c); return new SequenceStub(cs,"v");}  }
+  { if (cs.length == 0 && c instanceof Object) { return c;} else { cs.unshift(c); return new PatternStub(cs,"v");}  }
 
 // a sequence is a quoted stack
 sequence = ws quote s:stack quote
@@ -153,7 +153,7 @@ group_operator = cat
 
 // cat is another form of timeline
 cat = "cat" ws "[" ws  s:sequence_or_operator ss:(comma v:sequence_or_operator { return v})* ws "]"
-  { ss.unshift(s); return new SequenceStub(ss,"t"); }
+  { ss.unshift(s); return new PatternStub(ss,"t"); }
 
 // ------------------ high level sequence ---------------------------
 
