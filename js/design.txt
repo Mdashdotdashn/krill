@@ -1,4 +1,4 @@
-The overall goal is to transform a sequence of command / code into a sequence
+The overall goal is to transform a sequence of command / code into a pattern
 of events. Events happen at given time, referred to as Fraction of a global
 "cycle" (typically a bar)
 
@@ -30,7 +30,7 @@ Operators implement the following API:
     Sequence:
 
     +------------------------------------------------+
-    |   Sequence                                     |
+    |   Pattern                                     |
     |   o cycleLength_  // length of the data        |
     |   o events_ // array of events to be triggered |
     |     (all times are in fraction of the cycle)   |
