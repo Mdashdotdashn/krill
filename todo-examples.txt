@@ -1,7 +1,4 @@
 
-Hush
-setCps
-
 // Play a sequence every 8 bar:
 d1 $ every' 8 0 (const (s "cc")) $ silence
 
