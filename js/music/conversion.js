@@ -4,7 +4,7 @@ var chord = require('tonal-chord');
 
 var drumMap = new Array();
 drumMap["bd"] = 36;
-drumMap["rim"] = 37;
+drumMap["rs"] = 37;
 drumMap["sd"] = 38;
 drumMap["hh"] = 42;
 drumMap["oh"] = 46;
