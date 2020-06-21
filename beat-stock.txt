@@ -1,0 +1,5 @@
+Beat stock
+ "[bd@4 sd@4 bd@2 bd sd@3 sd bd]%8" // 95bpm
+ "[bd sd bd sd bd sd bd [sd ~ ~ sd]]%4, [hh hh hh hh hh hh hh hh hh hh hh hh hh hh hh oh]%8" // 130bpm
+ "[bd sd [~ bd] sd bd [sd bd ~ ~] bd sd]%4" // 80bpm
+ "[hh]%8, [[bd ~ ~ bd] ~ bd ~]%4 , [~ sd ~ sd]%4" // 100bpm
