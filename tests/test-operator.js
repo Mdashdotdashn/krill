@@ -104,7 +104,7 @@ function testValueWrapperOperator()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function testSlowOperator()
+function testStrechOperator()
 {
   var sequence = evaluator.evaluatePattern(quote + "1 2 3" + quote);
 
@@ -115,6 +115,25 @@ function testSlowOperator()
     ];
 
   var operator = makeStrechOperator(sequence, 2);
+
+  operator.tick();
+  testSequenceMatches(operator.render(), expected);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+function testShiftOperator()
+{
+  var sequence = evaluator.evaluatePattern(quote + "1 2 3 4" + quote);
+
+  var expected =   [
+      { "0/1" : ["3"] },
+      { "1/4" : ["4"] },
+      { "1/2" : ["1"] },
+      { "3/4" : ["2"] },
+    ];
+
+  var operator = makeShiftOperator(sequence, 0.5);
 
   operator.tick();
   testSequenceMatches(operator.render(), expected);
@@ -152,6 +171,7 @@ function testScaleOperator()
 
   var operator = makeScaleOperator(sequence, "major");
   testSequenceMatches(operator.render(), expected);
+  console.log("dsdsd");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -159,6 +179,7 @@ testSequenceImplementsOperatorInterface();
 testOperatorsAreRecursive();
 //testTimelineOperator();
 testValueWrapperOperator();
-testSlowOperator();
+testStrechOperator();
+testShiftOperator();
 testBjorklundOperator();
 testScaleOperator();

@@ -40,6 +40,9 @@ buildOperator = function(type, arguments, source)
   		case "stretch":
   			return makeStrechOperator(source, math.fraction(arguments.amount));
 
+      case "shift":
+  			return makeShiftOperator(source, math.fraction(arguments.amount));
+
       case "bjorklund":
   			return makeBjorklundOperator(source, math.fraction(arguments.step),math.fraction(arguments.pulse));
 
