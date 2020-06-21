@@ -191,7 +191,7 @@ setcps = "setcps" ws v:number
   { return new CommandStub("setcps", { value: v})}
 
 setbpm = "setbpm" ws v:number
-  { return new CommandStub("setcps", { value: (v/120/4)})}
+  { return new CommandStub("setcps", { value: (v/120/2)})}
 
 hush = "hush"
   { return new CommandStub("hush")}
