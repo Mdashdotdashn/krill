@@ -1,9 +1,33 @@
 require('../type.js')
 
+// Wrapper can be used to wrap fixed values
+
+var ValueWrapperOperator = function(value)
+{
+  this.value_ = value;
+}
+
+ValueWrapperOperator.prototype.tick = function() {};
+
+ValueWrapperOperator.prototype.render = function() { return this.value_};
+
+// The operator framework class
+
 Operator = function(renderFn, arguments)
 {
+  const makeTickable = function(a)
+  {
+    if (typeof a.tick === 'function')
+    {
+      return a;
+    }
+    else
+    {
+      return new ValueWrapperOperator(a);
+    }
+  }
   this.renderFn_ = renderFn;
-  this.arguments_ = arguments;
+  this.arguments_ = arguments.map( x => makeTickable(x));
 }
 
 Operator.prototype.tick = function()
@@ -18,22 +42,6 @@ Operator.prototype.render = function()
   var renderedSequence = this.renderFn_(renderedArguments);
 //  CHECK_TYPE(renderedSequence, Sequence);
   return renderedSequence;
-}
-
-// Wrapper can be used to wrap fixed values
-
-var ValueWrapperOperator = function(value)
-{
-  this.value_ = value;
-}
-
-ValueWrapperOperator.prototype.tick = function() {};
-
-ValueWrapperOperator.prototype.render = function() { return this.value_};
-
-makeValueWrapperOperator = function(v)
-{
-  return new ValueWrapperOperator(v);
 }
 
 require("./op-bjorklund.js");

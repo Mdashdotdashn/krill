@@ -26,7 +26,7 @@ makeStrechOperator = function(source, stretchFactor)
     return stretchPattern(args[0], args[1]);
   }
 
-  return new Operator(stretchFn, [source, makeValueWrapperOperator(stretchFactor)]);
+  return new Operator(stretchFn, [source, stretchFactor]);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -41,5 +41,5 @@ makeFixedStepOperator = function(source, stepDivision)
     return stretchPattern(args[0], args[1]);
   }
 
-  return new Operator(stretchFn, [source, makeValueWrapperOperator(stretchFactor)]);
+  return new Operator(stretchFn, [source, stretchFactor]);
 }

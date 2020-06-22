@@ -94,16 +94,6 @@ function testOperatorsAreRecursive()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function testValueWrapperOperator()
-{
-  var v = 1234;
-  var operator = makeValueWrapperOperator(v);
-  operator.tick();
-  assert.equal(operator.render(), v);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 function testStrechOperator()
 {
   var sequence = evaluator.evaluatePattern(quote + "1 2 3" + quote);
@@ -178,7 +168,6 @@ function testScaleOperator()
 testSequenceImplementsOperatorInterface();
 testOperatorsAreRecursive();
 //testTimelineOperator();
-testValueWrapperOperator();
 testStrechOperator();
 testShiftOperator();
 testBjorklundOperator();

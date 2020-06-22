@@ -92,6 +92,5 @@ makeBjorklundOperator = function(source, step, pulse)
     return makePatternFromWeightArray(weightArray);
   }
 
-  return new Operator(bjorklundFn,
-     [source, makeValueWrapperOperator(step), makeValueWrapperOperator(pulse)]);
+  return new Operator(bjorklundFn, [source, step, pulse]);
 }

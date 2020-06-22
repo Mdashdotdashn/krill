@@ -28,5 +28,5 @@ makeShiftOperator = function(source, shiftAmount)
     return shiftPattern(args[0], args[1]);
   }
 
-  return new Operator(stretchFn, [source, makeValueWrapperOperator(shiftAmount)]);
+  return new Operator(stretchFn, [source, shiftAmount]);
 }

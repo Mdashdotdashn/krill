@@ -10,5 +10,5 @@ makeTargetOperator = function(source, targetName)
     return clone;
   }
 
-  return new Operator(setTargetFn, [source, makeValueWrapperOperator(targetName)]);
+  return new Operator(setTargetFn, [source, targetName]);
 }
