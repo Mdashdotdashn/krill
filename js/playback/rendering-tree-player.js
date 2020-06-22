@@ -1,4 +1,4 @@
-require("../pattern.js");
+require("../patterns/pattern.js");
 var math = require("mathjs");
 
 RenderingTreePlayer = function()

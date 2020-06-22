@@ -1,6 +1,6 @@
 var math = require("mathjs");
 require("./base.js");
-require('../js/pattern.js');
+require('../js/patterns/pattern.js');
 
 //////////////////////////////////////////////////////////////////////////////
 

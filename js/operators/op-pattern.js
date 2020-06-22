@@ -1,7 +1,7 @@
 const math = require("mathjs");
 const _ = require("lodash");
 
-require("../pattern.js");
+require("../patterns/pattern.js");
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -130,7 +130,7 @@ var SequenceRenderingOperator = function(operatorArray)
 SequenceRenderingOperator.prototype.getWeight = function()
 {
   const totalWeight = this.nodes_.reduce((t,x) => { return t + x.weight_; }, 0);
-  return totalWeight;  
+  return totalWeight;
 }
 
 SequenceRenderingOperator.prototype.tick = function()
