@@ -8,7 +8,7 @@ function testSlice(string, position, length, expected)
 {
   var p = evaluator.evaluatePattern(string);
   var actual = slicePattern(p, math.fraction(position), math.fraction(length));
-  testSequenceMatches(actual, expected);
+  testPatternMatches(actual, expected);
 }
 
 testSlice("'1 2 3 4'", "1/2", "1/2",

@@ -3,7 +3,7 @@ require("./base.js");
 var testSequence = function(sequenceString, expected)
 {
   var sequence = evaluator.evaluatePattern(quote + sequenceString + quote);
-  testSequenceMatches(sequence, expected);
+  testPatternMatches(sequence, expected);
 }
 
 testSequence("true",

@@ -20,9 +20,9 @@ var makeSamplingArray = function(left, right, mode)
   }
 }
 
-var sampleSequence = function(sequence, time)
+var samplePattern = function(pattern, time)
 {
-  var events = sequence.events_;
+  var events = pattern.events_;
 //console.log("looking for time " + JSON.stringify(time));
   var index = 0;
   while (index < events.length)
@@ -47,16 +47,16 @@ var applyOperation = function(leftArray, rightArray, operation)
   return _.flattenDeep(result);
 }
 
-// Weaves two sequence together, i.e. sample both at given points
+// Weaves two pattern together, i.e. sample both at given points
 // and apply an operator on values. Depending on mode ("left" / "right" / "anything")
-// the sampling sequence is take from leftSequence, rightSequence or the merge of both
+// the sampling pattern is take from leftPattern, rightPattern or the merge of both
 // this is supposed to mimic |+ , +| & |+| from tidal
-weaveSequences = function(leftSequence, rightSequence, mode, operation)
+weavePatterns = function(leftPattern, rightPattern, mode, operation)
 {
-  const samplingArray =  makeSamplingArray(leftSequence, rightSequence, mode);
+  const samplingArray =  makeSamplingArray(leftPattern, rightPattern, mode);
   const eventsArray = samplingArray.map((t) => {
-    const leftValues = sampleSequence(leftSequence, t);
-    const rightValues = sampleSequence(rightSequence, t);
+    const leftValues = samplePattern(leftPattern, t);
+    const rightValues = samplePattern(rightPattern, t);
     const applied = applyOperation(leftValues, rightValues, operation);
     return new PatternEvent(t, applied);
   });
@@ -77,7 +77,7 @@ var boolValue = function(b)
   return true;
 }
 
-makeStructOperator = function(source, sequence)
+makeStructOperator = function(source, pattern)
 {
   var applyStructFn = function(args)
   {
@@ -86,8 +86,8 @@ makeStructOperator = function(source, sequence)
       return boolValue(r) ? l : "~";
     }
 
-    return weaveSequences(args[0], args[1], "right", operator);
+    return weavePatterns(args[0], args[1], "right", operator);
   }
 
-  return new Operator(applyStructFn, [source, sequence]);
+  return new Operator(applyStructFn, [source, pattern]);
 }

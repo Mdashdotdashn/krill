@@ -3,7 +3,7 @@
 // var testEvaluator = function(s, expected,cycleLength)
 // {
 //   var sequence = evaluator.evaluate(s);
-//   testSequenceMatches(sequence, expected, cycleLength);
+//   testPatternMatches(sequence, expected, cycleLength);
 // }
 //
 // testEvaluator("slow 2 $  "+quote+"1 2 3"+quote,

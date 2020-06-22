@@ -1,11 +1,11 @@
 require("./base.js");
 
-var testWeaving = function(leftSequenceString, rightSequenceString, mode, operation, expected)
+var testWeaving = function(leftPatternString, rightPatternString, mode, operation, expected)
 {
-  var sequenceL = evaluator.evaluatePattern(quote + leftSequenceString + quote);
-  var sequenceR = evaluator.evaluatePattern(quote + rightSequenceString + quote);
-  var result = weaveSequences(sequenceL, sequenceR, mode, operation);
-  testSequenceMatches(result, expected);
+  var patternL = evaluator.evaluatePattern(quote + leftPatternString + quote);
+  var patternR = evaluator.evaluatePattern(quote + rightPatternString + quote);
+  var result = weavePatterns(patternL, patternR, mode, operation);
+  testPatternMatches(result, expected);
 }
 
 // Use left structure and left data

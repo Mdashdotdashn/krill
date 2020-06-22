@@ -27,7 +27,7 @@ function testSequenceImplementsOperatorInterface()
   var operator = new Operator(identityFn, [sequence]);
   operator.tick();
   var rendered = operator.render();
-  testSequenceMatches(rendered, expected);
+  testPatternMatches(rendered, expected);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -57,7 +57,7 @@ function testOperatorsAreRecursive()
   // Make sure rendering the outer operator leads to the expected result
   outerOperator.tick();
   var rendered = outerOperator.render();
-  testSequenceMatches(rendered, expected);
+  testPatternMatches(rendered, expected);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -83,7 +83,7 @@ function testOperatorsAreRecursive()
 //   var operator = makeTimelineOperator([sequence1, sequence2]);
 //   var testAdvance = function(expected)
 //   {
-//     testSequenceMatches(operator.render(), expected);
+//     testPatternMatches(operator.render(), expected);
 //     operator.tick();
 //   }
 //
@@ -117,7 +117,7 @@ function testStrechOperator()
   var operator = makeStrechOperator(sequence, 2);
 
   operator.tick();
-  testSequenceMatches(operator.render(), expected);
+  testPatternMatches(operator.render(), expected);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -136,7 +136,7 @@ function testShiftOperator()
   var operator = makeShiftOperator(sequence, 0.5);
 
   operator.tick();
-  testSequenceMatches(operator.render(), expected);
+  testPatternMatches(operator.render(), expected);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -153,7 +153,7 @@ function testBjorklundOperator()
 
   var operator = makeBjorklundOperator(sequence, 8 ,3);
   operator.tick();
-  testSequenceMatches(operator.render(), expected);
+  testPatternMatches(operator.render(), expected);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -170,7 +170,7 @@ function testScaleOperator()
   ]
 
   var operator = makeScaleOperator(sequence, "major");
-  testSequenceMatches(operator.render(), expected);
+  testPatternMatches(operator.render(), expected);
   console.log("dsdsd");
 }
 

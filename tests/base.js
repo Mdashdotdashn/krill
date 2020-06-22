@@ -25,7 +25,7 @@ TestEvaluator.prototype.evaluatePattern = function(s)
 evaluator = new TestEvaluator();
 quote ="\"";
 
-testSequenceMatches = function(sequence, expected, cycleLength)
+testPatternMatches = function(sequence, expected, cycleLength)
 {
   var output = convertPatternToString(sequence);
   assert.deepEqual(output,expected);
