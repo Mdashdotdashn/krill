@@ -101,16 +101,16 @@ slice_weight =  "@" a:number
   { return { weight: a} }
 
 slice_bjorklund = "(" ws p:number ws comma ws s:number ws")"
-  { return { operator : { type_: "bjorklund", arguments_ :{ pulse: p, step:s } } } }
+  { return { operator : { type_: "bjorklund", arguments_ : [p, s ] } } }
 
 slice_slow = "/"a:number
-  { return { operator : { type_: "stretch", arguments_ :{ amount:a } } } }
+  { return { operator : { type_: "stretch", arguments_ : [a] } } }
 
 slice_fast = "*"a:number
-  { return { operator : { type_: "stretch", arguments_ :{ amount:"1/"+a } } } }
+  { return { operator : { type_: "stretch", arguments_ : [ "1/"+a ] } } }
 
 slice_fixed_step = "%"a:number
-  { return { operator : { type_: "fixed-step", arguments_ :{ amount:a } } } }
+  { return { operator : { type_: "fixed-step", arguments_ : [a ] } } }
 
 // a slice with an modifier applied i.e [bd@4 sd@3]@2 hh]
 slice_with_modifier = s:slice o:slice_modifier?
@@ -136,28 +136,28 @@ sequence = ws quote s:stack quote
 operator = scale / slow / fast / target / bjorklund / struct / rotR / rotL
 
 struct = "struct" ws s:sequence_or_operator
-  { return { name: "struct", args: { sequence:s }}}
+  { return { name: "struct", args: [s]}}
 
 target = "target" ws quote s:step quote
-  { return { name: "target", args : { name:s}}}
+  { return { name: "target", args : [s]}}
 
 bjorklund = "euclid" ws p:int ws s:int
-  { return { name: "bjorklund", args :{ pulse: parseInt(p), step:parseInt(s) }}}
+  { return { name: "bjorklund", args : [parseInt(p), parseInt(s) ]}}
 
 slow = "slow" ws a:number
-  { return { name: "stretch", args :{ amount: a}}}
+  { return { name: "stretch", args : [a]}}
 
 rotL = "rotL" ws a:number
-  { return { name: "shift", args :{ amount: "-"+a}}}
+  { return { name: "shift", args : ["-"+a]}}
 
 rotR = "rotR" ws a:number
-  { return { name: "shift", args :{ amount: a}}}
+  { return { name: "shift", args : [a]}}
 
 fast = "fast" ws a:number
-  { return { name: "stretch", args :{ amount: "1/"+a}}}
+  { return { name: "stretch", args : ["1/"+a]}}
 
 scale = "scale" ws quote s:(step_char)+ quote
-{ return { name: "scale", args :{ scale: s.join("")}}}
+{ return { name: "scale", args :[ s.join("")]}}
 
 comment = '//' p:([^\n]*)
 

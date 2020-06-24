@@ -13,7 +13,7 @@ function buildTreeForNode(node)
     return node.map((x) => buildTreeForNode(x));
   }
 
-  // If the node is an object, it is expected to be an operator note
+  // If the node is an object, it is expected to be an operator node
   if (node instanceof Object)
   {
     return buildOperatorNode(node);
@@ -29,25 +29,25 @@ buildOperator = function(type, arguments, source)
     switch(type)
     {
       case "scale":
-  			return makeScaleOperator(source, arguments.scale);
+  			return makeScaleOperator(source, arguments[0]);
 
       case "struct":
-        return makeStructOperator(source, buildTreeForNode(arguments.sequence));
+        return makeStructOperator(source, buildTreeForNode(arguments[0]));
 
       case "target":
-        return makeTargetOperator(source, arguments.name);
+        return makeTargetOperator(source, arguments[0]);
 
   		case "stretch":
-  			return makeStrechOperator(source, math.fraction(arguments.amount));
+  			return makeStrechOperator(source, arguments[0]);
 
       case "shift":
-  			return makeShiftOperator(source, math.fraction(arguments.amount));
+  			return makeShiftOperator(source, arguments[0]);
 
       case "bjorklund":
-  			return makeBjorklundOperator(source, math.fraction(arguments.step),math.fraction(arguments.pulse));
+  			return makeBjorklundOperator(source, arguments[0], arguments[1]);
 
       case "fixed-step":
-      return makeFixedStepOperator(source, math.fraction(arguments.amount));
+      return makeFixedStepOperator(source, arguments[0]);
 
       case "pattern":
         switch(arguments.alignment)

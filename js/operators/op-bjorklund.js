@@ -81,16 +81,16 @@ var buildWeightArray = function(step, pulse, source)
    return weightArray;
 }
 
-makeBjorklundOperator = function(source, step, pulse)
+makeBjorklundOperator = function(source, pulse, step)
 {
   var bjorklundFn = function(args)
   {
     const source = args[0];
-    const step = args[1];
-    const pulse = args[2];
+    const pulse = args[1];
+		const step = args[2];
     const weightArray = buildWeightArray(step, pulse, source);
     return makePatternFromWeightArray(weightArray);
   }
 
-  return new Operator(bjorklundFn, [source, step, pulse]);
+  return new Operator(bjorklundFn, [source, pulse, step]);
 }

@@ -141,7 +141,7 @@ function testBjorklundOperator()
       { "3/4" : ["bd"] }
     ];
 
-  var operator = makeBjorklundOperator(sequence, 8 ,3);
+  var operator = makeBjorklundOperator(sequence, 3 ,8);
   operator.tick();
   testPatternMatches(operator.render(), expected);
 }
