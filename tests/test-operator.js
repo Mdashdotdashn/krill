@@ -161,7 +161,6 @@ function testScaleOperator()
 
   var operator = makeScaleOperator(sequence, "major");
   testPatternMatches(operator.render(), expected);
-  console.log("dsdsd");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
