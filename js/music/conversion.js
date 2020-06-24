@@ -6,6 +6,7 @@ var drumMap = new Array();
 drumMap["bd"] = 36;
 drumMap["rs"] = 37;
 drumMap["sd"] = 38;
+drumMap["cp"] = 39;
 drumMap["hh"] = 42;
 drumMap["oh"] = 46;
 drumMap["clave"] = 75;
