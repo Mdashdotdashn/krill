@@ -1,5 +1,11 @@
 Beat stock
- "[bd@4 sd@4 bd@2 bd sd@3 sd bd]%8" // 95bpm
- "[bd sd bd sd bd sd bd [sd ~ ~ sd]]%4, [hh hh hh hh hh hh hh hh hh hh hh hh hh hh hh oh]%8" // 130bpm
- "[bd sd [~ bd] sd bd [sd bd ~ ~] bd sd]%4" // 80bpm
- "[hh]%8, [[bd ~ ~ bd] sd bd sd]%4" // 100bpm
+
+"[bd@4 sd@4 bd@2 bd sd@3 sd bd]%8" // 95bpm
+"[bd sd bd sd bd sd bd [sd ~ ~ sd]]%4,
+ [hh hh hh hh hh hh hh hh hh hh hh hh hh hh hh oh]%8" // 130bpm
+"[bd sd [~ bd] sd bd [sd bd ~ ~] bd sd]%4" // 80bpm
+"[hh]%8, [[bd ~ ~ bd] sd bd sd]%4" // 100bpm
+"[bd bd ~ [~@3 bd] [~ bd ~@2] bd ~ ~]%4,
+ [[~ sd rs ~] ~ [~@2 sd ~] sd [~@2 sd ~] rs]%4,
+ [~ [hh hh] [hh hh] [hh hh] hh [hh hh] [hh*2 ~*2] [hh ~ hh hh]]%4" // 90bpm
+"[bd [sd@7 sd] [~ bd] [sd bd]]%4" // 80 bpm
