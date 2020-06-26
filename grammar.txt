@@ -133,13 +133,10 @@ sequence = ws quote s:stack quote
 
 // ------------------ operators ---------------------------
 
-operator = scale / slow / fast / target / bjorklund / struct / rotR / rotL
+operator = scale / slow / fast / bjorklund / struct / rotR / rotL
 
 struct = "struct" ws s:sequence_or_operator
   { return { name: "struct", args: [s]}}
-
-target = "target" ws quote s:step quote
-  { return { name: "target", args : [s]}}
 
 bjorklund = "euclid" ws p:int ws s:int
   { return { name: "bjorklund", args : [parseInt(p), parseInt(s) ]}}

@@ -28,7 +28,6 @@ var Pattern = function()
 {
   this.cycleLength_ = math.fraction(1);
   this.events_ = [];
-  this.targetName_ = "";
 }
 
 Pattern.prototype.clone = function()
@@ -36,7 +35,6 @@ Pattern.prototype.clone = function()
   var clone = new Pattern();
   clone.events_ = this.events_.slice(0);
   clone.cycleLength_ = this.cycleLength_;
-  clone.targetName_ = CloneString(this.targetName_);
   return clone;
 }
 
@@ -44,11 +42,6 @@ Pattern.prototype.setEventArray = function(eventArray, length)
 {
   this.cycleLength_ = length ? length : math.fraction(1);
   this.events_ = eventArray;
-}
-
-Pattern.prototype.setTargetName = function(targetName)
-{
-  this.targetName_  = targetName;
 }
 
 Pattern.prototype.tick = function()

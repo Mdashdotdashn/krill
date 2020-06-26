@@ -1,3 +1,30 @@
+-------------------------------------
+test PatternSlicingOperator
+Call buildTreeForNode on every argument
+pass argument as an array, asserting the size
+implement a slicesize argument slicer operator and use it with euclid
+
+---------------------------------
+make name case insensitive
+scale "Major" doesn't work
+---------------------------------
+implement stack as a grouping element
+goal: do parallel sequences with operators
+  stack [ slow 4 $ "hh hh" , slow 2 $ "bd sd"]
+---------------------------------
+implements a function /player that returns a timeline section of a pattern that
+corresponding to an start offset and a length
+  original parttern = 1.5
+  get (0, 2) -> pattern(0,1.5) + pattern(0, 0.5)
+  get (0.5, 2) -> pattern(0.5, 1.5) + pattern(0, 1)
+  ...
+
+goal: this can be used to get slices of operator arguments pattern of the size of the
+  source and weave them together.
+----------------------------------
+implement add pattern
+goal: do octave shifts like in norns' awake
+-----------------------------------
 
 // Play a sequence every 8 bar:
 d1 $ every' 8 0 (const (s "cc")) $ silence

@@ -121,8 +121,7 @@ RenderingTreePlayer.prototype.eventForTime = function(currentTime)
     // Look if it matches the current time
     if (math.equal(math.fraction(currentTime), this.current_.time()))
     {
-      var targetName = this.sequence_ ? this.sequence_.targetName_: undefined;
-      return { target: targetName, values: this.current_.values() };
+      return { values: this.current_.values() };
     }
   }
 }
