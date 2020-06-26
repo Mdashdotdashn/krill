@@ -1,6 +1,29 @@
+mathjs = require("mathjs");
+
+var JSONFraction = function(value)
+{
+  return "" + value.n + "/" + value.d;
+}
+
+var JSONReplacer = function(key,value)
+{
+  if (value.mathjs == "Fraction")
+  {
+    return JSONFraction(value);
+  }
+  if (typeof value === "object")
+  {
+    if (value instanceof PatternEvent)
+    {
+      return  JSONFraction(value.time_) + ' : [' + value.values_ + ']';
+    }
+  }
+  return value;
+}
+
 Dump = function(o)
 {
-  console.log(JSON.stringify(o, undefined,1));
+  console.log(JSON.stringify(o, JSONReplacer,1));
 }
 
 Log = function(text, o)
