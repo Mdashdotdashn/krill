@@ -55,10 +55,8 @@ var tickPlayer = function(player, events)
 
   player.values_ = events.values.reduce((c,x) => {
      const notes = convertToNotes(x);
-     console.log(notes);
      return c.concat(notes);
    },[]);
-  console.log(player.values_);
 	processNotes(player.values_, 'noteon');
 }
 
