@@ -9,3 +9,5 @@ Beat stock
  [[~ sd rs ~] ~ [~@2 sd ~] sd [~@2 sd ~] rs]%4,
  [~ [hh hh] [hh hh] [hh hh] hh [hh hh] [hh*2 ~*2] [hh ~ hh hh]]%4" // 90bpm
 "[bd [sd@7 sd] [~ bd] [sd bd]]%4" // 80 bpm
+"[bd [sd bd] [~ sd] bd ]%4" // 150 bpm
+"[bd bd] [sd ~@2 bd] [bd bd] [sd bd]" // 85bpm
