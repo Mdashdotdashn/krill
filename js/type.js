@@ -28,7 +28,7 @@ Dump = function(o)
 
 Log = function(text, o)
 {
-  console.log(text + ": " + JSON.stringify(o, undefined,1));
+  console.log(text + ": " + JSON.stringify(o, JSONReplacer,1));
 }
 
 CHECK_TYPE = function(value, expectedType)
