@@ -1,8 +1,12 @@
 -------------------------------------
 test PatternSlicingOperator
+make an add / subtract
+implement a slicesize argument slicer operator and test it
+add pattern support for add
+add pattern support for struct
 Call buildTreeForNode on every argument
 pass argument as an array, asserting the size
-implement a slicesize argument slicer operator and use it with euclid
+use a slicer for every operator
 
 ---------------------------------
 make name case insensitive
