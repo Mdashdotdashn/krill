@@ -131,6 +131,26 @@ function testShiftOperator()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+function testAddOperator()
+{
+  var sequence = evaluator.evaluatePattern(quote + "1 2 3 4" + quote);
+  var argument = evaluator.evaluatePattern(quote + "0 -2 -4 -8" + quote);
+
+  var expected =   [
+      { "0/1" : ["1"] },
+      { "1/4" : ["0"] },
+      { "1/2" : ["-1"] },
+      { "3/4" : ["-4"] },
+    ];
+
+  var operator = makeAddOperator(sequence, argument);
+
+  operator.tick();
+  testPatternMatches(operator.render(), expected);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 function testBjorklundOperator()
 {
   var sequence = evaluator.evaluatePattern(quote + "bd" + quote);
@@ -164,9 +184,11 @@ function testScaleOperator()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 testSequenceImplementsOperatorInterface();
 testOperatorsAreRecursive();
 //testTimelineOperator();
+testAddOperator();
 testStrechOperator();
 testShiftOperator();
 testBjorklundOperator();

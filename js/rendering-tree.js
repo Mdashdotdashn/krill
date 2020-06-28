@@ -28,6 +28,9 @@ buildOperator = function(type, arguments, source)
 {
     switch(type)
     {
+      case "add":
+  			return makeAddOperator(source, buildTreeForNode(arguments[0]));
+
       case "scale":
   			return makeScaleOperator(source, arguments[0]);
 

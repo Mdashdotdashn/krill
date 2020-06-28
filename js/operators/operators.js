@@ -44,6 +44,7 @@ Operator.prototype.render = function()
   return renderedSequence;
 }
 
+require("./op-add.js");
 require("./op-bjorklund.js");
 require("./op-pattern.js");
 require("./op-scale.js");

@@ -133,7 +133,10 @@ sequence = ws quote s:stack quote
 
 // ------------------ operators ---------------------------
 
-operator = scale / slow / fast / bjorklund / struct / rotR / rotL
+operator = add / scale / slow / fast / bjorklund / struct / rotR / rotL
+
+add = "add" ws s:sequence_or_operator
+  { return { name: "add", args: [s]}}
 
 struct = "struct" ws s:sequence_or_operator
   { return { name: "struct", args: [s]}}
