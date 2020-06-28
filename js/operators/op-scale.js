@@ -6,7 +6,7 @@ const Interval = require("tonal-interval");
 
 makeScaleOperator = function(source, scale)
 {
-  const scaledef = Scale.tokenize(scale);
+  const scaledef = Scale.tokenize(scale.toLowerCase());
   const intervals = Scale.props(scaledef[1]).intervals.map(w => Interval.semitones(w));
   const offset = scaledef[0] != '' ? Note.chroma(scaleddef[0]) : 0;
 
