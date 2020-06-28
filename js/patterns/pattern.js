@@ -169,3 +169,9 @@ makeEmptyPattern = function()
   pattern.cycleLength_ = math.fraction(0);
   return pattern;
 }
+
+makeSingleEventPattern = function(value)
+{  // make a single sequence out of the event
+  var patternArray = [new PatternEvent("0", [value])];
+  return makePatternFromEventArray(patternArray);
+}

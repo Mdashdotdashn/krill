@@ -19,9 +19,7 @@ function buildTreeForNode(node)
     return buildOperatorNode(node);
   }
 
-  // make a single sequence out of the event
-  var patternArray = [new PatternEvent("0", [node])];
-  return makePatternFromEventArray(patternArray);
+  return makeSingleEventPattern(node);
 }
 
 buildOperator = function(type, arguments, source)
