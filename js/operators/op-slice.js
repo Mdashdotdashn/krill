@@ -37,7 +37,7 @@ PatternSlicerOperator.prototype.render = function()
   if (math.compare(this.pattern_.cycleLength_, this.slicingLength_) > 0)
   {
     var remainingLength = math.subtract(this.pattern_.cycleLength_, this.slicingLength_);
-    this.pattern_ = slicePattern(this.pattern_, math.fraction(1), remainingLength);
+    this.pattern_ = slicePattern(this.pattern_, this.slicingLength_, remainingLength);
   }
   else
   {
