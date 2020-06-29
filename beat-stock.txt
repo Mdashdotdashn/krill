@@ -12,3 +12,8 @@ Beat stock
 "[bd [sd bd] [~ sd] bd ]%4" // 150 bpm
 "[bd bd] [sd ~@2 bd] [bd bd] [sd bd]" // 85bpm
 "[bd [sd ~@2 bd] bd sd ]%4" // 85 bpm
+"[[bd bd][sd ~ hh sd][~ hh bd ~][hh sd]
+ [hh bd][sd hh][~ hh bd ~][sd ~ hh hh]]%4" // 110 bpm
+ "[[bd bd ~ rs] sd [bd*2] [rs sd]]%4" // 90bpm rs= ghost snare
+ "[[bd bd][sd ~@2 sd][bd rs bd ~][sd ~@2 bd]]%4,
+ [~ hh ~ hh hh hh ~ hh]%8" // 86 bpm rs = ghost snare
