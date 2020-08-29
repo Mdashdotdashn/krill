@@ -25,7 +25,7 @@
     "commander": "^3.0.0",
     "easymidi": "^1.0.1",
     "hapi": "^18.1.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "mathjs": "^5.10.0",
     "nanotimer": "^0.3.15",
     "note-parser": "^2.0.1",
