@@ -25,3 +25,11 @@ Beat stock
      ] // 90 bpm
   "[bd ~ ~ bd ~ ~ sd ~]%16" // 90bpm
 "[bd [sd ~ rs sd] [~ [bd,rs]] sd [~ ~ [bd,rs] bd ] [sd bd] [ ~ bd] [sd]]%4" // 122bpm
+"[bd sd [bd sd sd ~] ~]%4" // 120 bpm
+"[[bd ~ ~ sd] ~ [bd bd] [~ sd ~ ~]]%4" // 114 bpm
+"[[bd ~ ~ sd] [~ ~ sd ~] bd sd]%4" // 114 bpm
+cat [
+ "[bd sd [~ bd] [sd]]%4",
+ "[bd sd [~ bd] [sd bd ~ ~]]%4"
+] // 101 Bpm
+"[bd@2 bd@8 bd@3 bd@2 bd]%16,[~@4 sd@3 sd@2 sd@7]%16" //bpm 75
