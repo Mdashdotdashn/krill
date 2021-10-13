@@ -21,6 +21,7 @@
   "dependencies": {
     "@hapi/hapi": "^18.4.0",
     "@hapi/inert": "^5.2.0",
+    "@tonejs/midi": "^2.0.27",
     "assert": "^2.0.0",
     "commander": "^3.0.0",
     "easymidi": "^1.0.1",

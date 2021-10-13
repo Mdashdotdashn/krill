@@ -1,4 +1,7 @@
 var easymidi = require('easymidi');
+const { Midi } = require('@tonejs/midi')
+const fs = require('fs');
+
 require('../music/conversion.js');
 
 var defaultLoopback = function()
@@ -79,3 +82,69 @@ GMDevice.prototype.tick = function(events)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+MidiFileRenderer = function()
+{
+  this.midiDevice_ = this;
+  this.midiExporter_ = new Midi();
+  this.trackArray_ = new Array();
+  this.pendingNotes_ = new Array();
+  this.tempo_ = 0;
+}
+
+MidiFileRenderer.prototype.tick = function(time, events)
+{
+  this.currentTime_ = time;
+  tickPlayer(this, events);
+}
+
+MidiFileRenderer.prototype.send = function(message, options)
+{
+  var tempo = this.tempo_;
+  var toDuration = (cycleTime) => { return cycleTime * 60 * 4 / tempo;}
+  switch(message)
+  {
+    case 'noteon':
+      // remove possible duplicates
+      this.pendingNotes_ = this.pendingNotes_.filter((value) => {
+        return (value.note != options.note)
+      });
+      options.time = this.currentTime_;
+      this.pendingNotes_.push(options);
+      break;
+    case 'noteoff':
+      this.pendingNotes_ = this.pendingNotes_.filter((value) => {
+        if (value.note == options.note)
+        {
+          var noteData = {
+              midi: value.note,
+              time: toDuration(value.time),
+              duration: toDuration(this.currentTime_ - value.time)
+          }
+          if (!this.trackArray_[value.channel])
+          {
+            this.trackArray_[value.channel] = this.midiExporter_.addTrack();
+          }
+          this.trackArray_[value.channel].addNote(noteData);
+          return false;
+        }
+        return true;
+      });
+      break;
+  }
+}
+
+MidiFileRenderer.prototype.write = function(filename)
+{
+  fs.writeFileSync(filename,new Buffer(this.midiExporter_.toArray()))
+}
+
+MidiFileRenderer.prototype.setTempo = function(tempo)
+{
+  this.tempo_ = tempo;
+  this.midiExporter_.header.tempos.push({
+    bpm: tempo,
+    ticks: 0,
+  });
+  this.midiExporter_.header.update();
+}
