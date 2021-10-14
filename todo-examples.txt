@@ -1,37 +1,36 @@
+
+Look at last implemented feature,
+document properly
+test cases for stack
+make stack [ "hh hh" , fast 2 $ "bd sd"] work
+
+bug: add doesn't work with note numbers
+
 -------------------------------------
-test PatternSlicingOperator
-make an add / subtract
-implement a slicesize argument slicer operator and test it
-add pattern support for add
-add pattern support for struct
 Call buildTreeForNode on every argument
 pass argument as an array, asserting the size
-use a slicer for every operator
-
 ---------------------------------
-make name case insensitive
-scale "Major" doesn't work
+implement + & - (?) tokens for accent & ghost
 ---------------------------------
+allow a free javascript function to be applied to the pattern
+-------------------------------------
 implement stack as a grouping element
 goal: do parallel sequences with operators
   stack [ slow 4 $ "hh hh" , slow 2 $ "bd sd"]
----------------------------------
-implements a function /player that returns a timeline section of a pattern that
-corresponding to an start offset and a length
-  original parttern = 1.5
-  get (0, 2) -> pattern(0,1.5) + pattern(0, 0.5)
-  get (0.5, 2) -> pattern(0.5, 1.5) + pattern(0, 1)
-  ...
-
-goal: this can be used to get slices of operator arguments pattern of the size of the
-  source and weave them together.
 ----------------------------------
 implement add pattern
 goal: do octave shifts like in norns' awake
 -----------------------------------
+Implement shift as a pattern modifier
+  "[bd [sd bd] [~ sd] bd ]%4" -> "[bd [sd bd] [sd]>0.5 bd ]%4"
+
 
 // Play a sequence every 8 bar:
 d1 $ every' 8 0 (const (s "cc")) $ silence
 
 // Reich's It's going to rain
 d1 $ jux (slow 1.005) $ s "its_gonna_rain"
+
+// Ability to use stack to apply effects in parallel
+
+stack [ add 3, add 5 ] $ 'c3' // adds a third minor and a fifth 
