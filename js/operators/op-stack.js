@@ -29,12 +29,13 @@ mergeAndOrderSteps = function(steps)
 
 var StackRenderingOperator = function(contentArray)
 {
-  this.content_ =contentArray;
+  this.content_ = contentArray;
+  this.type_ = "stack";
 }
 
-StackRenderingOperator.prototype.getWeight = function()
+StackRenderingOperator.prototype.size = function()
 {
-  return this.content_[0].getWeight();
+  return this.content_[0].size();
 }
 
 StackRenderingOperator.prototype.tick = function()

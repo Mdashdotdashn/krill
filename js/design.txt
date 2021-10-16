@@ -17,6 +17,18 @@ The transformation of the string original data is done in steps:
   3- the rendering tree is passed on to players that renders it in order to
      play the generated events
 
+The render tree is made of a hierarchy of node where each node transform its
+children's node data. Node can either be a Patterns (sequence of event). Or an
+operator (transforms the childrens)
+
+  [node1]
+     |  +---- [node 11]
+     |
+  [node2]
+     |  +---- [node 21]
+     |
+
+
 Operators implement the following API:
   +-----------------------------------------------+
   |   Operator                                    |
@@ -29,9 +41,14 @@ Operators implement the following API:
   while render() return the whole array of event to be played in the form of a
     Sequence:
 
+Patterns: sequence of events with a fractional time within the sequence
     +------------------------------------------------+
     |   Pattern                                     |
     |   o cycleLength_  // length of the data        |
     |   o events_ // array of events to be triggered |
     |     (all times are in fraction of the cycle)   |
     +------------------------------------------------+
+
+Sequence: An operator representing a timeline of nodes. The elements of the
+          timeline can be 'weighted' so that each element can have it's own
+          spacing within the timeline

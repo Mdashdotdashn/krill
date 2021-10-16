@@ -26,20 +26,15 @@ makeStrechOperator = function(source, stretchFactor)
     return stretchPattern(args[0], args[1]);
   }
 
-  return new Operator(stretchFn, [source, stretchFactor]);
+  return new Operator(stretchFn, [source, stretchFactor], "stretch");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 makeFixedStepOperator = function(source, stepDivision)
 {
-  var sourceWeight = source.getWeight();
+  var sourceWeight = source.size();
   var stretchFactor = math.divide(sourceWeight, stepDivision);
 
-  var stretchFn = function(args)
-  {
-    return stretchPattern(args[0], args[1]);
-  }
-
-  return new Operator(stretchFn, [source, stretchFactor]);
+  return makeStrechOperator(source, stretchFactor);
 }

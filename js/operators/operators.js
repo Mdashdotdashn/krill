@@ -13,8 +13,9 @@ ValueWrapperOperator.prototype.render = function() { return this.value_};
 
 // The operator framework class
 
-Operator = function(renderFn, arguments)
+Operator = function(renderFn, arguments, type)
 {
+  this.type_ = type ? type : "untyped operator";
   const makeTickable = function(a)
   {
     if (typeof a.tick === 'function')

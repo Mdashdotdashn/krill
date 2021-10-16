@@ -10,7 +10,6 @@ makeAddOperator = function(source, pattern)
     var operator = function(l,r)
     {
       // Then let's ee if it is a note name
-      console.log(l + " * "+ r);
       const parsedNote = parser.parse(l);
       if (parsedNote && parsedNote.midi)
       {

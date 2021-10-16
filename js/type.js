@@ -7,6 +7,10 @@ var JSONFraction = function(value)
 
 var JSONReplacer = function(key,value)
 {
+  if (!value)
+  {
+    return "????";
+  }
   if (value.mathjs == "Fraction")
   {
     return JSONFraction(value);

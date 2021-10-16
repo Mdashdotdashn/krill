@@ -75,7 +75,7 @@ var buildWeightArray = function(step, pulse, source)
   // For every step, insert either a rest sequence or the source one
   const restPattern = makePatternFromEventArray([new PatternEvent(math.fraction(0),["~"])]);
   const weightArray = result.map(x => {
-     const v = x.value == 0 ? restPattern : source;
+     const v = (x.value == 0) ? restPattern : source;
      return new WeightedStep(v,x.weight);
    });
    return weightArray;

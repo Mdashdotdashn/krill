@@ -8,7 +8,17 @@ require("../patterns/pattern.js");
 
 WeightedStep = function(content, weight)
 {
-  this.operator_ = new PatternSlicerOperator(content);
+  this.type_ = "WeightedStep";
+  if (content.const_)
+  {
+    this.operator_ = content;
+    this.const_ = true;
+  }
+  else
+  {
+    this.operator_ = new PatternSlicerOperator(content);
+    this.operator_.tick(); // why prefetch is needed ?
+  }
   this.weight_ = weight ? weight : 1;
 }
 
@@ -26,18 +36,8 @@ buildPatternStep = function(content, option)
 {
   // apply any step based operator
   var stepContent = (option && option.operator) ? buildOperator(option.operator.type_, option.operator.arguments_, content) : content;
-
-  var step = new WeightedStep(stepContent);
-
-  // apply scaling options
-  if (option)
-  {
-    if (option.weight)
-    {
-      step.weight_ = option.weight;
-    }
-  }
-  return step;
+  var weight = (option && option.weight) ? option.weight : 1;
+  return new WeightedStep(stepContent, weight);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -79,15 +79,16 @@ makePatternFromWeightArray = function(weigthedArray)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-var SequenceRenderingOperator = function(operatorArray)
+var SequenceRenderingOperator = function(childArray)
 {
-  this.nodes_ = operatorArray;
+  // look if the childs are all const and pre-render if possible
+  this.type_ = "sequence";
+  this.nodes_ = childArray;
 }
 
-SequenceRenderingOperator.prototype.getWeight = function()
+SequenceRenderingOperator.prototype.size = function()
 {
-  const totalWeight = this.nodes_.reduce((t,x) => { return t + x.weight_; }, 0);
-  return totalWeight;
+  return this.nodes_.length;
 }
 
 SequenceRenderingOperator.prototype.tick = function()
@@ -98,27 +99,6 @@ SequenceRenderingOperator.prototype.tick = function()
 SequenceRenderingOperator.prototype.render = function()
 {
   const steps = computeEventsFromWeightArray(this.nodes_);
-
-  // // Merge all data in a single array
-  // const merged = steps.reduce(function(collection,x) {
-  //    return collection.concat(x);
-  // }, []);
-  //
-  // // Collect all result in a single, sorted array
-  // var grouped = merged.reduce(function(collection, x) {
-  //   // push and create if necessary
-  //   var t = x.timeString();
-  //   (collection[t] = collection[t] ? collection[t]: []).push(x.values_);
-  //    return collection;}
-  // ,{});
-  //
-  // const ordered = [];
-  // const fractionCompareFn = (a,b) => { return math.compare(math.fraction(a), math.fraction(b))};
-  // Object.keys(grouped).sort(fractionCompareFn).forEach(function(key) {
-  //   ordered.push(new PatternEvent(key,_.flattenDeep(grouped[key])));
-  // });
-  //
-
   return makePatternFromEventArray(steps);
 }
 
@@ -127,5 +107,5 @@ SequenceRenderingOperator.prototype.render = function()
 makePatternRenderingOperator = function(childArray)
 {
   if (!Array.isArray(childArray)) throw ("Unexpected child data type");
-  return new SequenceRenderingOperator(childArray);
+    return new SequenceRenderingOperator(childArray);
 }

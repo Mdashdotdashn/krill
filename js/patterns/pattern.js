@@ -26,8 +26,10 @@ DumpPattern = function(s)
 
 var Pattern = function()
 {
+  this.type_ = "pattern";
   this.cycleLength_ = math.fraction(1);
   this.events_ = [];
+  this.const_ = true;
 }
 
 Pattern.prototype.clone = function()
@@ -35,6 +37,7 @@ Pattern.prototype.clone = function()
   var clone = new Pattern();
   clone.events_ = this.events_.slice(0);
   clone.cycleLength_ = this.cycleLength_;
+  clone.const_ = this.const_;
   return clone;
 }
 

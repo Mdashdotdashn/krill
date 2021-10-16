@@ -9,12 +9,17 @@ require("../patterns/pattern.js");
 
 PatternSlicerOperator = function(content)
 {
-   // the underlying content, to be sliced
-    this.content_ = content;
-    // the current pattern data, ready for render
-    this.pattern_ = makeEmptyPattern();
-    this.slicingLength_ = math.fraction(1);
-    this.tick();
+  this.type_ = "slice"
+ // the underlying content, to be sliced
+  this.content_ = content;
+  // the current pattern data, ready for render
+  this.pattern_ = makeEmptyPattern();
+  this.slicingLength_ = math.fraction(1);
+}
+
+PatternSlicerOperator.prototype.setSliceSize = function(size)
+{
+  this.slicingLength_ = math.fraction(size) ;
 }
 
 PatternSlicerOperator.prototype.tick = function()
