@@ -4,3 +4,4 @@ embedded/build
 .DS_Store
 *.exe
 *.dSYM
+build/
