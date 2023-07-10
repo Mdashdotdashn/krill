@@ -64,8 +64,10 @@ public:
   std::vector<Event> events{};
 };
 
+using EventArray = std::vector<Cycle::Event>;
+
 Cycle makeEmptyCycle();
-Cycle makeSingleEventCycle(std::string value);
+Cycle makeSingleEventCycle(const std::string &value);
 
 Cycle concat(const Cycle& c1, const Cycle& c2);
 Cycle slice(const Cycle& cycle, const Fraction& from, const Fraction length);

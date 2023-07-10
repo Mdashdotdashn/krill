@@ -52,7 +52,7 @@ Cycle makeEmptyCycle()
 }
 
 // make a cycle out of a single event
-Cycle makeSingleEventCycle(std::string value)
+Cycle makeSingleEventCycle(const std::string& value)
 {
   std::vector<Cycle::Event> eventArray;
   eventArray.push_back({ 0,{value} });

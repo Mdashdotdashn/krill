@@ -1,0 +1,1676 @@
+{
+  "cases": [
+    {
+      "use": true,
+      "source": "'1 2 3'",
+      "expected": {
+        "0/1": [
+          "1"
+        ],
+        "1/3": [
+          "2"
+        ],
+        "2/3": [
+          "3"
+        ]
+      },
+      "model": {
+        "type_": "pattern",
+        "arguments_": {
+          "alignment": "h"
+        },
+        "source_": [
+          {
+            "type_": "element",
+            "source_": "1"
+          },
+          {
+            "type_": "element",
+            "source_": "2"
+          },
+          {
+            "type_": "element",
+            "source_": "3"
+          }
+        ]
+      }
+    },
+    {
+      "source": "slow 2 $ '1 2 3'",
+      "expected": {
+        "0/1": [
+          "1"
+        ],
+        "2/3": [
+          "2"
+        ],
+        "4/3": [
+          "3"
+        ]
+      },
+      "model": {
+        "type_": "stretch",
+        "arguments_": [
+          2
+        ],
+        "source_": {
+          "type_": "pattern",
+          "arguments_": {
+            "alignment": "h"
+          },
+          "source_": [
+            {
+              "type_": "element",
+              "source_": "1"
+            },
+            {
+              "type_": "element",
+              "source_": "2"
+            },
+            {
+              "type_": "element",
+              "source_": "3"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "source": "'[1 2 , 3 4 5]'",
+      "expected": {
+        "0/1": [
+          "1",
+          "3"
+        ],
+        "1/3": [
+          "4"
+        ],
+        "1/2": [
+          "2"
+        ],
+        "2/3": [
+          "5"
+        ]
+      },
+      "model": {
+        "type_": "pattern",
+        "arguments_": {
+          "alignment": "h"
+        },
+        "source_": [
+          {
+            "type_": "element",
+            "source_": {
+              "type_": "pattern",
+              "arguments_": {
+                "alignment": "v"
+              },
+              "source_": [
+                {
+                  "type_": "pattern",
+                  "arguments_": {
+                    "alignment": "h"
+                  },
+                  "source_": [
+                    {
+                      "type_": "element",
+                      "source_": "1"
+                    },
+                    {
+                      "type_": "element",
+                      "source_": "2"
+                    }
+                  ]
+                },
+                {
+                  "type_": "pattern",
+                  "arguments_": {
+                    "alignment": "h"
+                  },
+                  "source_": [
+                    {
+                      "type_": "element",
+                      "source_": "3"
+                    },
+                    {
+                      "type_": "element",
+                      "source_": "4"
+                    },
+                    {
+                      "type_": "element",
+                      "source_": "5"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "source": "'bd@3 sd'",
+      "expected": {
+        "0/1": [
+          "bd"
+        ],
+        "3/4": [
+          "sd"
+        ]
+      },
+      "model": {
+        "type_": "pattern",
+        "arguments_": {
+          "alignment": "h"
+        },
+        "source_": [
+          {
+            "type_": "element",
+            "source_": "bd",
+            "options_": {
+              "weight": 3
+            }
+          },
+          {
+            "type_": "element",
+            "source_": "sd"
+          }
+        ]
+      }
+    },
+    {
+      "source": "cat [ slow 2 $ '1 12', slow 4 $ '5 17']",
+      "expected": {
+        "0/1": [
+          "1"
+        ],
+        "1/1": [
+          "12"
+        ],
+        "2/1": [
+          "5"
+        ],
+        "4/1": [
+          "17"
+        ],
+        "6/1": [
+          "1"
+        ]
+      },
+      "model": {
+        "type_": "pattern",
+        "arguments_": {
+          "alignment": "t"
+        },
+        "source_": [
+          {
+            "type_": "stretch",
+            "arguments_": [
+              2
+            ],
+            "source_": {
+              "type_": "pattern",
+              "arguments_": {
+                "alignment": "h"
+              },
+              "source_": [
+                {
+                  "type_": "element",
+                  "source_": "1"
+                },
+                {
+                  "type_": "element",
+                  "source_": "12"
+                }
+              ]
+            }
+          },
+          {
+            "type_": "stretch",
+            "arguments_": [
+              4
+            ],
+            "source_": {
+              "type_": "pattern",
+              "arguments_": {
+                "alignment": "h"
+              },
+              "source_": [
+                {
+                  "type_": "element",
+                  "source_": "5"
+                },
+                {
+                  "type_": "element",
+                  "source_": "17"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "source": "'c2 c3 [d#3 g2]'",
+      "expected": {
+        "0/1": [
+          "c2"
+        ],
+        "1/3": [
+          "c3"
+        ],
+        "2/3": [
+          "d#3"
+        ],
+        "5/6": [
+          "g2"
+        ]
+      },
+      "model": {
+        "type_": "pattern",
+        "arguments_": {
+          "alignment": "h"
+        },
+        "source_": [
+          {
+            "type_": "element",
+            "source_": "c2"
+          },
+          {
+            "type_": "element",
+            "source_": "c3"
+          },
+          {
+            "type_": "element",
+            "source_": {
+              "type_": "pattern",
+              "arguments_": {
+                "alignment": "h"
+              },
+              "source_": [
+                {
+                  "type_": "element",
+                  "source_": "d#3"
+                },
+                {
+                  "type_": "element",
+                  "source_": "g2"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "source": "'[bd sd](2,8)'",
+      "expected": {
+        "0/1": [
+          "bd"
+        ],
+        "1/4": [
+          "sd"
+        ],
+        "1/2": [
+          "bd"
+        ],
+        "3/4": [
+          "sd"
+        ]
+      },
+      "model": {
+        "type_": "pattern",
+        "arguments_": {
+          "alignment": "h"
+        },
+        "source_": [
+          {
+            "type_": "element",
+            "source_": {
+              "type_": "pattern",
+              "arguments_": {
+                "alignment": "h"
+              },
+              "source_": [
+                {
+                  "type_": "element",
+                  "source_": "bd"
+                },
+                {
+                  "type_": "element",
+                  "source_": "sd"
+                }
+              ]
+            },
+            "options_": {
+              "operator": {
+                "type_": "bjorklund",
+                "arguments_": [
+                  2,
+                  8
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "source": "'[a b]/4'",
+      "expected": {
+        "0/1": [
+          "a"
+        ],
+        "2/1": [
+          "b"
+        ]
+      },
+      "model": {
+        "type_": "pattern",
+        "arguments_": {
+          "alignment": "h"
+        },
+        "source_": [
+          {
+            "type_": "element",
+            "source_": {
+              "type_": "pattern",
+              "arguments_": {
+                "alignment": "h"
+              },
+              "source_": [
+                {
+                  "type_": "element",
+                  "source_": "a"
+                },
+                {
+                  "type_": "element",
+                  "source_": "b"
+                }
+              ]
+            },
+            "options_": {
+              "operator": {
+                "type_": "stretch",
+                "arguments_": [
+                  4
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "source": "'[a]*4'",
+      "expected": {
+        "0/1": [
+          "a"
+        ],
+        "1/4": [
+          "a"
+        ],
+        "1/2": [
+          "a"
+        ],
+        "3/4": [
+          "a"
+        ]
+      },
+      "model": {
+        "type_": "pattern",
+        "arguments_": {
+          "alignment": "h"
+        },
+        "source_": [
+          {
+            "type_": "element",
+            "source_": {
+              "type_": "pattern",
+              "arguments_": {
+                "alignment": "h"
+              },
+              "source_": [
+                {
+                  "type_": "element",
+                  "source_": "a"
+                }
+              ]
+            },
+            "options_": {
+              "operator": {
+                "type_": "stretch",
+                "arguments_": [
+                  "1/4"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "source": "'[[a b]/2 c]'",
+      "expected": {
+        "0/1": [
+          "a"
+        ],
+        "1/2": [
+          "c"
+        ],
+        "1/1": [
+          "b"
+        ],
+        "3/2": [
+          "c"
+        ]
+      },
+      "model": {
+        "type_": "pattern",
+        "arguments_": {
+          "alignment": "h"
+        },
+        "source_": [
+          {
+            "type_": "element",
+            "source_": {
+              "type_": "pattern",
+              "arguments_": {
+                "alignment": "h"
+              },
+              "source_": [
+                {
+                  "type_": "element",
+                  "source_": {
+                    "type_": "pattern",
+                    "arguments_": {
+                      "alignment": "h"
+                    },
+                    "source_": [
+                      {
+                        "type_": "element",
+                        "source_": "a"
+                      },
+                      {
+                        "type_": "element",
+                        "source_": "b"
+                      }
+                    ]
+                  },
+                  "options_": {
+                    "operator": {
+                      "type_": "stretch",
+                      "arguments_": [
+                        2
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type_": "element",
+                  "source_": "c"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "source": "'[[a b]/4 c]'",
+      "expected": {
+        "0/1": [
+          "a"
+        ],
+        "1/2": [
+          "c"
+        ],
+        "3/2": [
+          "c"
+        ],
+        "2/1": [
+          "b"
+        ],
+        "5/2": [
+          "c"
+        ],
+        "7/2": [
+          "c"
+        ]
+      },
+      "model": {
+        "type_": "pattern",
+        "arguments_": {
+          "alignment": "h"
+        },
+        "source_": [
+          {
+            "type_": "element",
+            "source_": {
+              "type_": "pattern",
+              "arguments_": {
+                "alignment": "h"
+              },
+              "source_": [
+                {
+                  "type_": "element",
+                  "source_": {
+                    "type_": "pattern",
+                    "arguments_": {
+                      "alignment": "h"
+                    },
+                    "source_": [
+                      {
+                        "type_": "element",
+                        "source_": "a"
+                      },
+                      {
+                        "type_": "element",
+                        "source_": "b"
+                      }
+                    ]
+                  },
+                  "options_": {
+                    "operator": {
+                      "type_": "stretch",
+                      "arguments_": [
+                        4
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type_": "element",
+                  "source_": "c"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "source": "'[a b c]%1'",
+      "expected": {
+        "0/1": [
+          "a"
+        ],
+        "1/1": [
+          "b"
+        ],
+        "2/1": [
+          "c"
+        ]
+      },
+      "model": {
+        "type_": "pattern",
+        "arguments_": {
+          "alignment": "h"
+        },
+        "source_": [
+          {
+            "type_": "element",
+            "source_": {
+              "type_": "pattern",
+              "arguments_": {
+                "alignment": "h"
+              },
+              "source_": [
+                {
+                  "type_": "element",
+                  "source_": "a"
+                },
+                {
+                  "type_": "element",
+                  "source_": "b"
+                },
+                {
+                  "type_": "element",
+                  "source_": "c"
+                }
+              ]
+            },
+            "options_": {
+              "operator": {
+                "type_": "fixed-step",
+                "arguments_": [
+                  1
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "source": "'[a b c]%2'",
+      "expected": {
+        "0/1": [
+          "a"
+        ],
+        "1/2": [
+          "b"
+        ],
+        "1/1": [
+          "c"
+        ]
+      },
+      "model": {
+        "type_": "pattern",
+        "arguments_": {
+          "alignment": "h"
+        },
+        "source_": [
+          {
+            "type_": "element",
+            "source_": {
+              "type_": "pattern",
+              "arguments_": {
+                "alignment": "h"
+              },
+              "source_": [
+                {
+                  "type_": "element",
+                  "source_": "a"
+                },
+                {
+                  "type_": "element",
+                  "source_": "b"
+                },
+                {
+                  "type_": "element",
+                  "source_": "c"
+                }
+              ]
+            },
+            "options_": {
+              "operator": {
+                "type_": "fixed-step",
+                "arguments_": [
+                  2
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "source": "'[a b c, 1 2 3]%2'",
+      "expected": {
+        "0/1": [
+          "a",
+          "1"
+        ],
+        "1/2": [
+          "b",
+          "2"
+        ],
+        "1/1": [
+          "c",
+          "3"
+        ]
+      },
+      "model": {
+        "type_": "pattern",
+        "arguments_": {
+          "alignment": "h"
+        },
+        "source_": [
+          {
+            "type_": "element",
+            "source_": {
+              "type_": "pattern",
+              "arguments_": {
+                "alignment": "v"
+              },
+              "source_": [
+                {
+                  "type_": "pattern",
+                  "arguments_": {
+                    "alignment": "h"
+                  },
+                  "source_": [
+                    {
+                      "type_": "element",
+                      "source_": "a"
+                    },
+                    {
+                      "type_": "element",
+                      "source_": "b"
+                    },
+                    {
+                      "type_": "element",
+                      "source_": "c"
+                    }
+                  ]
+                },
+                {
+                  "type_": "pattern",
+                  "arguments_": {
+                    "alignment": "h"
+                  },
+                  "source_": [
+                    {
+                      "type_": "element",
+                      "source_": "1"
+                    },
+                    {
+                      "type_": "element",
+                      "source_": "2"
+                    },
+                    {
+                      "type_": "element",
+                      "source_": "3"
+                    }
+                  ]
+                }
+              ]
+            },
+            "options_": {
+              "operator": {
+                "type_": "fixed-step",
+                "arguments_": [
+                  2
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "source": "'[bd sd [~ bd] sd bd [sd bd@3] bd sd]%4'",
+      "expected": {
+        "0/1": [
+          "bd"
+        ],
+        "1/4": [
+          "sd"
+        ],
+        "1/2": [
+          "~"
+        ],
+        "5/8": [
+          "bd"
+        ],
+        "3/4": [
+          "sd"
+        ],
+        "1/1": [
+          "bd"
+        ],
+        "5/4": [
+          "sd"
+        ],
+        "21/16": [
+          "bd"
+        ],
+        "3/2": [
+          "bd"
+        ],
+        "7/4": [
+          "sd"
+        ]
+      },
+      "model": {
+        "type_": "pattern",
+        "arguments_": {
+          "alignment": "h"
+        },
+        "source_": [
+          {
+            "type_": "element",
+            "source_": {
+              "type_": "pattern",
+              "arguments_": {
+                "alignment": "h"
+              },
+              "source_": [
+                {
+                  "type_": "element",
+                  "source_": "bd"
+                },
+                {
+                  "type_": "element",
+                  "source_": "sd"
+                },
+                {
+                  "type_": "element",
+                  "source_": {
+                    "type_": "pattern",
+                    "arguments_": {
+                      "alignment": "h"
+                    },
+                    "source_": [
+                      {
+                        "type_": "element",
+                        "source_": "~"
+                      },
+                      {
+                        "type_": "element",
+                        "source_": "bd"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type_": "element",
+                  "source_": "sd"
+                },
+                {
+                  "type_": "element",
+                  "source_": "bd"
+                },
+                {
+                  "type_": "element",
+                  "source_": {
+                    "type_": "pattern",
+                    "arguments_": {
+                      "alignment": "h"
+                    },
+                    "source_": [
+                      {
+                        "type_": "element",
+                        "source_": "sd"
+                      },
+                      {
+                        "type_": "element",
+                        "source_": "bd",
+                        "options_": {
+                          "weight": 3
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type_": "element",
+                  "source_": "bd"
+                },
+                {
+                  "type_": "element",
+                  "source_": "sd"
+                }
+              ]
+            },
+            "options_": {
+              "operator": {
+                "type_": "fixed-step",
+                "arguments_": [
+                  4
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "source": "euclid 2 8 $ '[bd sd]'",
+      "expected": {
+        "0/1": [
+          "bd"
+        ],
+        "1/4": [
+          "sd"
+        ],
+        "1/2": [
+          "bd"
+        ],
+        "3/4": [
+          "sd"
+        ]
+      },
+      "model": {
+        "type_": "bjorklund",
+        "arguments_": [
+          2,
+          8
+        ],
+        "source_": {
+          "type_": "pattern",
+          "arguments_": {
+            "alignment": "h"
+          },
+          "source_": [
+            {
+              "type_": "element",
+              "source_": {
+                "type_": "pattern",
+                "arguments_": {
+                  "alignment": "h"
+                },
+                "source_": [
+                  {
+                    "type_": "element",
+                    "source_": "bd"
+                  },
+                  {
+                    "type_": "element",
+                    "source_": "sd"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "source": "fast 2 $ '[bd sd]'",
+      "expected": {
+        "0/1": [
+          "bd"
+        ],
+        "1/4": [
+          "sd"
+        ],
+        "1/2": [
+          "bd"
+        ],
+        "3/4": [
+          "sd"
+        ]
+      },
+      "model": {
+        "type_": "stretch",
+        "arguments_": [
+          "1/2"
+        ],
+        "source_": {
+          "type_": "pattern",
+          "arguments_": {
+            "alignment": "h"
+          },
+          "source_": [
+            {
+              "type_": "element",
+              "source_": {
+                "type_": "pattern",
+                "arguments_": {
+                  "alignment": "h"
+                },
+                "source_": [
+                  {
+                    "type_": "element",
+                    "source_": "bd"
+                  },
+                  {
+                    "type_": "element",
+                    "source_": "sd"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "source": "struct 't f f t' $ 'bd'",
+      "expected": {
+        "0/1": [
+          "bd"
+        ],
+        "1/4": [
+          "~"
+        ],
+        "1/2": [
+          "~"
+        ],
+        "3/4": [
+          "bd"
+        ]
+      },
+      "model": {
+        "type_": "struct",
+        "arguments_": [
+          {
+            "type_": "pattern",
+            "arguments_": {
+              "alignment": "h"
+            },
+            "source_": [
+              {
+                "type_": "element",
+                "source_": "t"
+              },
+              {
+                "type_": "element",
+                "source_": "f"
+              },
+              {
+                "type_": "element",
+                "source_": "f"
+              },
+              {
+                "type_": "element",
+                "source_": "t"
+              }
+            ]
+          }
+        ],
+        "source_": {
+          "type_": "pattern",
+          "arguments_": {
+            "alignment": "h"
+          },
+          "source_": [
+            {
+              "type_": "element",
+              "source_": "bd"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "source": "add 7.5 $ '10 11 12'",
+      "expected": {
+        "0/1": [
+          "17.5"
+        ],
+        "1/3": [
+          "18.5"
+        ],
+        "2/3": [
+          "19.5"
+        ]
+      },
+      "model": {
+        "type_": "add",
+        "arguments_": [
+          "7.5"
+        ],
+        "source_": {
+          "type_": "pattern",
+          "arguments_": {
+            "alignment": "h"
+          },
+          "source_": [
+            {
+              "type_": "element",
+              "source_": "10"
+            },
+            {
+              "type_": "element",
+              "source_": "11"
+            },
+            {
+              "type_": "element",
+              "source_": "12"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "source": "add '0 1 2' $ '10 11 12'",
+      "expected": {
+        "0/1": [
+          "10"
+        ],
+        "1/3": [
+          "12"
+        ],
+        "2/3": [
+          "14"
+        ]
+      },
+      "model": {
+        "type_": "add",
+        "arguments_": [
+          {
+            "type_": "pattern",
+            "arguments_": {
+              "alignment": "h"
+            },
+            "source_": [
+              {
+                "type_": "element",
+                "source_": "0"
+              },
+              {
+                "type_": "element",
+                "source_": "1"
+              },
+              {
+                "type_": "element",
+                "source_": "2"
+              }
+            ]
+          }
+        ],
+        "source_": {
+          "type_": "pattern",
+          "arguments_": {
+            "alignment": "h"
+          },
+          "source_": [
+            {
+              "type_": "element",
+              "source_": "10"
+            },
+            {
+              "type_": "element",
+              "source_": "11"
+            },
+            {
+              "type_": "element",
+              "source_": "12"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "source": "add '0 1 2' $ '[10 , 20] [11, 21 , 31] 12'",
+      "expected": {
+        "0/1": [
+          "10",
+          "20"
+        ],
+        "1/3": [
+          "12",
+          "22",
+          "32"
+        ],
+        "2/3": [
+          "14"
+        ]
+      },
+      "model": {
+        "type_": "add",
+        "arguments_": [
+          {
+            "type_": "pattern",
+            "arguments_": {
+              "alignment": "h"
+            },
+            "source_": [
+              {
+                "type_": "element",
+                "source_": "0"
+              },
+              {
+                "type_": "element",
+                "source_": "1"
+              },
+              {
+                "type_": "element",
+                "source_": "2"
+              }
+            ]
+          }
+        ],
+        "source_": {
+          "type_": "pattern",
+          "arguments_": {
+            "alignment": "h"
+          },
+          "source_": [
+            {
+              "type_": "element",
+              "source_": {
+                "type_": "pattern",
+                "arguments_": {
+                  "alignment": "v"
+                },
+                "source_": [
+                  {
+                    "type_": "pattern",
+                    "arguments_": {
+                      "alignment": "h"
+                    },
+                    "source_": [
+                      {
+                        "type_": "element",
+                        "source_": "10"
+                      }
+                    ]
+                  },
+                  {
+                    "type_": "pattern",
+                    "arguments_": {
+                      "alignment": "h"
+                    },
+                    "source_": [
+                      {
+                        "type_": "element",
+                        "source_": "20"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "type_": "element",
+              "source_": {
+                "type_": "pattern",
+                "arguments_": {
+                  "alignment": "v"
+                },
+                "source_": [
+                  {
+                    "type_": "pattern",
+                    "arguments_": {
+                      "alignment": "h"
+                    },
+                    "source_": [
+                      {
+                        "type_": "element",
+                        "source_": "11"
+                      }
+                    ]
+                  },
+                  {
+                    "type_": "pattern",
+                    "arguments_": {
+                      "alignment": "h"
+                    },
+                    "source_": [
+                      {
+                        "type_": "element",
+                        "source_": "21"
+                      }
+                    ]
+                  },
+                  {
+                    "type_": "pattern",
+                    "arguments_": {
+                      "alignment": "h"
+                    },
+                    "source_": [
+                      {
+                        "type_": "element",
+                        "source_": "31"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "type_": "element",
+              "source_": "12"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "source": "add '<0 1 2>' $ '10 11 12'",
+      "expected": {
+        "0/1": [
+          "10"
+        ],
+        "1/3": [
+          "11"
+        ],
+        "2/3": [
+          "12"
+        ],
+        "1/1": [
+          "11"
+        ],
+        "4/3": [
+          "12"
+        ],
+        "5/3": [
+          "13"
+        ],
+        "2/1": [
+          "12"
+        ],
+        "7/3": [
+          "13"
+        ],
+        "8/3": [
+          "14"
+        ]
+      },
+      "model": {
+        "type_": "add",
+        "arguments_": [
+          {
+            "type_": "pattern",
+            "arguments_": {
+              "alignment": "h"
+            },
+            "source_": [
+              {
+                "type_": "element",
+                "source_": {
+                  "type_": "pattern",
+                  "arguments_": {
+                    "alignment": "t"
+                  },
+                  "source_": [
+                    {
+                      "type_": "element",
+                      "source_": "0"
+                    },
+                    {
+                      "type_": "element",
+                      "source_": "1"
+                    },
+                    {
+                      "type_": "element",
+                      "source_": "2"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "source_": {
+          "type_": "pattern",
+          "arguments_": {
+            "alignment": "h"
+          },
+          "source_": [
+            {
+              "type_": "element",
+              "source_": "10"
+            },
+            {
+              "type_": "element",
+              "source_": "11"
+            },
+            {
+              "type_": "element",
+              "source_": "12"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "source": "add '1' $ 'c1'",
+      "expected": {
+        "0/1": [
+          "C#1"
+        ]
+      },
+      "model": {
+        "type_": "add",
+        "arguments_": [
+          {
+            "type_": "pattern",
+            "arguments_": {
+              "alignment": "h"
+            },
+            "source_": [
+              {
+                "type_": "element",
+                "source_": "1"
+              }
+            ]
+          }
+        ],
+        "source_": {
+          "type_": "pattern",
+          "arguments_": {
+            "alignment": "h"
+          },
+          "source_": [
+            {
+              "type_": "element",
+              "source_": "c1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "source": "add '[0 1 2]%4' $ '[10 11 12]%2'",
+      "expected": {
+        "0/1": [
+          "10"
+        ],
+        "1/4": [
+          "11"
+        ],
+        "1/2": [
+          "13"
+        ],
+        "3/4": [
+          "11"
+        ],
+        "1/1": [
+          "13"
+        ],
+        "5/4": [
+          "14"
+        ]
+      },
+      "model": {
+        "type_": "add",
+        "arguments_": [
+          {
+            "type_": "pattern",
+            "arguments_": {
+              "alignment": "h"
+            },
+            "source_": [
+              {
+                "type_": "element",
+                "source_": {
+                  "type_": "pattern",
+                  "arguments_": {
+                    "alignment": "h"
+                  },
+                  "source_": [
+                    {
+                      "type_": "element",
+                      "source_": "0"
+                    },
+                    {
+                      "type_": "element",
+                      "source_": "1"
+                    },
+                    {
+                      "type_": "element",
+                      "source_": "2"
+                    }
+                  ]
+                },
+                "options_": {
+                  "operator": {
+                    "type_": "fixed-step",
+                    "arguments_": [
+                      4
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "source_": {
+          "type_": "pattern",
+          "arguments_": {
+            "alignment": "h"
+          },
+          "source_": [
+            {
+              "type_": "element",
+              "source_": {
+                "type_": "pattern",
+                "arguments_": {
+                  "alignment": "h"
+                },
+                "source_": [
+                  {
+                    "type_": "element",
+                    "source_": "10"
+                  },
+                  {
+                    "type_": "element",
+                    "source_": "11"
+                  },
+                  {
+                    "type_": "element",
+                    "source_": "12"
+                  }
+                ]
+              },
+              "options_": {
+                "operator": {
+                  "type_": "fixed-step",
+                  "arguments_": [
+                    2
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "source": "scale 'MiNor' $ '0 1 2 3'",
+      "expected": {
+        "0/1": [
+          "0"
+        ],
+        "1/4": [
+          "2"
+        ],
+        "1/2": [
+          "3"
+        ],
+        "3/4": [
+          "5"
+        ]
+      },
+      "model": {
+        "type_": "scale",
+        "arguments_": [
+          "MiNor"
+        ],
+        "source_": {
+          "type_": "pattern",
+          "arguments_": {
+            "alignment": "h"
+          },
+          "source_": [
+            {
+              "type_": "element",
+              "source_": "0"
+            },
+            {
+              "type_": "element",
+              "source_": "1"
+            },
+            {
+              "type_": "element",
+              "source_": "2"
+            },
+            {
+              "type_": "element",
+              "source_": "3"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "source": "rotR 0.125 $ 'bd ~ sd ~'",
+      "expected": {
+        "1/8": [
+          "bd"
+        ],
+        "3/8": [
+          "~"
+        ],
+        "5/8": [
+          "sd"
+        ],
+        "7/8": [
+          "~"
+        ]
+      },
+      "model": {
+        "type_": "shift",
+        "arguments_": [
+          0.125
+        ],
+        "source_": {
+          "type_": "pattern",
+          "arguments_": {
+            "alignment": "h"
+          },
+          "source_": [
+            {
+              "type_": "element",
+              "source_": "bd"
+            },
+            {
+              "type_": "element",
+              "source_": "~"
+            },
+            {
+              "type_": "element",
+              "source_": "sd"
+            },
+            {
+              "type_": "element",
+              "source_": "~"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "source": "rotL 0.125 $ 'bd ~ sd ~'",
+      "expected": {
+        "1/8": [
+          "~"
+        ],
+        "3/8": [
+          "sd"
+        ],
+        "5/8": [
+          "~"
+        ],
+        "7/8": [
+          "bd"
+        ]
+      },
+      "model": {
+        "type_": "shift",
+        "arguments_": [
+          "-0.125"
+        ],
+        "source_": {
+          "type_": "pattern",
+          "arguments_": {
+            "alignment": "h"
+          },
+          "source_": [
+            {
+              "type_": "element",
+              "source_": "bd"
+            },
+            {
+              "type_": "element",
+              "source_": "~"
+            },
+            {
+              "type_": "element",
+              "source_": "sd"
+            },
+            {
+              "type_": "element",
+              "source_": "~"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
