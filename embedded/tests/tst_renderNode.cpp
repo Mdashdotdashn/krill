@@ -1,8 +1,6 @@
 #include "renderer/RenderNode.hpp"
 
-#include <catch2/catch.hpp>
-
-using namespace krill;
+#include "testUtils.hpp"
 
 TEST_CASE("Slicer")
 {

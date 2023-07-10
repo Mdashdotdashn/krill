@@ -1,18 +1,91 @@
 #include "Cycle.hpp"
 
+#include <algorithm>
 
 namespace krill
 {
-  Cycle makeEmptyCycle()
+namespace detail
+{
+template <typename Function>
+Cycle transform(const Cycle& c, const Function& f)
+{
+  Cycle result = c;
+  for (auto& event : result.events)
   {
-    return Cycle{};
+    event = f(event);
   }
-
-   // make a cycle out of a single event
-  Cycle makeSingleEventCycle (std::string value)
-  {
-    std::vector<Cycle::Event> eventArray;
-    eventArray.push_back({0,{value}});
-    return Cycle{eventArray};
-  }  
+  return result;
 }
+
+template <typename Predicate>
+Cycle filter(const Cycle& c, Predicate& p)
+{
+  Cycle result = c;
+  auto& events = result.events;
+  auto removeIt = std::remove_if(events.begin(), events.end(), [&p](Cycle::Event& e) { return !p(e); });
+  events.erase(removeIt, events.end());
+  return result;
+}
+
+template <typename TimeFunction>
+Cycle applyTimeChange(const Cycle& c, const TimeFunction& f)
+{
+  Cycle result = c;
+  for (auto& event : result.events)
+  {
+    event.time = f(event.time);
+  }
+  return result;
+}
+
+// Remove all events that don't belong
+// to the cycle's length
+Cycle cleanup(const Cycle& c)
+{
+  return detail::filter(c, [&c](const Cycle::Event& e) { return e.time >= 0 && e.time < c.length; });
+}
+} // namespace detail
+
+Cycle makeEmptyCycle()
+{
+  return Cycle{};
+}
+
+// make a cycle out of a single event
+Cycle makeSingleEventCycle(std::string value)
+{
+  std::vector<Cycle::Event> eventArray;
+  eventArray.push_back({ 0,{value} });
+  return Cycle{ eventArray };
+}
+
+// concatenate two cycles
+Cycle concat(const Cycle& c1, const Cycle& c2)
+{
+  // c1 comes first
+  Cycle result = c1;
+  // shift c2's event by c1's length
+  const auto shifted = detail::applyTimeChange(c2, [&c1](const Fraction& time) { return time + c1.length; });
+  for (const auto &e: shifted.events)
+  {
+    result.events.push_back(e);
+  }
+  result.length += c2.length;
+  return result;
+}
+
+// Return a slice of the repeated cycle
+Cycle slice(const Cycle& cycle, const Fraction& from, const Fraction length)
+{
+  // Make sure we're slicing enough repeat of the original cycles
+  Cycle source{};
+  while (source.length < (from + length))
+  {
+    source = concat(source, cycle);
+  }
+  // Shift all times leftward
+  auto shifted = detail::applyTimeChange(source, [&from](const Fraction& time) { return time - from; });
+  shifted.length = length;
+  return detail::cleanup(shifted);
+}
+} // namespace krill

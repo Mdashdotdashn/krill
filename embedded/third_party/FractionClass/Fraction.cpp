@@ -51,6 +51,12 @@ Fraction::Fraction(std::string FractionString) {
 	this->convertStringToFraction(FractionString);
 }
 
+Fraction::Fraction(long numerator_, long denominator_) {
+	this->numerator = numerator_;
+	this->denominator = denominator_;
+	this->reduce();
+}
+
 /**
  * Standard deconstructor
 */
@@ -244,7 +250,7 @@ Fraction::operator std::string() {
 /**
  * Addition operator overloading
 */
-Fraction Fraction::operator+(Fraction fraction) {
+Fraction Fraction::operator+(const Fraction& fraction) const {
 	Fraction resultFraction;
 
 	if (this->denominator == fraction.getDenominator()) {
@@ -275,7 +281,7 @@ Fraction Fraction::operator+=(Fraction fraction) {
 /**
  * Subtraction operator overloading
 */
-Fraction Fraction::operator-(Fraction fraction) {
+Fraction Fraction::operator-(const Fraction& fraction) const {
 	Fraction resultFraction;
 
 	if (this->denominator == fraction.getDenominator()) {
@@ -306,7 +312,7 @@ Fraction Fraction::operator-=(Fraction fraction) {
 /**
  * Multiply operator overloading
 */
-Fraction Fraction::operator*(Fraction fraction) {
+Fraction Fraction::operator*(const Fraction& fraction) const {
 	Fraction resultFraction;
 
 	resultFraction.setNumerator(this->numerator * fraction.getNumerator());
@@ -328,7 +334,7 @@ Fraction Fraction::operator*=(Fraction fraction) {
 /**
  * Division operator overloading
 */
-Fraction Fraction::operator/(Fraction fraction) {
+Fraction Fraction::operator/(const Fraction& fraction) const {
 	Fraction resultFraction;
 
 	resultFraction.setDenominator(this->denominator * fraction.getNumerator());
