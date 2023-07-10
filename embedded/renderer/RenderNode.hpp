@@ -1,41 +1,68 @@
 #pragma once
 
 #include "cycle/Cycle.hpp"
+#include "utils/jsonUtils.hpp"
 
-#include <rapidjson/document.h>
-
+#include <map>
 #include <memory>
-
+#include <numeric>
+#include <vector>
 
 namespace krill
 {
-namespace detail
-{
-  bool hasMember(const rapidjson::Value& v, const std::string& member)
-  {
-    const auto it = v.FindMember("member");
-    return it != v.MemberEnd();
-  }
-
-  template <typename T>
-  T optionOrValue(const rapidjson::Value& v, const std::string& member, const T& defaultValue)
-  {
-    return hasMember(v, member) ? float(v[member.c_str()].GetDouble()) : defaultValue;
-  }
-
-}
 
 //------------------------------------------------------------------------------
+
+using Options = std::map<std::string, std::string>;
+
+template <typename T>
+T optionOrValue(const Options& v, const std::string& member, const T& defaultValue)
+{
+  const auto it = v.find(member);
+  return it != v.end() ? T(atof(it->second.c_str())) : defaultValue;
+}
 
 class RenderNode
 {
 public:
   virtual void tick() = 0;
   virtual Cycle render() = 0;
+
+  void setWeight(float weight) { mWeight = weight; }
+  float weigth() { return mWeight; }
+private:
+  float mWeight{ 1 };
 };
 
 using RenderNodePtr = std::shared_ptr<RenderNode>;
+using RenderNodeArray = std::vector<RenderNodePtr>;
 
+namespace detail
+{
+  static EventArray computeEventsFromWeightedArray(const RenderNodeArray& renderNodes)
+  {
+    const float totalWeight = std::accumulate(renderNodes.begin(), renderNodes.end(), 0.f, [](float acc, const RenderNodePtr& pRenderNode) { return acc + pRenderNode->weigth(); });
+    Fraction weightFactor;
+    weightFactor.convertDoubleToFraction(totalWeight);
+
+    EventArray events;
+    auto position = Fraction(0);
+
+    for (const auto& pNode : renderNodes)
+    {
+      const auto cycle = pNode->render();
+      const auto scaleFactor = Fraction(pNode->weigth()) / weightFactor;
+      for (const auto& event : cycle.events)
+      {
+        const auto scaled = Cycle::Event{ position + (event.time * scaleFactor), event.values };
+        events.push_back(scaled);
+      }
+      position += scaleFactor;
+    }
+
+    return events;
+  }
+}
 //------------------------------------------------------------------------------
 // CycleRenderNode:
 // Wraps a cycle as a render node
@@ -89,16 +116,17 @@ public:
 
   Cycle render() override
   {
-    const auto slice = subCycle(mAccumulator, 0, mSliceLength);
+    const auto sliced = slice(mAccumulator, 0, mSliceLength);
     const auto remaining = mAccumulator.length - mSliceLength;
     if (remaining > Fraction(0))
     {
-      mAccumulator = subCycle(mAccumulator, mSliceLength, remaining);
+      mAccumulator = slice(mAccumulator, mSliceLength, remaining);
     }
     else
     {
       mAccumulator = Cycle{};
     }
+    return sliced;
   }
 
 private:
@@ -107,36 +135,49 @@ private:
   Fraction mSliceLength{1};
 };
 
-//------------------------------------------------------------------------------
+static RenderNodePtr makeStepRenderNode(const Cycle& cycle, const Options& options)
+{
+  assert(options.size() == 0); // See buildPatternStep
+  const auto pStepNode = std::make_shared<CycleRenderNode>(cycle);
+  auto ptr = std::make_shared<SliceRenderNode>(pStepNode);
+  const auto weight = optionOrValue<float>(options, "weigth", 1);
+  ptr->setWeight(weight);
+  return ptr;
+}
 
-class WeigthedStepRenderNode : public RenderNode
+
+//------------------------------------------------------------------------------
+// SliceRenderNode:
+// Slices the cycles created by its mChild node in chunks a specified by
+// the slice size.
+
+class WeightedPatternRenderNode : public RenderNode
 {
 public:
-  WeigthedStepRenderNode(RenderNodePtr child, float weight)
-  : mSlicer(child)
-  , mWeight(weight)
+  WeightedPatternRenderNode(RenderNodeArray& children)
+    : mChildren(children)
   {}
 
-  void tick() override
+  void tick()
   {
-    mSlicer.tick();
-  }
+    for (auto& child : mChildren)
+    {
+      child->tick();
+    }
+  };
 
-  Cycle render() override
+  Cycle render() 
   {
-    mSlicer.render();
+    const auto events = detail::computeEventsFromWeightedArray(mChildren);
+    return {1, events};
   }
 
 private:
-  SliceRenderNode mSlicer;
-  float mWeight;
+  RenderNodeArray mChildren;
 };
 
-RenderNodePtr makeStepRenderNode(const Cycle& cycle, const rapidjson::Value& options)
+static RenderNodePtr makeWeightedPatternRenderNode(std::vector<RenderNodePtr>& children)
 {
-  assert(!detail::hasMember(options, "operator")); // See buildPatternStep
-  const auto pStepNode = std::make_shared<CycleRenderNode>(cycle);
-  const auto weigth = detail::optionOrValue<float>(options, "weigth", 1);
-  return std::make_shared<WeigthedStepRenderNode>(pStepNode, weigth);
+  return std::make_shared<WeightedPatternRenderNode>(children);
 }
 } // namespace krill
