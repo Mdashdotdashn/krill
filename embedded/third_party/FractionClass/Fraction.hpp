@@ -40,6 +40,7 @@ class Fraction {
 		Fraction(void);
 		Fraction(double Number);
 		Fraction(std::string FractionString);
+		Fraction(long numerator, long denominator);
 		// Destructur
 		~Fraction(void);
 
@@ -67,13 +68,13 @@ class Fraction {
 		operator float();
 		operator long();
 		operator std::string();
-		Fraction operator+(Fraction fraction);
+		Fraction operator+(const Fraction& fraction) const;
 		Fraction operator+=(Fraction fraction);
 		Fraction operator-=(Fraction fraction);
-		Fraction operator-(Fraction fraction);
-		Fraction operator*(Fraction fraction);
+		Fraction operator-(const Fraction& fraction) const;
+		Fraction operator*(const Fraction& fraction) const;
 		Fraction operator*=(Fraction fraction);
-		Fraction operator/(Fraction fraction);
+		Fraction operator/(const Fraction& fraction) const;
 		Fraction operator/=(Fraction fraction);
 		Fraction operator~(void);
 		Fraction operator++(void);
