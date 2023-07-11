@@ -33,7 +33,10 @@ TEST_CASE("Rendertree")
     const auto expected = v["expected"].GetObject();
     const auto model = v["model"].GetObject();
 
-    if (use)
+    auto runTest = use;
+    // If you want to run a single test, set the string here
+    // runTest = (!strcmp(source, "'[a]*4'"));
+    if (runTest)
     {
       std::cout << source << std::endl;
       const auto pRenderTree = RenderTreeBuilder::fromJson(model);
@@ -56,6 +59,7 @@ TEST_CASE("Rendertree")
         const auto expectedTimeAsString = m.name.GetString();
         const auto expectedValues = m.value.GetArray();
 
+        currentTime.reduce();
         const auto currentTimeAsString = std::string(currentTime);
         const auto values = oEvent->values;
 
