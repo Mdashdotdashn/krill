@@ -18,7 +18,7 @@ Cycle transform(const Cycle& c, const Function& f)
 }
 
 template <typename Predicate>
-Cycle filter(const Cycle& c, Predicate& p)
+Cycle filter(const Cycle& c, const Predicate& p)
 {
   Cycle result = c;
   auto& events = result.events;
