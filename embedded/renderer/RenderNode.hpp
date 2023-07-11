@@ -42,6 +42,7 @@ namespace detail
     for (const auto& pNode : renderNodes)
     {
       const auto cycle = pNode->render();
+      assert(cycle.length == Fraction(1));
       const auto scaleFactor = Fraction(pNode->weigth()) / weightFactor;
       for (const auto& event : cycle.events)
       {
@@ -88,7 +89,8 @@ class SliceRenderNode: public RenderNode
 public:
   SliceRenderNode(RenderNodePtr pChild)
   : mpChild(pChild)
-  {}
+  {
+  }
 
   void setSliceSize(const Fraction& size)
   {
@@ -101,9 +103,9 @@ public:
     // to cover the slice length
     while (mAccumulator.length < mSliceLength)
     {
+      mpChild->tick();
       Cycle newCycle = mpChild->render();
       mAccumulator = concat(mAccumulator, newCycle);
-      mpChild->tick();
     }
   }
 
@@ -128,14 +130,9 @@ private:
   Fraction mSliceLength{1};
 };
 
-static RenderNodePtr makeStepRenderNode(const Cycle& cycle, const rapidjson::Value& options)
+static RenderNodePtr makeCycleRenderNode(const Cycle& cycle)
 {
-  assert(!hasMember(options, "operator")); // See buildPatternStep
-  const auto pStepNode = std::make_shared<CycleRenderNode>(cycle);
-  auto ptr = std::make_shared<SliceRenderNode>(pStepNode);
-  const auto weight = optionOrValue<float>(options, "weight", 1);
-  ptr->setWeight(weight);
-  return ptr;
+  return std::make_shared<CycleRenderNode>(cycle);
 }
 
 

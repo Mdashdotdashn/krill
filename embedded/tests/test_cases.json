@@ -360,6 +360,7 @@
     },
     {
       "source": "'[a b]/4'",
+      "use": true,
       "expected": {
         "0/1": [
           "a"
@@ -406,6 +407,7 @@
     },
     {
       "source": "'[a]*4'",
+      "use": true,
       "expected": {
         "0/1": [
           "a"
@@ -454,6 +456,7 @@
     },
     {
       "source": "'[[a b]/2 c]'",
+      "use": true,
       "expected": {
         "0/1": [
           "a"
@@ -521,6 +524,7 @@
     },
     {
       "source": "'[[a b]/4 c]'",
+      "use": true,
       "expected": {
         "0/1": [
           "a"
@@ -962,6 +966,7 @@
     },
     {
       "source": "fast 2 $ '[bd sd]'",
+      "use": true,
       "expected": {
         "0/1": [
           "bd"
