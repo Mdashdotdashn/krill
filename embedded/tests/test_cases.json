@@ -37,6 +37,7 @@
     },
     {
       "source": "slow 2 $ '1 2 3'",
+      "use": true,
       "expected": {
         "0/1": [
           "1"
@@ -150,6 +151,7 @@
     },
     {
       "source": "'bd@3 sd'",
+      "use": true,
       "expected": {
         "0/1": [
           "bd"
@@ -252,6 +254,7 @@
     },
     {
       "source": "'c2 c3 [d#3 g2]'",
+      "use": true,
       "expected": {
         "0/1": [
           "c2"

@@ -17,6 +17,9 @@ namespace krill
     {
       return hasMember(v, member) ? float(v[member.c_str()].GetBool()) : defaultValue;
     }
-    return hasMember(v, member) ? float(v[member.c_str()].GetDouble()) : defaultValue;
+    if constexpr (std::is_same_v<T, float>)
+    {
+      return hasMember(v, member) ? float(v[member.c_str()].GetDouble()) : defaultValue;
+    }
   }
 } // namespace krill

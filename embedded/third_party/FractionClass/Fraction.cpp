@@ -137,7 +137,7 @@ void Fraction::convertDoubleToFraction(double Number) {
 /**
  * Convert function for fraction to double
 */
-double Fraction::convertFractionToDouble(void) {
+double Fraction::convertFractionToDouble(void) const {
 	return (double)this->numerator / (double)this->denominator;
 }
 
@@ -208,12 +208,9 @@ bool Fraction::operator!=(const Fraction &fraction) const {
 /**
  * Modulos operator overloading (a/b % x/y = (a*y % b*x) / (b*y))
 */
-long Fraction::operator%(const Fraction &fraction) const {
-	long result;
+Fraction Fraction::operator%(const Fraction &fraction) const {
 
-	result = ((this->numerator * fraction.getDenominator()) % (this->denominator * fraction.getNumerator())) / (this->denominator * fraction.getDenominator());
-
-	return result;
+	return *this - fraction * floor(*this / fraction);
 }
 
 /**
@@ -387,6 +384,11 @@ Fraction Fraction::operator--(void) {
 	return *this;
 }
 
+Fraction floor(const Fraction& f) {
+	Fraction result;
+	result.convertDoubleToFraction(std::floor(f.convertFractionToDouble()));
+	return result;
+}
 /**
  * Left shift operator overloading
 */
