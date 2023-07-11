@@ -53,7 +53,7 @@ class Fraction {
 		// Fraction functions
 		bool reduce(void);
 		void convertDoubleToFraction(double Number);
-		double convertFractionToDouble(void);
+		double convertFractionToDouble(void) const;
 		bool convertStringToFraction(std::string FractionString);
 
 		// Operator overloading functions
@@ -63,7 +63,7 @@ class Fraction {
 		bool operator>=(const Fraction &fraction) const;
 		bool operator==(const Fraction &fraction) const;
 		bool operator!=(const Fraction &fraction) const;
-		long operator%(const Fraction &fraction) const;
+		Fraction operator%(const Fraction &fraction) const;
 		operator double();
 		operator float();
 		operator long();
@@ -80,6 +80,8 @@ class Fraction {
 		Fraction operator++(void);
 		Fraction operator--(void);
 };
+
+Fraction floor(const Fraction& f);
 
 /**
  * FractionInputFailException class

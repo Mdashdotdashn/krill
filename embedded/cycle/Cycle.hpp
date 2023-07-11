@@ -2,6 +2,7 @@
 
 #include <FractionClass/Fraction.hpp>
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -14,6 +15,10 @@ public:
   {
     using Time = Fraction;
     using Value = std::string;
+
+    Event()
+      : time(0)
+      , values() {}
 
     Event(Time time_, std::vector<Value> values_)
     : time(time_)
@@ -71,4 +76,9 @@ Cycle makeSingleEventCycle(const std::string &value);
 
 Cycle concat(const Cycle& c1, const Cycle& c2);
 Cycle slice(const Cycle& cycle, const Fraction& from, const Fraction length);
+
+std::optional<Cycle::Event> findEventAfter(const Cycle& cycle, const Fraction& time);
+
+bool isEmpty(const Cycle::Event& event);
+bool isEmpty(const Cycle& cycle);
 } // namespace krill

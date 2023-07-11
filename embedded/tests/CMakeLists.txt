@@ -14,5 +14,5 @@ add_executable(Tests.exe
 
 ./tst_cycle.cpp
 ./tst_renderNode.cpp
-./tst_renderTree.cpp
+./tst_run_cases.cpp
 )

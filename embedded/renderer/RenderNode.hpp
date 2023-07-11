@@ -13,15 +13,6 @@ namespace krill
 
 //------------------------------------------------------------------------------
 
-using Options = std::map<std::string, std::string>;
-
-template <typename T>
-T optionOrValue(const Options& v, const std::string& member, const T& defaultValue)
-{
-  const auto it = v.find(member);
-  return it != v.end() ? T(atof(it->second.c_str())) : defaultValue;
-}
-
 class RenderNode
 {
 public:
@@ -54,7 +45,8 @@ namespace detail
       const auto scaleFactor = Fraction(pNode->weigth()) / weightFactor;
       for (const auto& event : cycle.events)
       {
-        const auto scaled = Cycle::Event{ position + (event.time * scaleFactor), event.values };
+        auto scaled = Cycle::Event{ position + (event.time * scaleFactor), event.values };
+        scaled.time.reduce();
         events.push_back(scaled);
       }
       position += scaleFactor;
@@ -63,6 +55,7 @@ namespace detail
     return events;
   }
 }
+
 //------------------------------------------------------------------------------
 // CycleRenderNode:
 // Wraps a cycle as a render node
@@ -135,21 +128,20 @@ private:
   Fraction mSliceLength{1};
 };
 
-static RenderNodePtr makeStepRenderNode(const Cycle& cycle, const Options& options)
+static RenderNodePtr makeStepRenderNode(const Cycle& cycle, const rapidjson::Value& options)
 {
-  assert(options.size() == 0); // See buildPatternStep
+  assert(!hasMember(options, "operator")); // See buildPatternStep
   const auto pStepNode = std::make_shared<CycleRenderNode>(cycle);
   auto ptr = std::make_shared<SliceRenderNode>(pStepNode);
-  const auto weight = optionOrValue<float>(options, "weigth", 1);
+  const auto weight = optionOrValue<float>(options, "weight", 1);
   ptr->setWeight(weight);
   return ptr;
 }
 
 
 //------------------------------------------------------------------------------
-// SliceRenderNode:
-// Slices the cycles created by its mChild node in chunks a specified by
-// the slice size.
+// WeightedPatternRenderNode:
+// resolves a serie of steps with applied weighting
 
 class WeightedPatternRenderNode : public RenderNode
 {
@@ -179,5 +171,41 @@ private:
 static RenderNodePtr makeWeightedPatternRenderNode(std::vector<RenderNodePtr>& children)
 {
   return std::make_shared<WeightedPatternRenderNode>(children);
+}
+
+//------------------------------------------------------------------------------
+// StretchRenderNode:
+// Stretches/Compresses the content of the underlying source cycle
+
+class StretchRenderNode : public RenderNode
+{
+public:
+  StretchRenderNode(RenderNodePtr& child, Fraction stretchFactor)
+    : mpChild(child)
+    , mStretchFactor(stretchFactor)
+  {}
+
+  void tick()
+  {
+    mpChild->tick();
+  }
+
+  Cycle render()
+  {
+    Cycle result = mpChild->render();
+    result.length *= mStretchFactor;
+    for (auto& e : result.events)
+    {
+      e.time *= mStretchFactor;
+    }
+    return result;
+  }
+private:
+  RenderNodePtr mpChild;
+  Fraction mStretchFactor;
+};
+static RenderNodePtr makeStretchRenderNode(RenderNodePtr child, Fraction stretchFactor)
+{
+  return std::make_shared<StretchRenderNode>(child, stretchFactor);
 }
 } // namespace krill

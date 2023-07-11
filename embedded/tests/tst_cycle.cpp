@@ -2,12 +2,6 @@
 
 TEST_CASE("Cycle")
 {
-  SECTION("Empty")
-  {
-    const auto cycle = makeEmptyCycle();
-    CHECK(cycle.events.size() == 0);
-  }
-
   SECTION("Single event")
   {
     const auto cycle = makeSingleEventCycle("C4");

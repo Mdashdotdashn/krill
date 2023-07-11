@@ -14,19 +14,14 @@ namespace detail
 RenderNodePtr makeRenderNode(const rapidjson::Value& value);
 std::vector<RenderNodePtr> buildStepArray(const rapidjson::Value& a);
 
-RenderNodePtr makeOperatorRenderNode(const rapidjson::Value& value)
+RenderNodePtr makeRenderNode(const rapidjson::Value& value)
 {
+  rapidjson::Value emptyObject;
+  emptyObject.SetObject();
+
   const auto& type = value["type_"];
   const auto& source = value["source_"];
-
-  Options options;
-  if (hasMember(value, "options"))
-  {
-    for (auto& m : value["options"].GetObject())
-    {
-      options.insert({ std::string(m.name.GetString()), std::string(m.value.GetString()) });
-    }
-  }
+  const auto& options = hasMember(value, "options_") ? value["options_"] : emptyObject;
 
   const auto typeString = type.GetString();
   if (type == "pattern")
@@ -37,19 +32,30 @@ RenderNodePtr makeOperatorRenderNode(const rapidjson::Value& value)
 
   if (type == "element")
   {
-    const auto value = source.GetString();
-    const auto cycle = makeSingleEventCycle(value);
-    return makeStepRenderNode(cycle, options);
+    if (source.IsObject())
+    {
+      return makeRenderNode(source);
+    }
+    else
+    {
+      const auto value = source.GetString();
+      const auto cycle = makeSingleEventCycle(value);
+      return makeStepRenderNode(cycle, options);
+    }
   }
-  return nullptr;
-}
 
-RenderNodePtr makeRenderNode(const rapidjson::Value& value)
-{
-  if (value.IsObject())
+  // All following are operator and have a single child node
+  const auto childNode = makeRenderNode(source);
+  const auto arguments = value["arguments_"].GetArray();
+
+  if (type == "stretch")
   {
-      return makeOperatorRenderNode(value);
+    Fraction factor;
+    factor.convertDoubleToFraction(arguments[0].GetDouble());
+    return makeStretchRenderNode(childNode, factor);
   }
+
+  assert(0);
   return nullptr;
 }
 

@@ -46,11 +46,6 @@ Cycle cleanup(const Cycle& c)
 }
 } // namespace detail
 
-Cycle makeEmptyCycle()
-{
-  return Cycle{};
-}
-
 // make a cycle out of a single event
 Cycle makeSingleEventCycle(const std::string& value)
 {
@@ -87,5 +82,34 @@ Cycle slice(const Cycle& cycle, const Fraction& from, const Fraction length)
   auto shifted = detail::applyTimeChange(source, [&from](const Fraction& time) { return time - from; });
   shifted.length = length;
   return detail::cleanup(shifted);
+}
+
+std::optional<Cycle::Event> findEventAfter(const Cycle& cycle, const Fraction& time)
+{
+  const auto& events = cycle.events;
+
+  if (events.size() > 0)
+  {
+    for (const auto& event : events)
+    {
+      // we assume the cycle's events are sorted
+      if (event.time > time)
+      {
+        return event;
+      }
+    }
+  }
+  return {};
+}
+
+bool isEmpty(const Cycle::Event& event)
+{
+  return event.values.size() == 0;
+}
+
+
+bool isEmpty(const Cycle& cycle)
+{
+  return cycle.length == 0;
 }
 } // namespace krill
