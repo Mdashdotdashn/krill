@@ -81,4 +81,6 @@ std::optional<Cycle::Event> findEventAfter(const Cycle& cycle, const Fraction& t
 
 bool isEmpty(const Cycle::Event& event);
 bool isEmpty(const Cycle& cycle);
+
+EventArray mergeAndSort(const EventArray&);
 } // namespace krill

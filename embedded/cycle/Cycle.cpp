@@ -112,4 +112,31 @@ bool isEmpty(const Cycle& cycle)
 {
   return cycle.length == 0;
 }
+
+EventArray mergeAndSort(const EventArray& array)
+{
+  EventArray sorted = array;
+  // Sort element according to time
+  std::sort(sorted.begin(), sorted.end(), [](const auto& a, const auto& b) { return a.time < b.time; });
+  // Merge steps with equivalent time
+  EventArray merged;
+  for (const auto& event : sorted)
+  {
+    // Push any event with a new time
+    if ((merged.size() == 0) || (event.time != merged.back().time))
+    {
+      merged.push_back(event);
+    }
+    // Add the data to the last event
+    else
+    {
+      for (const auto& value : event.values)
+      {
+        merged.back().values.push_back(value);
+      }
+    }
+  }  
+  return merged;
+}
+
 } // namespace krill

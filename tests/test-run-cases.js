@@ -52,7 +52,7 @@ function runAllTestCases()
   }
   }
   let data = JSON.stringify(cppTestData, null, 2);
-  fs.writeFileSync('./embedded/tests/test-case.json', data);
+  fs.writeFileSync('./embedded/tests/test_cases.json', data);
 }
 
 runAllTestCases();

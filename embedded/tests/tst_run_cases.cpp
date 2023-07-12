@@ -29,7 +29,7 @@ TEST_CASE("Rendertree")
   for (auto& v : cases.GetArray())
   {
     const auto source = v["source"].GetString();
-    const auto use = optionOrValue(v,"use", false);
+    const auto use = optionOrValue(v, "use", false);
     const auto expected = v["expected"].GetObject();
     const auto model = v["model"].GetObject();
 
@@ -67,11 +67,15 @@ TEST_CASE("Rendertree")
         CHECK(expectedValues.Size() == values.size());
 
         size_t index = 0;
-        for (const auto& v: expectedValues)
-        { 
+        for (const auto& v : expectedValues)
+        {
           CHECK(v.GetString() == values[index++]);
         }
       }
+    }
+    else
+    {
+      std::cout << ".. skip (" << source << ")" << std::endl;
     }
   }
 }
