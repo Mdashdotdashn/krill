@@ -205,4 +205,82 @@ static RenderNodePtr makeStretchRenderNode(RenderNodePtr child, Fraction stretch
 {
   return std::make_shared<StretchRenderNode>(child, stretchFactor);
 }
+
+//------------------------------------------------------------------------------
+// TimelineRenderNode:
+// Plays children cycles one after the other
+
+class TimelineRenderNode : public RenderNode
+{
+public:
+  TimelineRenderNode(RenderNodeArray& children)
+    : mChildren(children)
+    , mCurrent(mChildren.size() - 1)
+  {}
+
+  void tick()
+  {
+    mCurrent = (mCurrent + 1) % mChildren.size();
+    mChildren[mCurrent]->tick();
+  }
+
+  Cycle render()
+  {
+    return mChildren[mCurrent]->render();
+  }
+
+private:
+  RenderNodeArray mChildren;
+  size_t mCurrent{0};
+};
+
+static RenderNodePtr makeTimelineRenderNode(RenderNodeArray children)
+{
+  return std::make_shared<TimelineRenderNode>(children);
+}
+
+//------------------------------------------------------------------------------
+// StackRenderNode:
+// Plays children cycles in parallel
+
+class StackRenderNode : public RenderNode
+{
+public:
+  StackRenderNode(RenderNodeArray& children)
+    : mChildren(children)
+  {}
+
+  void tick()
+  {
+    for (auto& child : mChildren)
+    {
+      child->tick();
+    }
+  }
+
+  Cycle render()
+  {
+    // At this point, cycles with different lenght might be problematic
+    // one way to cope would be to wrap every child with a slice rendernode
+    // See also the hardcoded length of 1 when returning the cycle
+    EventArray events;
+    for (auto& child : mChildren)
+    {
+      Cycle childCycle = child->render();
+      for (auto& event : childCycle.events)
+      {
+        events.push_back(event);
+      }
+    }
+    return { 1, mergeAndSort(events) };
+  }
+
+private:
+  RenderNodeArray mChildren;
+};
+
+static RenderNodePtr makeStackRenderNode(RenderNodeArray children)
+{
+  return std::make_shared<StackRenderNode>(children);
+}
 } // namespace krill
