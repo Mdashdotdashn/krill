@@ -1,6 +1,6 @@
 #pragma once
 
-#include <FractionClass/Fraction.hpp>
+#include "third_party/FractionClass/Fraction.hpp"
 
 #include <optional>
 #include <string>

@@ -2,7 +2,7 @@
 
 #include "RenderNode.hpp"
 
-#include <rapidjson/document.h>
+#include "third_party/rapidjson/document.h"
 
 namespace krill
 {

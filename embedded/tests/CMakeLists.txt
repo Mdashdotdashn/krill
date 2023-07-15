@@ -1,6 +1,5 @@
 include_directories(
 ../
-../third_party
 )
 
 add_executable(Tests.exe

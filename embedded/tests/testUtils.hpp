@@ -1,6 +1,6 @@
 #include "cycle/Cycle.hpp"
 
-#include <catch2/catch.hpp>
+#include <third_party/catch2/catch.hpp>
 
 using namespace krill;
 
