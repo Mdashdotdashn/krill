@@ -4,7 +4,7 @@
 #include "utils/jsonUtils.hpp"
 #include "testUtils.hpp"
 
-#include <rapidjson/istreamwrapper.h>
+#include <third_party/rapidjson/istreamwrapper.h>
 
 #include <cassert>
 #include <iostream>

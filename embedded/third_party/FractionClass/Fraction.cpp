@@ -124,7 +124,6 @@ bool Fraction::reduce(void) {
 */
 void Fraction::convertDoubleToFraction(double Number) {
 	this->denominator = 1;
-
 	while(((double)(int)Number) != Number) {
 		Number = Number * 10;
 		this->denominator = this->denominator * 10;
