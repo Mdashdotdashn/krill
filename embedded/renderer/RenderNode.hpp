@@ -18,6 +18,9 @@ class RenderNode
 public:
   virtual void tick() = 0;
   virtual Cycle render() = 0;
+  virtual size_t stepCount() {
+    return 1;
+  }
 
   void setWeight(float weight) { mWeight = weight; }
   float weigth() { return mWeight; }
@@ -75,6 +78,12 @@ public:
   {
     return mCycle;
   }
+
+  size_t stepCount() override
+  {
+    return mCycle.events.size();
+  }
+
 private:
   Cycle mCycle;
 };
@@ -161,6 +170,11 @@ public:
     return {1, events};
   }
 
+  size_t stepCount() final
+  {
+    return mChildren.size();
+  }
+
 private:
   RenderNodeArray mChildren;
 };
@@ -201,8 +215,15 @@ private:
   RenderNodePtr mpChild;
   Fraction mStretchFactor;
 };
+
 static RenderNodePtr makeStretchRenderNode(RenderNodePtr child, Fraction stretchFactor)
 {
+  return std::make_shared<StretchRenderNode>(child, stretchFactor);
+}
+
+static RenderNodePtr makeFixedStepRenderNode(RenderNodePtr child, Fraction stepDivision)
+{
+  const auto stretchFactor = Fraction(double(child->stepCount())) / Fraction(1) / stepDivision;
   return std::make_shared<StretchRenderNode>(child, stretchFactor);
 }
 
@@ -273,6 +294,11 @@ public:
       }
     }
     return { 1, mergeAndSort(events) };
+  }
+
+  size_t stepCount() final
+  {
+    return mChildren[0]->stepCount();
   }
 
 private:

@@ -1021,6 +1021,7 @@
     },
     {
       "source": "'[a b c]%1'",
+      "use": true,
       "expected": {
         "0/1": [
           "a"
@@ -1074,6 +1075,7 @@
     },
     {
       "source": "'[a b c]%2'",
+      "use": true,
       "expected": {
         "0/1": [
           "a"
@@ -1127,6 +1129,7 @@
     },
     {
       "source": "'[a b c, 1 2 3]%2'",
+      "use": true,
       "expected": {
         "0/1": [
           "a",
@@ -1211,6 +1214,7 @@
     },
     {
       "source": "'[bd sd [~ bd] sd bd [sd bd@3] bd sd]%4'",
+      "use": true,
       "expected": {
         "0/1": [
           "bd"

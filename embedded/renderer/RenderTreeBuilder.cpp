@@ -11,6 +11,23 @@ namespace detail
 {
 namespace rj = rapidjson;
 
+namespace detail
+{
+  Fraction fractionFromValue(const rj::Value& v)
+  {
+    Fraction factor;
+    if (v.IsNumber())
+    {
+      factor.convertDoubleToFraction(v.GetDouble());
+    }
+    else
+    {
+      factor.convertStringToFraction(v.GetString());
+    }
+    return factor;
+  }
+} // namespace detail
+
 RenderNodePtr makeRenderNode(const rj::Value& value);
 
 // Builds an array of RenderNodePtr from a rj array
@@ -32,16 +49,14 @@ RenderNodePtr makeOperatorRenderNode(const std::string& type, const rj::Value& a
 
   if (type == "stretch")
   {
-    Fraction factor;
-    if (arguments[0].IsNumber())
-    {
-      factor.convertDoubleToFraction(arguments[0].GetDouble());
-    }
-    else
-    {
-      factor.convertStringToFraction(arguments[0].GetString());
-    }
+    Fraction factor = detail::fractionFromValue(arguments[0]);
     return makeStretchRenderNode(childNode, factor);
+  }
+
+  if (type == "fixed-step")
+  {
+    Fraction stepDivision = detail::fractionFromValue(arguments[0]);
+    return makeFixedStepRenderNode(childNode, stepDivision);
   }
 
   assert(0);
