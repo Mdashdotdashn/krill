@@ -33,3 +33,9 @@ cat [
  "[bd sd [~ bd] [sd bd ~ ~]]%4"
 ] // 101 Bpm
 "[bd@2 bd@8 bd@3 bd@2 bd]%16,[~@4 sd@3 sd@2 sd@7]%16" //bpm 75
+
+cat [
+   "[bd sd [hh@3 bd] sd]",
+   "[bd [sd bd] [hh bd@3] sd]" 
+   ] // bpm 69.5
+
