@@ -6,8 +6,6 @@
 
 namespace krill
 {
-using ParsingException = std::exception;
-
 class Parser
 {
 public:

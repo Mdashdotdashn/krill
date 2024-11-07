@@ -1,9 +1,12 @@
 #pragma once
 
+#include <optional>
 #include <string>
 
 namespace krill
 {
+using ParsingException = std::exception;
+
 class StringStream
 {
 public:
@@ -12,6 +15,7 @@ public:
 	bool finished();
 
 	bool consumeWord(const std::string& word);
+	std::optional<std::string> consumeFloat();
 
 private:
 	std::string current();

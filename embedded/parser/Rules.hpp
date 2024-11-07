@@ -16,6 +16,7 @@ enum class ParsingRule
 	command,
 	sequence_definition,
 	hush,
+	setCps,
 	setBpm,
 };
 

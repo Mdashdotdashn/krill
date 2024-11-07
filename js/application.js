@@ -24,6 +24,7 @@ Application.prototype.parse = function(commandString)
 	var result = this.evaluator_.evaluate(commandString);
   if (result.type_ == "command")
   {
+    Dump(result);
     this.processCommand(result);
   }
   else
