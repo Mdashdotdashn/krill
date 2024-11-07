@@ -5,6 +5,7 @@ namespace
 {
 	using Context = krill::Context;
 	using ParsingRule = krill::ParsingRule;
+	using ParsingException = krill::ParsingException;
 
 	bool parseStatement(Context& c)
 	{
@@ -19,6 +20,7 @@ namespace
 		return resolveOneOf(c, {
 			ParsingRule::hush,
 			ParsingRule::setBpm,
+			ParsingRule::setCps,
 			});
 	}
 
@@ -32,21 +34,38 @@ namespace
 		const std::string token("hush");
 		if (c.consumeToken(token))
 		{
-			c.addCommand(token);
+			c.addCommand(token, {});
 			return true;
+		}
+		return false;
+	}
+
+	bool parseSetCps(Context& c)
+	{
+		const std::string token("setcps");
+		if (c.consumeToken(token))
+		{
+				if (auto s = c.consumeFloat())
+				{
+					c.addCommand(token, s);
+					return true;
+				}
+				throw ParsingException();
+
 		}
 		return false;
 	}
 
 	bool parseSetBpm(Context& c)
 	{
-		const std::string token("setBpm");
+		const std::string token("setbpm");
 		if (c.consumeToken(token))
 		{
 			//		if (const auto n = c.consumeNumber())
 			//		{
 			//			return CommandStub(token, n.value());			
 			//		}
+			//		throw ParsingException();
 		}
 		return false;
 	}
@@ -64,6 +83,7 @@ namespace krill
 			{ParsingRule::command, parseCommand},
 			{ParsingRule::sequence_definition, parseSequenceDefinition},
 			{ParsingRule::hush, parseHush},
+			{ParsingRule::setCps, parseSetCps},
 			{ParsingRule::setBpm, parseSetBpm},
 		};
 	}
