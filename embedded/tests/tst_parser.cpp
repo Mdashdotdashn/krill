@@ -82,10 +82,17 @@ TEST_CASE("Parser")
 	  checkParsing("hush", "{'type_':'command','name_':'hush'}");
 	}
 
-	SECTION("setCps")
+	SECTION("setcps")
 	{
 	  checkParsing("setcps 0.34e4"
 	  , "{ 'type_': 'command', 'name_': 'setcps', 'options_': {'value': 0.34e4 }}");
+	  expectException("setcps not-a-number");
+	}
+
+	SECTION("setbpm")
+	{
+	  checkParsing("setbpm 120"
+	  , "{ 'type_': 'command', 'name_': 'setcps', 'options_': {'value': 0.5 }}");
 	  expectException("setcps not-a-number");
 	}
 }
