@@ -19,7 +19,7 @@ public:
 
 	bool consumeToken(const std::string& token);
 	std::optional<std::string> consumeFloat();
-	void addCommand(const std::string& command, const std::optional<std::string> value);
+	void addCommand(const std::string& command, const std::optional<float> value);
 
 private:
 	rapidjson::Document& mDocument;

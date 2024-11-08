@@ -19,7 +19,7 @@ std::optional<std::string> Context::consumeFloat()
 	return mStream.consumeFloat();
 }
 
-void Context::addCommand(const std::string& command, const std::optional<std::string> value)
+void Context::addCommand(const std::string& command, const std::optional<float> value)
 {
 	using namespace rapidjson;
 
@@ -30,7 +30,7 @@ void Context::addCommand(const std::string& command, const std::optional<std::st
 	mDocument.AddMember("name_", name_, mDocument.GetAllocator());
 	if (value)
 	{
-		const float floatValue = std::stof(value.value());
+		const float floatValue = value.value();
 		Value value_;
 		value_.SetFloat(floatValue);
 		Value options_(kObjectType);

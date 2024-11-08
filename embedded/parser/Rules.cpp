@@ -1,6 +1,8 @@
 #include "Rules.hpp"
 #include "Context.hpp"
 
+#include <string>
+
 namespace
 {
 	using Context = krill::Context;
@@ -47,25 +49,26 @@ namespace
 		{
 				if (auto s = c.consumeFloat())
 				{
-					c.addCommand(token, s);
+					const auto f = std::stof(s.value());
+					c.addCommand(token, f);
 					return true;
 				}
 				throw ParsingException();
-
 		}
 		return false;
 	}
 
 	bool parseSetBpm(Context& c)
 	{
-		const std::string token("setbpm");
-		if (c.consumeToken(token))
+		if (c.consumeToken("setbpm"))
 		{
-			//		if (const auto n = c.consumeNumber())
-			//		{
-			//			return CommandStub(token, n.value());			
-			//		}
-			//		throw ParsingException();
+				if (auto s = c.consumeFloat())
+				{
+					const auto f = std::stof(s.value());
+					c.addCommand("setcps", f/120.f/2.f);
+					return true;
+				}
+				throw ParsingException();
 		}
 		return false;
 	}
