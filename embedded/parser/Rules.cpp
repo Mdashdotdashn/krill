@@ -10,7 +10,7 @@ namespace
 	using ParsingRule = krill::ParsingRule;
 	using ParsingException = krill::ParsingException;
 
-	bool parseStatement(Context& c)
+	bool parseStart(Context& c)
 	{
 		return resolveOneOf(c, {
 			ParsingRule::command,
@@ -85,10 +85,10 @@ namespace krill
 	bool resolve(Context& context, ParsingRule rule)
 	{
 		using RuleHandler = std::function<bool(Context&)>;
-
+  
 		std::map<ParsingRule, const RuleHandler> handlers =
 		{
-			{ParsingRule::statement, parseStatement},
+			{ParsingRule::start, parseStart},
 			{ParsingRule::command, parseCommand},
 			{ParsingRule::sequence_definition, parseSequenceDefinition},
 			{ParsingRule::single_cycle, parseSingleCycle},
