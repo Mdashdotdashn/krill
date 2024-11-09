@@ -1,15 +1,16 @@
 #include "Parser.hpp"
 #include "Context.hpp"
-#include "Rules.hpp"
 
 namespace krill
 {
-void Parser::parse(rapidjson::Document& document, const std::string& input)
+ParsingResult Parser::parse(const std::string& input)
 {
-	Context context(document, input);
-	if (!resolve(context, ParsingRule::start))
+	Context context(input);
+	if (auto result = resolve(context))
 	{
-		throw ParsingException();
+    return result;
 	}
+	
+  throw ParsingException();
 }	
 } // krill

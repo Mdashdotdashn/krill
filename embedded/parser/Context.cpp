@@ -2,9 +2,8 @@
 
 namespace krill
 {
-Context::Context(rapidjson::Document& document, const std::string& source)
-	:mDocument(document)
-	,mStream(source)
+Context::Context(const std::string& source)
+	: mStream(source)
 {
 	mDocument.SetObject();
 }
@@ -19,23 +18,8 @@ std::optional<std::string> Context::consumeFloat()
 	return mStream.consumeFloat();
 }
 
-void Context::addCommand(const std::string& command, const std::optional<float> value)
+rapidjson::Document& Context::document()
 {
-	using namespace rapidjson;
-
-	// Commands are top level so we can add directly to the document
-	mDocument.AddMember("type_", "command", mDocument.GetAllocator());
-	Value name_;
-	name_.SetString(command.c_str(), rapidjson::SizeType(command.size()), mDocument.GetAllocator());
-	mDocument.AddMember("name_", name_, mDocument.GetAllocator());
-	if (value)
-	{
-		const float floatValue = value.value();
-		Value value_;
-		value_.SetFloat(floatValue);
-		Value options_(kObjectType);
-		options_.AddMember("value", value_, mDocument.GetAllocator());
-		mDocument.AddMember("options_", options_, mDocument.GetAllocator());
-	}
+  return mDocument;
 }
 } // namespace krill

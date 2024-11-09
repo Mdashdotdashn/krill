@@ -7,18 +7,49 @@
 namespace
 {
 	using Context = krill::Context;
-	using ParsingRule = krill::ParsingRule;
+  using ParsingResult = krill::ParsingResult;
 	using ParsingException = krill::ParsingException;
+  using Value = rapidjson::Value;
 
-	bool parseStart(Context& c)
+rapidjson::Value makeCommand(Context& c, const std::string& command, const std::optional<float> value)
+{
+	using namespace rapidjson;
+
+  Value result(kObjectType);
+  auto& allocator = c.document().GetAllocator();
+	// Commands are top level so we can add directly to the document
+	result.AddMember("type_", "command", allocator);
+	Value name_;
+	name_.SetString(command.c_str(), rapidjson::SizeType(command.size()), allocator);
+	result.AddMember("name_", name_, allocator);
+	if (value)
 	{
-		return resolveOneOf(c, {
-			ParsingRule::command,
-			ParsingRule::sequence_definition,
-			});
+		const float floatValue = value.value();
+		Value value_;
+		value_.SetFloat(floatValue);
+		Value options_(kObjectType);
+		options_.AddMember("value", value_, allocator);
+		result.AddMember("options_", options_, allocator);
 	}
+  return result;
+}
 
-	bool parseCommand(Context& c)
+
+  enum class ParsingRule
+  {
+    command,
+    sequence_definition,
+    hush,
+    setCps,
+    setBpm,
+    single_cycle,
+    count
+  };
+
+	ParsingResult resolveOneOf(Context& context, const std::initializer_list<ParsingRule>& rules);
+	ParsingResult resolve(Context& context, ParsingRule rule);
+
+	ParsingResult parseCommand(Context& c)
 	{
 		return resolveOneOf(c, {
 			ParsingRule::hush,
@@ -27,28 +58,27 @@ namespace
 			});
 	}
 
-	bool parseSequenceDefinition(Context& c)
+	ParsingResult parseSequenceDefinition(Context& c)
 	{
 		return resolve(c, ParsingRule::single_cycle);
 	}
 
-	bool parseSingleCycle(Context& c)
+	ParsingResult parseSingleCycle(Context& c)
 	{
-    return false;
+    return {};
 	}
 
-	bool parseHush(Context& c)
+	ParsingResult parseHush(Context& c)
 	{
 		const std::string token("hush");
 		if (c.consumeToken(token))
 		{
-			c.addCommand(token, {});
-			return true;
+			return makeCommand(c, token, {});
 		}
-		return false;
+		return {};
 	}
 
-	bool parseSetCps(Context& c)
+	ParsingResult parseSetCps(Context& c)
 	{
 		const std::string token("setcps");
 		if (c.consumeToken(token))
@@ -56,39 +86,33 @@ namespace
 				if (auto s = c.consumeFloat())
 				{
 					const auto f = std::stof(s.value());
-					c.addCommand(token, f);
-					return true;
+					return makeCommand(c, token, f);
 				}
 				throw ParsingException();
 		}
-		return false;
+		return {};
 	}
 
-	bool parseSetBpm(Context& c)
+	ParsingResult parseSetBpm(Context& c)
 	{
 		if (c.consumeToken("setbpm"))
 		{
 				if (auto s = c.consumeFloat())
 				{
 					const auto f = std::stof(s.value());
-					c.addCommand("setcps", f/120.f/2.f);
-					return true;
+					return makeCommand(c, "setcps", f/120.f/2.f);
 				}
 				throw ParsingException();
 		}
-		return false;
+		return {};
 	}
-}
 
-namespace krill
-{
-	bool resolve(Context& context, ParsingRule rule)
+	ParsingResult resolve(Context& context, ParsingRule rule)
 	{
-		using RuleHandler = std::function<bool(Context&)>;
+		using RuleHandler = std::function<ParsingResult(Context&)>;
   
 		std::map<ParsingRule, const RuleHandler> handlers =
 		{
-			{ParsingRule::start, parseStart},
 			{ParsingRule::command, parseCommand},
 			{ParsingRule::sequence_definition, parseSequenceDefinition},
 			{ParsingRule::single_cycle, parseSingleCycle},
@@ -102,12 +126,28 @@ namespace krill
 		return handlers[rule](context);
 	}
 
-	bool resolveOneOf(Context& context, const std::initializer_list<ParsingRule>& rules)
+	ParsingResult resolveOneOf(Context& context, const std::initializer_list<ParsingRule>& rules)
 	{
-		const auto it = std::find_if(rules.begin(), rules.end(), [&context](auto r) {
-			return resolve(context, r);
-		});
-		return it != rules.end();
+    for (auto& rule: rules)
+    {
+      if (auto result = resolve(context, rule))
+      {
+        return result;
+      }
+    }
+    return {};
+	}
+} // namespace
+
+namespace krill
+{
+// Start point
+	ParsingResult resolve(Context& c)
+	{
+		return resolveOneOf(c, {
+			ParsingRule::command,
+			ParsingRule::sequence_definition,
+			});
 	}
 }
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "StringStream.hpp"
-#include "Rules.hpp"
 
 #include "third_party/rapidjson/document.h"
 
@@ -15,14 +14,15 @@ namespace krill
 class Context
 {
 public:
-	Context(rapidjson::Document& document, const std::string& source);
+	Context(const std::string& source);
 
 	bool consumeToken(const std::string& token);
 	std::optional<std::string> consumeFloat();
-	void addCommand(const std::string& command, const std::optional<float> value);
+
+  rapidjson::Document& document();
 
 private:
-	rapidjson::Document& mDocument;
+	rapidjson::Document mDocument{};
 	StringStream mStream;
 };
 
