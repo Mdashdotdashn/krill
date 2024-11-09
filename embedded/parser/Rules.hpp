@@ -12,7 +12,7 @@ class Context;
 
 enum class ParsingRule
 {
-	statement,
+	start,
 	command,
 	sequence_definition,
 	hush,
