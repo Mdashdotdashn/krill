@@ -1,6 +1,7 @@
 #include "Rules.hpp"
 #include "Context.hpp"
 
+#include <cassert>
 #include <string>
 
 namespace
@@ -28,7 +29,12 @@ namespace
 
 	bool parseSequenceDefinition(Context& c)
 	{
-		return false;
+		return resolve(c, ParsingRule::single_cycle);
+	}
+
+	bool parseSingleCycle(Context& c)
+	{
+    return false;
 	}
 
 	bool parseHush(Context& c)
@@ -76,25 +82,24 @@ namespace
 
 namespace krill
 {
-	using RuleHandler = std::function<bool(Context&)>;
-
-	std::map<ParsingRule, RuleHandler> SRuleHandlers()
+	bool resolve(Context& context, ParsingRule rule)
 	{
-		return
+		using RuleHandler = std::function<bool(Context&)>;
+
+		std::map<ParsingRule, const RuleHandler> handlers =
 		{
 			{ParsingRule::statement, parseStatement},
 			{ParsingRule::command, parseCommand},
 			{ParsingRule::sequence_definition, parseSequenceDefinition},
+			{ParsingRule::single_cycle, parseSingleCycle},
 			{ParsingRule::hush, parseHush},
 			{ParsingRule::setCps, parseSetCps},
 			{ParsingRule::setBpm, parseSetBpm},
 		};
-	}
 
-	bool resolve(Context& context, ParsingRule rule)
-	{
-		const auto handler = SRuleHandlers()[rule];
-		return handler(context);
+    assert(handlers.size() == size_t(ParsingRule::count));
+  
+		return handlers[rule](context);
 	}
 
 	bool resolveOneOf(Context& context, const std::initializer_list<ParsingRule>& rules)
