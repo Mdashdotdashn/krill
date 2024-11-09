@@ -18,6 +18,8 @@ enum class ParsingRule
 	hush,
 	setCps,
 	setBpm,
+	single_cycle,
+  count
 };
 
 bool resolve(Context &c, ParsingRule rule);
