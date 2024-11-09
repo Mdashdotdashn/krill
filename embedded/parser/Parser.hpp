@@ -4,11 +4,13 @@
 
 #include <stdexcept>
 
+#include "Rules.hpp"
+
 namespace krill
 {
 class Parser
 {
 public:
-	void parse(rapidjson::Document& document, const std::string& input);
+	ParsingResult parse(const std::string& input);
 };
 }

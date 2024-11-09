@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Context.hpp"
+
 #include "third_party/rapidjson/document.h"
 
 #include <functional>
@@ -8,20 +10,6 @@
 
 namespace krill
 {
-class Context;
-
-enum class ParsingRule
-{
-	start,
-	command,
-	sequence_definition,
-	hush,
-	setCps,
-	setBpm,
-	single_cycle,
-  count
-};
-
-bool resolve(Context &c, ParsingRule rule);
-bool resolveOneOf(Context& c, const std::initializer_list<ParsingRule>& rule);
+using ParsingResult = std::optional<rapidjson::Value>;
+ParsingResult resolve(Context& c);
 }

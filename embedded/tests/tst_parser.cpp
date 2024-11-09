@@ -13,18 +13,18 @@ using namespace rapidjson;
 
 namespace
 {
-void Dump(const std::string& label, const Document& document)
+void Dump(const std::string& label, const Value& value)
 {
 	StringBuffer buffer;
 	Writer<StringBuffer> writer(buffer);
-	document.Accept(writer);
+	value.Accept(writer);
 	std::cout << "Parsing result: " << label << std::endl << buffer.GetString() << std::endl;
 }
 void checkParsing(const std::string& input, const std::string& expected)
 {
 	try
 	{
-		Document expectedDocument;
+    Document expectedDocument;
 		auto doubleQuoted = expected;
 		std::replace(doubleQuoted.begin(), doubleQuoted.end(), '\'', '\"');
 		expectedDocument.Parse(doubleQuoted.c_str());
@@ -35,15 +35,14 @@ void checkParsing(const std::string& input, const std::string& expected)
 		assert(!expectedDocument.HasParseError());
 
 		Parser parser;
-		rapidjson::Document parsedDocument;
-		parser.parse(parsedDocument, input);
+		auto result = parser.parse(input);
 
-		bool similar = (parsedDocument == expectedDocument);
+		bool similar = (result.value() == expectedDocument);
 		if (!similar)
 		{
 			std::cout << "Document differ" << std::endl;
 			Dump("Expected", expectedDocument);
-			Dump("Parsed", parsedDocument);
+			Dump("Parsed", result.value());
 		}
 			
 		CHECK(similar);
@@ -56,12 +55,10 @@ void checkParsing(const std::string& input, const std::string& expected)
 
 void expectException(const std::string& s)
 {
-	Parser parser;
-	rapidjson::Document document;
-
 	try 
 	{
-		parser.parse(document, s);
+  	Parser parser;
+		parser.parse(s);
 		CHECK(false);
 	}
 	catch (const ParsingException& /*e*/)
