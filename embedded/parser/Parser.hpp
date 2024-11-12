@@ -11,6 +11,6 @@ namespace krill
 class Parser
 {
 public:
-	ParsingResult parse(const std::string& input);
+	ParsingResult parse(rapidjson::Document& document, const std::string& input);
 };
 }

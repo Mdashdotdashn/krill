@@ -30,6 +30,12 @@ Dump = function(o)
   console.log(JSON.stringify(o, JSONReplacer,1));
 }
 
+DumpForCpp = function(o)
+{
+  jsonstring = JSON.stringify(o, JSONReplacer);
+  console.log(jsonstring.replace(/"/g,"'"));
+}
+
 Log = function(text, o)
 {
   console.log(text + ": " + JSON.stringify(o, JSONReplacer,1));

@@ -32,7 +32,7 @@ Application.prototype.parse = function(commandString)
     var dumper = new Object();
     dumper["source"] = commandString;
     dumper["model"] = result;
-    Dump(dumper);
+    DumpForCpp(dumper);
     var renderingTree = this.renderingTreeBuilder_.rebuild(result);
   	this.engine_.setRenderingTree(renderingTree);
   	return JSON.stringify(result, undefined, 1);
