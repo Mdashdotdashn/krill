@@ -5,25 +5,29 @@
 #include "third_party/rapidjson/document.h"
 
 #include <initializer_list>
+#include <iostream>
 #include <string>
 #include <sstream>
-#include <iostream>
+#include <vector>
 
 namespace krill
 {
 class Context
 {
 public:
-	Context(const std::string& source);
+	Context(rapidjson::Document& document, const std::string& source);
 
 	bool consumeToken(const std::string& token);
 	std::optional<std::string> consumeFloat();
-
+	std::optional<std::string> consumeDelimitedString(const std::string& delimiters);
+	std::vector<std::string> consumeTokens(const std::string& separators);
   rapidjson::Document& document();
 
+	Context buildSubContext(std::string& subString);
+
 private:
-	rapidjson::Document mDocument{};
 	StringStream mStream;
+	rapidjson::Document& mDocument;
 };
 
 } // namespace krill
