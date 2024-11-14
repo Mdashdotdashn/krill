@@ -83,6 +83,27 @@ void expectException(const std::string& s)
 };
 } // namespace
 
+TEST_CASE("splitCycleSlice")
+{
+	extern std::vector<std::string> splitCycleSlice(const std::string& sliceString);
+	std::string input = " bd hh   rs*8  [sd ~ rs sd] [~ [bd,rs]] <sd rt> ~ [~ ~ [bd,rs] bd ] [sd <bd hh>]*2    [ ~ bd] [sd]  ";
+	std::vector<std::string> expected = {
+		"bd",
+		"hh",
+		"rs*8",
+		"[sd ~ rs sd]",
+		"[~ [bd,rs]]",
+		"<sd rt>",
+		"~",
+		"[~ ~ [bd,rs] bd ]",
+		"[sd <bd hh>]*2",
+		"[ ~ bd]",
+		"[sd]",
+	};
+	const auto actual = splitCycleSlice(input);
+	CHECK(expected == actual);
+}
+
 TEST_CASE("Parser")
 {
 	SECTION("Garbage throws exception")
