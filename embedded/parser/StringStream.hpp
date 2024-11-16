@@ -1,19 +1,13 @@
 #pragma once
 
+#include "Types.hpp"
+
 #include <optional>
 #include <string>
 #include <vector>
 
 namespace krill
 {
-class ParsingException: public std::exception
-{
-public:
-	ParsingException(): std::exception()
-	{
-	}
-};
-
 class StringStream
 {
 public:
