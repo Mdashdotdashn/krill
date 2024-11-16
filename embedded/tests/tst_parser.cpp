@@ -136,9 +136,9 @@ TEST_CASE("Parser")
 
   SECTION("slice")
   {
-    checkParsingFromXml("{ 'source': 'a', 'model': { 'type_': 'pattern', 'arguments_': {  'alignment': 'h' }, 'source_': [ { 'type_': 'element', 'source_': 'a' } ] } }");
+    checkParsingFromXml("{ 'source': 'a', 'model': { 'type_': 'element', 'source_': 'a' } }");
 		checkParsingFromXml("{ 'source': 'a b', 'model': { 'type_': 'pattern', 'arguments_': { 'alignment': 'h' }, 'source_': [ { 'type_': 'element', 'source_': 'a' }, { 'type_': 'element', 'source_': 'b' } ] }}");
-		checkParsingFromXml("{ 'source':'a b, c','model':{'type_':'pattern','arguments_':{'alignment':'v'},'source_':[{'type_':'pattern','arguments_':{'alignment':'h'},'source_':[{'type_':'element','source_':'a'},{'type_':'element','source_':'b'}]},{'type_':'pattern','arguments_':{'alignment':'h'},'source_':[{'type_':'element','source_':'c'}]}]}}");
-		checkParsingFromXml("{'source':'a [2,4]','model':{'type_':'pattern','arguments_':{'alignment':'h'},'source_':[{'type_':'element','source_':'a'},{'type_':'element','source_':{'type_':'pattern','arguments_':{'alignment':'v'},'source_':[{'type_':'pattern','arguments_':{'alignment':'h'},'source_':[{'type_':'element','source_':'2'}]},{'type_':'pattern','arguments_':{'alignment':'h'},'source_':[{'type_':'element','source_':'4'}]}]}}]}}");
+		checkParsingFromXml("{ 'source': 'a b, c','model': {'type_':'pattern','arguments_':{'alignment':'v'},'source_':[{'type_':'pattern','arguments_':{'alignment':'h'},'source_':[{'type_':'element','source_':'a'},{'type_':'element','source_':'b'}]},{'type_':'element','source_':'c'}]}}");
+		checkParsingFromXml("{ 'source': 'a [2,4]','model': {'type_':'pattern','arguments_':{'alignment':'h'},'source_':[{'type_':'element','source_':'a'},{'type_':'pattern','arguments_':{'alignment':'v'},'source_':[{'type_':'element','source_':'2'},{'type_':'element','source_':'4'}]}]}}");
 	}
 }

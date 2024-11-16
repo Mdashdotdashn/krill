@@ -34,6 +34,13 @@ rapidjson::Value buildXmlForPattern(Context& c, rapidjson::Value& sources, const
 
   assert(sources.IsArray());
 
+  if (sources.Size() == 1)
+  {
+    Value firstElement(kObjectType);
+    firstElement = sources[0];
+    return firstElement;
+  }
+
   Value result(kObjectType);
   auto& allocator = c.document().GetAllocator();
 
