@@ -83,9 +83,13 @@ void expectException(const std::string& s)
 };
 } // namespace
 
-TEST_CASE("splitCycleSlice")
+namespace krill
 {
 	extern std::vector<std::string> splitCycleSlice(const std::string& sliceString);
+}
+
+TEST_CASE("splitCycleSlice")
+{
 	std::string input = " bd hh   rs*8  [sd ~ rs sd] [~ [bd,rs]] <sd rt> ~ [~ ~ [bd,rs] bd ] [sd <bd hh>]*2    [ ~ bd] [sd]  ";
 	std::vector<std::string> expected = {
 		"bd",
@@ -135,5 +139,6 @@ TEST_CASE("Parser")
     checkParsingFromXml("{ 'source': 'a', 'model': { 'type_': 'pattern', 'arguments_': {  'alignment': 'h' }, 'source_': [ { 'type_': 'element', 'source_': 'a' } ] } }");
 		checkParsingFromXml("{ 'source': 'a b', 'model': { 'type_': 'pattern', 'arguments_': { 'alignment': 'h' }, 'source_': [ { 'type_': 'element', 'source_': 'a' }, { 'type_': 'element', 'source_': 'b' } ] }}");
 		checkParsingFromXml("{ 'source':'a b, c','model':{'type_':'pattern','arguments_':{'alignment':'v'},'source_':[{'type_':'pattern','arguments_':{'alignment':'h'},'source_':[{'type_':'element','source_':'a'},{'type_':'element','source_':'b'}]},{'type_':'pattern','arguments_':{'alignment':'h'},'source_':[{'type_':'element','source_':'c'}]}]}}");
+		checkParsingFromXml("{'source':'a [2,4]','model':{'type_':'pattern','arguments_':{'alignment':'h'},'source_':[{'type_':'element','source_':'a'},{'type_':'element','source_':{'type_':'pattern','arguments_':{'alignment':'v'},'source_':[{'type_':'pattern','arguments_':{'alignment':'h'},'source_':[{'type_':'element','source_':'2'}]},{'type_':'pattern','arguments_':{'alignment':'h'},'source_':[{'type_':'element','source_':'4'}]}]}}]}}");
 	}
 }
