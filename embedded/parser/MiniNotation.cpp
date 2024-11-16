@@ -163,13 +163,7 @@ Value parseSubCycle(Context& context, const std::string& content)
     values.PushBack(parseSlice(context, slice), context.document().GetAllocator());
   }
 
-  if (values.Size() > 1)
-  {
-    return buildXmlForPattern(context, values,"v");
-  }
-  Value firstElement(kObjectType);
-  firstElement = values[0];
-  return firstElement;
+  return buildXmlForPattern(context, values,"v");
 }
 
 Value parseSliceElement(Context& context, const std::string& content)

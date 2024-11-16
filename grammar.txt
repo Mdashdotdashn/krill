@@ -88,7 +88,7 @@ sub_cycle = ws  "[" ws s:stack ws "]" ws { return s}
 
 // define a timeline e.g <1 3 [3 5]>. We simply defer to a stack and change the alignement
 timeline = ws "<" ws sc:single_cycle ws ">" ws
-  { sc.arguments_.alignment = "t"; return sc;}
+  { if (sc.type_ == "pattern" ) { sc.arguments_.alignment = "t"; return sc;} else { return sc; }}
 
 // a slice is either a single step or a sub cycle
 slice = step / sub_cycle  / timeline
@@ -113,13 +113,14 @@ slice_fixed_step = "%"a:number
   { return { operator : { type_: "fixed-step", arguments_ : [a ] } } }
 
 // a slice with an modifier applied i.e [bd@4 sd@3]@2 hh]
+// TODO: reduce to source if s in an object and o is undefined
 slice_with_modifier = s:slice o:slice_modifier?
   { return new ElementStub(s, o);}
 
 // a single cycle is a combination of one or more successive slices (as an array). If we
 // have only one element, we skip the array and return the element itself
 single_cycle = s:(slice_with_modifier)+
-  { return new PatternStub(s,"h"); }
+  { if (s.length == 1) { return s[0]; } else {return new PatternStub(s,"h");} }
 
 // a stack is a serie of vertically aligned single cycles, separated by a comma
 // if the stack contains only one element, we don't create a stack but return the
