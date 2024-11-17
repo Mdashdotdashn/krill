@@ -1,10 +1,10 @@
 #pragma once
 
+#include "Types.hpp"
+
 #include "third_party/rapidjson/document.h"
 
 #include <stdexcept>
-
-#include "Rules.hpp"
 
 namespace krill
 {
