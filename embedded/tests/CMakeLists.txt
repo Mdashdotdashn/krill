@@ -10,7 +10,6 @@ add_executable(Tests.exe
 ../parser/MiniNotation.cpp
 ../parser/Parser.cpp
 ../parser/StringStream.cpp
-../parser/Rules.cpp
 ../parser/XmlBuilder.cpp
 ../renderer/RenderTreeBuilder.cpp
 
