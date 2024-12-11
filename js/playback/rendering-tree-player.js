@@ -64,7 +64,7 @@ RenderingTreePlayer.prototype.advance = function(time)
   return this.current_.time();
 }
 
-RenderingTreePlayer.prototype.reset = function()
+RenderingTreePlayer.prototype.clear = function()
 {
   // probably a lot more complex than this
   this.resetCycle_ = true;
