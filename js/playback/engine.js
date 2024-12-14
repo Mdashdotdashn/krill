@@ -129,11 +129,8 @@ Engine.prototype.processUnsyncedEvent = function()
 Engine.prototype.processSyncedEvent = function()
 {
   this.timer_.clearTimeout();
-  console.log("processing callback event at " + this.nextEventTime_);
   var offsetToNextEvent = this.processPlayerEvent();
-  console.log("offset " + offsetToNextEvent + "ms");
   this.timer_.setTimeout(function(engine) { engine.processSyncedEvent();} , [this], "" + offsetToNextEvent +"m");
-//  console.log("out");
 }
 
 // process the event we're at. Most of the time it relates
@@ -145,7 +142,12 @@ Engine.prototype.processPlayerEvent = function()
   // See if the player has some events and broadcast them
   var eventTime = this.nextEventTime_;
   var event = this.player_.eventForTime(eventTime);
-  if (event) this.emit("tick", event);
+  if (event)
+  {
+    console.log("Emit at: "+ eventTime);
+    console.log(event);
+    this.emit("tick", event);
+  } 
 
   // Ask the player what is the next cycle time it has event for
   var nextEventTime = this.player_.advance(eventTime);
@@ -163,5 +165,9 @@ Engine.prototype.processPlayerEvent = function()
 Engine.prototype.setRenderingTree = function(s)
 {
   this.renderingTree_ = s;
-  this.player_.setRenderingTree(s);
+  var running = (!this.synced_) || (this.syncOn_);
+  if (running)
+  {
+    this.player_.setRenderingTree(s);
+  }
 }
