@@ -85,6 +85,7 @@ Engine.prototype.onSyncStop = function()
   console.log("stop");
   this.syncOn_ = false;
   this.player_.clear();
+  this.timer_.clearTimeout();
 }
 
 Engine.prototype.onSyncClock = function()
@@ -144,8 +145,8 @@ Engine.prototype.processPlayerEvent = function()
   var event = this.player_.eventForTime(eventTime);
   if (event)
   {
-    console.log("Emit at: "+ eventTime);
-    console.log(event);
+ //   console.log("Emit at: "+ eventTime);
+ //   console.log(event);
     this.emit("tick", event);
   } 
 
