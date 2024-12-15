@@ -2,6 +2,7 @@ require('./input-evaluator.js');
 require('./rendering-tree.js');
 require('./playback/engine.js');
 require('./playback/playback-device.js');
+require('./playback/sync-device.js');
 
 var Application = function()
 {
@@ -14,9 +15,14 @@ var Application = function()
 
 Application.prototype.init = function(options)
 {
-  this.engine_.start();
+  this.syncDevice_ = new SyncDevice(options.midiSync);
+  this.engine_.start(this.syncDevice_);
 	this.engine_.connect(this);
   this.playbackDevice_ = new GMDevice(options.midiDevice);
+  if (options.cycle)
+  {
+    this.parse("'" + options.cycle + "'");
+  }
 }
 
 Application.prototype.parse = function(commandString)

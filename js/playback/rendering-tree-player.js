@@ -1,5 +1,6 @@
 require("../patterns/pattern.js");
 var math = require("mathjs");
+const _ = require("lodash");
 
 RenderingTreePlayer = function()
 {
@@ -17,7 +18,7 @@ RenderingTreePlayer = function()
 
 RenderingTreePlayer.prototype.setRenderingTree = function(tree)
 {
-  this.queued_ = tree;
+  this.queued_ = _.cloneDeep(tree);
 }
 
 RenderingTreePlayer.prototype.cycleLength = function()
@@ -64,7 +65,7 @@ RenderingTreePlayer.prototype.advance = function(time)
   return this.current_.time();
 }
 
-RenderingTreePlayer.prototype.reset = function()
+RenderingTreePlayer.prototype.clear = function()
 {
   // probably a lot more complex than this
   this.resetCycle_ = true;

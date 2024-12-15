@@ -73,7 +73,9 @@ async function start(options)
 // Initialisation
 program
   .version('0.0.1')
-  .option('-m, --midi-device <midiDevice>', 'selects a midi interface');
+  .option('-m, --midi-device <midiDevice>', 'selects a midi interface')
+  .option('-s, --midi-sync <midiDevice>', 'selects a midi device to sync from')
+  .option('-c, --cycle <cycleString>', 'use the specied cycleString at startup');
 
 program.parse(process.argv);
 start(program.opts());
