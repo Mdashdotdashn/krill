@@ -97,6 +97,5 @@ RenderingTreeBuilder = function()
 RenderingTreeBuilder.prototype.rebuild = function(modelNodeTree)
 {
   var tree =  buildTreeForNode(modelNodeTree);
-  Dump(tree);
   return tree;
 }
