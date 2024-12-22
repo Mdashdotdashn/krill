@@ -41,6 +41,9 @@ buildOperator = function(type, arguments, source)
   		case "stretch":
   			return makeStrechOperator(source, arguments[0]);
 
+      case "trunc":
+        return makeTruncOperator(source, arguments[0]);
+
       case "shift":
   			return makeShiftOperator(source, arguments[0]);
 

@@ -183,6 +183,19 @@ function testScaleOperator()
   testPatternMatches(operator.render(), expected);
 }
 
+function test()
+{
+  var sequence = evaluator.evaluatePattern("'0 1 2 3'");
+
+  var expected = [
+    { "0/1" : ["0"] },
+    { "1/4" : ["1"] },
+    { "1/2" : ["2"] }
+  ]
+
+  var operator = makeTruncOperator(sequence, 0.75);
+  testPatternMatches(operator.render(), expected);
+}
 ////////////////////////////////////////////////////////////////////////////////
 
 testSequenceImplementsOperatorInterface();
@@ -193,3 +206,4 @@ testStrechOperator();
 testShiftOperator();
 testBjorklundOperator();
 testScaleOperator();
+test();

@@ -55,3 +55,4 @@ require("./op-stack.js");
 require("./op-stretch.js");
 require("./op-struct.js");
 require("./op-timeline.js");
+require("./op-trunc.js");
