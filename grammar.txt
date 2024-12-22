@@ -136,7 +136,7 @@ sequence = ws quote s:stack quote
 // Operator take a single value or a sequence
 operator_argument = step / sequence_or_operator
 
-operator = add / scale / slow / fast / bjorklund / struct / rotR / rotL
+operator = add / scale / slow / fast / bjorklund / struct / rotR / rotL / trunc
 
 add = "add" ws s:operator_argument
   { return { name: "add", args: [s]}}
@@ -155,6 +155,9 @@ rotL = "rotL" ws a:number
 
 rotR = "rotR" ws a:number
   { return { name: "shift", args : [a]}}
+
+trunc = "trunc" ws a:number
+  { return { name: "trunc", args : [a]}}
 
 fast = "fast" ws a:number
   { return { name: "stretch", args : ["1/"+a]}}
