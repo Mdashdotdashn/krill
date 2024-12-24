@@ -22,6 +22,11 @@ PatternSlicerOperator.prototype.setSliceSize = function(size)
   this.slicingLength_ = math.fraction(size) ;
 }
 
+PatternSlicerOperator.prototype.size = function()
+{
+  return this.slicingLength_;
+}
+
 PatternSlicerOperator.prototype.tick = function()
 {
   // continue to evaluate the underlying content until we have one cycle of data
