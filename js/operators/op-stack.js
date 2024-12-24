@@ -29,7 +29,18 @@ mergeAndOrderSteps = function(steps)
 
 var StackRenderingOperator = function(contentArray)
 {
-  this.content_ = contentArray;
+  // We insert a slicing operator in front of every source
+  // so that we get equivalent length / one cycle on every
+  // lane
+  this.content_ = new Array();
+  contentArray.forEach((x) => { 
+    this.content_.push(new PatternSlicerOperator(x));
+  });
+
+  // Why prefetch needed ?
+  this.content_.forEach((x) => {
+    x.tick();
+  })
   this.type_ = "stack";
 }
 
