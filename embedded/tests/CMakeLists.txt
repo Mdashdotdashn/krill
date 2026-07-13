@@ -1,5 +1,6 @@
 include_directories(
 ../
+../third_party/cpp-peglib
 )
 
 add_executable(Tests.exe
@@ -21,4 +22,5 @@ add_executable(Tests.exe
 ./tst_renderNode.cpp
 ./tst_stringStream.cpp
 ./tst_run_cases.cpp
+./tst_peglib_smoke.cpp
 )
