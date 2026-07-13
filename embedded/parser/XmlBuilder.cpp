@@ -73,4 +73,26 @@ rapidjson::Value buildXmlForElement(Context& c, const std::string& source)
   result.AddMember("source_", sourceString, allocator);
   return result;
 }
+
+rapidjson::Value buildXmlForOperator(Context& c, const std::string& type,
+                                     rapidjson::Value& arguments, rapidjson::Value& source)
+{
+  using namespace rapidjson;
+
+  Value result(kObjectType);
+  auto& allocator = c.document().GetAllocator();
+
+  // type_
+  Value typeStr;
+  typeStr.SetString(type.c_str(), SizeType(type.size()), allocator);
+  result.AddMember("type_", typeStr, allocator);
+
+  // arguments_
+  result.AddMember("arguments_", arguments, allocator);
+
+  // source_
+  result.AddMember("source_", source, allocator);
+
+  return result;
+}
 }

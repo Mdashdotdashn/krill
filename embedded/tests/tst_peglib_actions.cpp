@@ -204,3 +204,102 @@ TEST_CASE("S3.2-S3.4 nested sub_cycle", "[actions]")
         R"({"type_":"element","source_":"bd"},{"type_":"element","source_":"sd"}]})");
 }
 
+// ── S3.5 tests — operators ────────────────────────────────────────────────────
+
+namespace {
+// Parse a full Krill statement (no outer quotes — used for operator expressions).
+std::string parseStmt(krill::KrillParser& p, const std::string& input)
+{
+    rapidjson::Document doc;
+    auto result = p.parse(doc, input);
+    REQUIRE(result.has_value());
+    return toJson(result.value());
+}
+} // namespace
+
+TEST_CASE("S3.5 slow operator", "[actions]")
+{
+    krill::KrillParser p;
+    const auto json = parseStmt(p, R"(slow 2 $ "a b")");
+    REQUIRE(json.find(R"("type_":"stretch")") != std::string::npos);
+    const bool hasArgs = json.find(R"("arguments_":[2.0])") != std::string::npos ||
+                         json.find(R"("arguments_":[2])")   != std::string::npos;
+    REQUIRE(hasArgs);
+    REQUIRE(json.find(R"("type_":"pattern")") != std::string::npos);
+}
+
+TEST_CASE("S3.5 fast operator", "[actions]")
+{
+    krill::KrillParser p;
+    const auto json = parseStmt(p, R"(fast 2 $ "a")");
+    REQUIRE(json.find(R"("type_":"stretch")") != std::string::npos);
+    // fast 2 → stretch 0.5
+    REQUIRE(json.find("0.5") != std::string::npos);
+}
+
+TEST_CASE("S3.5 euclid operator", "[actions]")
+{
+    krill::KrillParser p;
+    const auto json = parseStmt(p, R"(euclid 5 8 $ "bd")");
+    REQUIRE(json.find(R"("type_":"bjorklund")") != std::string::npos);
+    REQUIRE(json.find("5") != std::string::npos);
+    REQUIRE(json.find("8") != std::string::npos);
+}
+
+TEST_CASE("S3.5 rotR operator", "[actions]")
+{
+    krill::KrillParser p;
+    const auto json = parseStmt(p, R"(rotR 1 $ "a b c")");
+    REQUIRE(json.find(R"("type_":"shift")") != std::string::npos);
+}
+
+TEST_CASE("S3.5 scale operator", "[actions]")
+{
+    krill::KrillParser p;
+    const auto json = parseStmt(p, R"(scale "Cmaj" $ "1 2 3")");
+    REQUIRE(json.find(R"("type_":"scale")") != std::string::npos);
+    REQUIRE(json.find("Cmaj") != std::string::npos);
+}
+
+TEST_CASE("S3.5 chained operators", "[actions]")
+{
+    krill::KrillParser p;
+    const auto json = parseStmt(p, R"(slow 2 $ euclid 5 8 $ "bd sd")");
+    // Outer node is stretch, inner is bjorklund
+    REQUIRE(json.find(R"("type_":"stretch")") != std::string::npos);
+    REQUIRE(json.find(R"("type_":"bjorklund")") != std::string::npos);
+}
+
+TEST_CASE("S3.5 cat grouping operator", "[actions]")
+{
+    krill::KrillParser p;
+    const auto json = parseStmt(p, R"(cat ["a b", "c d"])");
+    REQUIRE(json.find(R"("alignment":"t")") != std::string::npos);
+}
+
+// ── S3.6 tests — commands ─────────────────────────────────────────────────────
+
+TEST_CASE("S3.6 hush command", "[actions]")
+{
+    krill::KrillParser p;
+    REQUIRE(parseStmt(p, "hush") == R"({"type_":"command","name_":"hush"})");
+}
+
+TEST_CASE("S3.6 setcps command", "[actions]")
+{
+    krill::KrillParser p;
+    const auto json = parseStmt(p, "setcps 0.5");
+    REQUIRE(json.find(R"("type_":"command")") != std::string::npos);
+    REQUIRE(json.find(R"("name_":"setcps")") != std::string::npos);
+    REQUIRE(json.find("0.5") != std::string::npos);
+}
+
+TEST_CASE("S3.6 setbpm command", "[actions]")
+{
+    krill::KrillParser p;
+    const auto json = parseStmt(p, "setbpm 120");
+    // setbpm 120 → setcps (120/120/2) = 0.5
+    REQUIRE(json.find(R"("name_":"setcps")") != std::string::npos);
+    REQUIRE(json.find("0.5") != std::string::npos);
+}
+
