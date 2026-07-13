@@ -24,4 +24,5 @@ add_executable(Tests.exe
 ./tst_run_cases.cpp
 ./tst_peglib_smoke.cpp
 ./tst_peglib_primitives.cpp
+./tst_peglib_mininotation.cpp
 )
