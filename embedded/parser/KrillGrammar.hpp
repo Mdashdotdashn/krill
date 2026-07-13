@@ -12,6 +12,18 @@
 
 static constexpr auto kKrillGrammar = R"(
 
+# ── [S2.6] Top-level entry point ─────────────────────────────────────────────────
+
+start               <- ws statement ws
+statement           <- sequence_definition / command
+
+# ── [S2.6] Commands ──────────────────────────────────────────────────────────────
+
+command             <- setcps / setbpm / hush
+setcps              <- 'setcps' ws number
+setbpm              <- 'setbpm' ws number
+hush                <- 'hush'
+
 # ── [S2.1] Numbers ────────────────────────────────────────────────────────────
 
 number      <- minus? int frac? exp?
@@ -108,4 +120,4 @@ sequence_or_operator <- sequence_or_group ws comment*
 sequence_definition <- sequence_or_operator
                       / comment
 
-)";
+)"; // kKrillGrammar
