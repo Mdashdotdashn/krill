@@ -72,4 +72,40 @@ stack               <- single_cycle (comma single_cycle)*
 # sequence: a quoted stack  e.g. "1 2 3"  or  '1 [2 3], 4'
 sequence            <- ws quote stack quote
 
+# ── [S2.4] Operators ──────────────────────────────────────────────────────────
+
+# operator_argument: a bare step OR a full sequence_or_operator (e.g. a quoted pattern)
+operator_argument   <- step / sequence_or_operator
+
+operator            <- add / scale / slow / fast / bjorklund / struct / rotR / rotL
+
+add                 <- 'add' ws operator_argument
+struct              <- 'struct' ws sequence_or_operator
+bjorklund           <- 'euclid' ws int ws int
+slow                <- 'slow' ws number
+fast                <- 'fast' ws number
+rotL                <- 'rotL' ws number
+rotR                <- 'rotR' ws number
+scale               <- 'scale' ws quote step_char+ quote
+
+comment             <- '//' [^\n]*
+
+# ── [S2.5] Grouping & high-level sequence ─────────────────────────────────────
+
+# cat / stack_op: functional forms of timeline / vertical stack
+cat                 <- 'cat' ws '[' ws sequence_or_operator (comma sequence_or_operator)* ws ']'
+stack_op            <- 'stack' ws '[' ws sequence_or_operator (comma sequence_or_operator)* ws ']'
+group_operator      <- cat / stack_op
+
+# sequence_or_group: a quoted sequence or a functional group
+sequence_or_group   <- group_operator / sequence
+
+# sequence_or_operator: the main recursive rule for chaining operators via $
+sequence_or_operator <- sequence_or_group ws comment*
+                      / operator ws '$' ws sequence_or_operator
+
+# sequence_definition: top-level pattern entry (operator chain or bare comment)
+sequence_definition <- sequence_or_operator
+                      / comment
+
 )";
