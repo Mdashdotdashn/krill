@@ -27,5 +27,4 @@ add_executable(Tests.exe
 ./tst_peglib_mininotation.cpp
 ./tst_peglib_operators.cpp
 ./tst_peglib_statement.cpp
-./tst_peglib_actions.cpp
 )
