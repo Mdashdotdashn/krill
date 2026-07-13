@@ -116,4 +116,24 @@ TEST_CASE("Parser")
 		checkParsingFromXml("{ 'source': 'a b, c','model': {'type_':'pattern','arguments_':{'alignment':'v'},'source_':[{'type_':'pattern','arguments_':{'alignment':'h'},'source_':[{'type_':'element','source_':'a'},{'type_':'element','source_':'b'}]},{'type_':'element','source_':'c'}]}}");
 		checkParsingFromXml("{ 'source': 'a [2,4]','model': {'type_':'pattern','arguments_':{'alignment':'h'},'source_':[{'type_':'element','source_':'a'},{'type_':'pattern','arguments_':{'alignment':'v'},'source_':[{'type_':'element','source_':'2'},{'type_':'element','source_':'4'}]}]}}");
 	}
+
+  SECTION("timeline (S5.2 — previously assert(0) in MiniNotation)")
+  {
+    // <a b> → pattern with alignment "t"
+    checkParsingFromXml("{ 'source': '<a b>', 'model': {'type_':'pattern','arguments_':{'alignment':'t'},'source_':[{'type_':'element','source_':'a'},{'type_':'element','source_':'b'}]}}");
+    // single-element timeline passes through as element
+    checkParsingFromXml("{ 'source': '<a>', 'model': {'type_':'element','source_':'a'}}");
+    // timeline inside a sequence
+    checkParsingFromXml("{ 'source': 'x <a b> y', 'model': {'type_':'pattern','arguments_':{'alignment':'h'},'source_':[{'type_':'element','source_':'x'},{'type_':'pattern','arguments_':{'alignment':'t'},'source_':[{'type_':'element','source_':'a'},{'type_':'element','source_':'b'}]},{'type_':'element','source_':'y'}]}}");
+  }
+
+  SECTION("operators (S5.4 — full round-trip smoke)")
+  {
+    // slow
+    checkParsing("slow 2 $ 'a b'", "{'type_':'stretch','arguments_':[2.0],'source_':{'type_':'pattern','arguments_':{'alignment':'h'},'source_':[{'type_':'element','source_':'a'},{'type_':'element','source_':'b'}]}}");
+    // euclid
+    checkParsing("euclid 5 8 $ 'bd'", "{'type_':'bjorklund','arguments_':[5,8],'source_':{'type_':'element','source_':'bd'}}");
+    // chained: slow $ euclid $ sequence
+    checkParsing("slow 2 $ euclid 5 8 $ 'bd'", "{'type_':'stretch','arguments_':[2.0],'source_':{'type_':'bjorklund','arguments_':[5,8],'source_':{'type_':'element','source_':'bd'}}}");
+  }
 }
