@@ -23,4 +23,5 @@ add_executable(Tests.exe
 ./tst_stringStream.cpp
 ./tst_run_cases.cpp
 ./tst_peglib_smoke.cpp
+./tst_peglib_primitives.cpp
 )
