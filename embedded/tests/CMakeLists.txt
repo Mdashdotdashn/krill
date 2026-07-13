@@ -8,7 +8,6 @@ add_executable(Tests.exe
 
 ../cycle/Cycle.cpp
 ../parser/Context.cpp
-../parser/MiniNotation.cpp
 ../parser/KrillParser.cpp
 ../parser/Parser.cpp
 ../parser/StringStream.cpp
