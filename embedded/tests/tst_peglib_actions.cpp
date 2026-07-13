@@ -3,6 +3,7 @@
 
 #include "parser/Context.hpp"
 #include "parser/KrillGrammar.hpp"
+#include "parser/KrillParser.hpp"
 #include "parser/XmlBuilder.hpp"
 #include "parser/Helpers.hpp"
 
@@ -119,3 +120,87 @@ TEST_CASE("S3.1 step action — output JSON shape", "[actions]")
     // Matches JS side: {"type_":"element","source_":"a"}
     REQUIRE(toJson(*result) == R"({"type_":"element","source_":"a"})");
 }
+
+// ── S3.2 / S3.3 / S3.4 tests — full mini-notation via KrillParser ────────────
+//
+// KrillParser::parse() now returns results for sequence inputs.
+// Test cases mirror the existing tst_parser.cpp "slice" section exactly.
+
+namespace {
+
+// Helper: parse a quoted sequence string and return the JSON result.
+// e.g. checkSeq("a")  parses  "\"a\""  as a Krill statement.
+std::string parseSeq(krill::KrillParser& p, const std::string& inner)
+{
+    rapidjson::Document doc;
+    const auto input = "\"" + inner + "\"";
+    auto result = p.parse(doc, input);
+    REQUIRE(result.has_value());
+    return toJson(result.value());
+}
+
+} // namespace
+
+TEST_CASE("S3.2-S3.4 single step", "[actions]")
+{
+    krill::KrillParser p;
+    // Single step → element (matches tst_parser.cpp "slice" section)
+    REQUIRE(parseSeq(p, "a") == R"({"type_":"element","source_":"a"})");
+}
+
+TEST_CASE("S3.2-S3.4 horizontal sequence", "[actions]")
+{
+    krill::KrillParser p;
+    REQUIRE(parseSeq(p, "a b") ==
+        R"({"type_":"pattern","arguments_":{"alignment":"h"},"source_":[)"
+        R"({"type_":"element","source_":"a"},)"
+        R"({"type_":"element","source_":"b"}]})");
+}
+
+TEST_CASE("S3.2-S3.4 vertical stack", "[actions]")
+{
+    krill::KrillParser p;
+    // "a b, c" → vertical of [horizontal [a,b], c]
+    REQUIRE(parseSeq(p, "a b, c") ==
+        R"({"type_":"pattern","arguments_":{"alignment":"v"},"source_":[)"
+        R"({"type_":"pattern","arguments_":{"alignment":"h"},"source_":[)"
+        R"({"type_":"element","source_":"a"},{"type_":"element","source_":"b"}]},)"
+        R"({"type_":"element","source_":"c"}]})");
+}
+
+TEST_CASE("S3.2-S3.4 sub_cycle", "[actions]")
+{
+    krill::KrillParser p;
+    // "a [2,4]" → horizontal of [a, vertical [2,4]]
+    REQUIRE(parseSeq(p, "a [2,4]") ==
+        R"({"type_":"pattern","arguments_":{"alignment":"h"},"source_":[)"
+        R"({"type_":"element","source_":"a"},)"
+        R"({"type_":"pattern","arguments_":{"alignment":"v"},"source_":[)"
+        R"({"type_":"element","source_":"2"},{"type_":"element","source_":"4"}]}]})");
+}
+
+TEST_CASE("S3.3 timeline changes alignment to t", "[actions]")
+{
+    krill::KrillParser p;
+    // "<a b>" inside a sequence → pattern with alignment "t"
+    REQUIRE(parseSeq(p, "<a b>") ==
+        R"({"type_":"pattern","arguments_":{"alignment":"t"},"source_":[)"
+        R"({"type_":"element","source_":"a"},{"type_":"element","source_":"b"}]})");
+}
+
+TEST_CASE("S3.3 timeline single element passes through", "[actions]")
+{
+    krill::KrillParser p;
+    // Single-step timeline → just the element
+    REQUIRE(parseSeq(p, "<a>") == R"({"type_":"element","source_":"a"})");
+}
+
+TEST_CASE("S3.2-S3.4 nested sub_cycle", "[actions]")
+{
+    krill::KrillParser p;
+    // "[bd sd]" as the whole sequence → horizontal pattern
+    REQUIRE(parseSeq(p, "[bd sd]") ==
+        R"({"type_":"pattern","arguments_":{"alignment":"h"},"source_":[)"
+        R"({"type_":"element","source_":"bd"},{"type_":"element","source_":"sd"}]})");
+}
+
