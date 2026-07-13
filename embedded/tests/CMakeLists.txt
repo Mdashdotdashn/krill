@@ -9,6 +9,7 @@ add_executable(Tests.exe
 ../cycle/Cycle.cpp
 ../parser/Context.cpp
 ../parser/MiniNotation.cpp
+../parser/KrillParser.cpp
 ../parser/Parser.cpp
 ../parser/StringStream.cpp
 ../parser/XmlBuilder.cpp
@@ -27,4 +28,5 @@ add_executable(Tests.exe
 ./tst_peglib_mininotation.cpp
 ./tst_peglib_operators.cpp
 ./tst_peglib_statement.cpp
+./tst_peglib_actions.cpp
 )

@@ -1,0 +1,121 @@
+#include <third_party/catch2/catch.hpp>
+#include <peglib.h>
+
+#include "parser/Context.hpp"
+#include "parser/KrillGrammar.hpp"
+#include "parser/XmlBuilder.hpp"
+#include "parser/Helpers.hpp"
+
+#include <memory>
+#include <string>
+
+// Epic 3 — Semantic actions tests.
+// Each story adds test cases to this file as actions are wired.
+//
+// Strategy: each story tests its actions using a focused grammar (the rule
+// under test as root) with the user-data pattern that matches KrillParser.
+// This isolates each action without requiring the full pipeline to be complete.
+
+// ── Shared utilities (mirror KrillParser.cpp internals) ───────────────────────
+
+using PValue = std::shared_ptr<rapidjson::Value>;
+
+struct UserData { krill::Context& ctx; };
+
+static std::string trimWs(const std::string& s)
+{
+    const auto first = s.find_first_not_of(" \t\n\r");
+    if (first == std::string::npos) return "";
+    const auto last  = s.find_last_not_of(" \t\n\r");
+    return s.substr(first, last - first + 1);
+}
+
+// Run a focused grammar with the given rule as root.
+// Returns the PValue produced by the rule's action (captured via a root wrapper).
+static PValue parseWithAction(
+    const std::string& ruleName,
+    const std::string& grammar,
+    const std::function<void(peg::parser&)>& wireActions,
+    const std::string& input,
+    rapidjson::Document& doc)
+{
+    std::string fullGrammar = "root <- " + ruleName + "\n" + grammar;
+    peg::parser p(fullGrammar.c_str());
+    REQUIRE(p);
+
+    wireActions(p);
+
+    PValue result;
+    p["root"] = [&result](const peg::SemanticValues& vs) {
+        if (!vs.empty()) result = std::any_cast<PValue>(vs[0]);
+    };
+
+    krill::Context ctx(doc, input);
+    UserData ud{ctx};
+    std::any dt = ud;
+    p.parse(input.c_str(), dt);
+    return result;
+}
+
+// Serialise a rapidjson::Value to a JSON string for easy comparison in assertions.
+static std::string toJson(const rapidjson::Value& v)
+{
+    rapidjson::StringBuffer buf;
+    rapidjson::Writer<rapidjson::StringBuffer> w(buf);
+    v.Accept(w);
+    return buf.GetString();
+}
+
+// ── S3.1 grammar fragment ─────────────────────────────────────────────────────
+
+static const char* kStepGrammar = R"(
+    step      <- ws step_char+ ws
+    step_char <- [0-9a-zA-Z~\-#.]
+    ws        <- [ \t\n\r]*
+)";
+
+static void wireStepAction(peg::parser& p)
+{
+    p["step"] = [](const peg::SemanticValues& vs, std::any& dt) -> std::any {
+        auto& ud = std::any_cast<UserData&>(dt);
+        const auto token = trimWs(vs.token_to_string());
+        return std::make_shared<rapidjson::Value>(krill::buildXmlForElement(ud.ctx, token));
+    };
+}
+
+// ── S3.1 tests ────────────────────────────────────────────────────────────────
+
+TEST_CASE("S3.1 step action — plain step produces element", "[actions]")
+{
+    rapidjson::Document doc;
+
+    auto checkStep = [&](const char* input, const char* expectedSource) {
+        auto result = parseWithAction("step", kStepGrammar, wireStepAction, input, doc);
+        REQUIRE(result != nullptr);
+        REQUIRE(result->IsObject());
+        REQUIRE(std::string((*result)["type_"].GetString()) == "element");
+        REQUIRE(std::string((*result)["source_"].GetString()) == expectedSource);
+    };
+
+    checkStep("bd",     "bd");
+    checkStep("  bd  ", "bd");      // leading/trailing whitespace stripped
+    checkStep("~",      "~");       // rest marker
+    checkStep("c#4",    "c#4");     // note name with accidental
+    checkStep("d#0",    "d#0");
+    checkStep("hh",     "hh");
+    checkStep("3",      "3");       // numeric step
+}
+
+TEST_CASE("S3.1 step action — output JSON shape", "[actions]")
+{
+    rapidjson::Document doc;
+    auto result = parseWithAction("step", kStepGrammar, wireStepAction, "a", doc);
+
+    REQUIRE(result != nullptr);
+    // Must have exactly type_ and source_ keys
+    REQUIRE(result->MemberCount() == 2);
+    REQUIRE(result->HasMember("type_"));
+    REQUIRE(result->HasMember("source_"));
+    // Matches JS side: {"type_":"element","source_":"a"}
+    REQUIRE(toJson(*result) == R"({"type_":"element","source_":"a"})");
+}
