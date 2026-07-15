@@ -7,7 +7,7 @@ namespace krill
 class StretchRenderNode : public RenderNode
 {
 public:
-  StretchRenderNode(RenderNodePtr& child, Fraction stretchFactor)
+  StretchRenderNode(const RenderNodePtr& child, Fraction stretchFactor)
     : mpChild(child)
     , mStretchFactor(stretchFactor)
   {}
