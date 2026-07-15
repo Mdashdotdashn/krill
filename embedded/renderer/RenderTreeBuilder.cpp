@@ -74,6 +74,15 @@ RenderNodePtr makeOperatorRenderNode(const std::string& type, const rj::Value& a
     return makeStructRenderNode(childNode, rightNode);
   }
 
+  if (type == "add")
+  {
+    assert(arguments.Size() >= 1);
+    // arguments[0] is the add pattern (right operand)
+    // childNode is the left operand
+    const auto rightNode = makeRenderNode(arguments[0]);
+    return makeAddRenderNode(childNode, rightNode);
+  }
+
   assert(0);
   return nullptr;
 }

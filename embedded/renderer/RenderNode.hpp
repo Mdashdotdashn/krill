@@ -400,6 +400,164 @@ static RenderNodePtr makeStructRenderNode(RenderNodePtr left, RenderNodePtr righ
 }
 
 //------------------------------------------------------------------------------
+// AddRenderNode:
+// Weaves two patterns: samples at all event times from both patterns,
+// applies addition: combines values from both patterns by adding them
+
+namespace detail
+{
+  // Try to parse a string as a number
+  // Returns {success, value}
+  static std::pair<bool, double> tryParseDouble(const std::string& s)
+  {
+    try
+    {
+      const auto result = std::stod(s);
+      return {true, result};
+    }
+    catch (...)
+    {
+      return {false, 0.0};
+    }
+  }
+
+  // Format a double as a string, removing trailing zeros and decimal point if needed
+  static std::string formatDouble(double value)
+  {
+    // Handle the case where it's a whole number
+    if (value == (long long)value)
+    {
+      return std::to_string((long long)value);
+    }
+    
+    // Format with reasonable precision, trim trailing zeros
+    char buffer[32];
+    snprintf(buffer, sizeof(buffer), "%.15g", value);
+    return std::string(buffer);
+  }
+
+  // Add two values (as strings), returning the result as a string
+  // If either value is "~" (rest), return "~"
+  static std::string addValues(const std::string& left, const std::string& right)
+  {
+    if (left == "~" || right == "~")
+    {
+      return "~";
+    }
+
+    const auto [leftOk, leftVal] = detail::tryParseDouble(left);
+    const auto [rightOk, rightVal] = detail::tryParseDouble(right);
+
+    if (!leftOk || !rightOk)
+    {
+      return "~";
+    }
+
+    const auto result = leftVal + rightVal;
+    return detail::formatDouble(result);
+  }
+
+  // Collect all unique event times from both cycles, sorted
+  static std::vector<Fraction> collectEventTimes(const Cycle& left, const Cycle& right)
+  {
+    std::vector<Fraction> times;
+    times.reserve(left.events.size() + right.events.size());
+
+    for (const auto& e : left.events)
+    {
+      times.push_back(e.time);
+    }
+    for (const auto& e : right.events)
+    {
+      times.push_back(e.time);
+    }
+
+    // Sort and deduplicate
+    std::sort(times.begin(), times.end());
+    times.erase(std::unique(times.begin(), times.end()), times.end());
+
+    return times;
+  }
+}
+
+class AddRenderNode : public RenderNode
+{
+public:
+  AddRenderNode(RenderNodePtr left, RenderNodePtr right)
+    : mpLeft(left)
+    , mpRight(right)
+  {}
+
+  void tick() override
+  {
+    mpLeft->tick();
+    mpRight->tick();
+  }
+
+  Cycle render() override
+  {
+    // Render both patterns
+    const auto leftCycle = mpLeft->render();
+    const auto rightCycle = mpRight->render();
+
+    // Collect all event times from both patterns
+    const auto eventTimes = detail::collectEventTimes(leftCycle, rightCycle);
+
+    // Sample both patterns at each time and apply addition
+    EventArray events;
+    
+    for (const auto& time : eventTimes)
+    {
+      const auto leftValues = detail::sampleCycle(leftCycle, time);
+      const auto rightValues = detail::sampleCycle(rightCycle, time);
+
+      // For each combination of left and right values, add them
+      for (const auto& leftVal : leftValues)
+      {
+        for (const auto& rightVal : rightValues)
+        {
+          const auto result = detail::addValues(leftVal, rightVal);
+          
+          Cycle::Event event;
+          event.time = time;
+          event.values.push_back(result);
+          events.push_back(event);
+        }
+      }
+    }
+
+    // Merge duplicate times
+    std::map<Fraction, std::vector<std::string>> merged;
+    for (const auto& event : events)
+    {
+      merged[event.time].insert(
+        merged[event.time].end(),
+        event.values.begin(),
+        event.values.end()
+      );
+    }
+
+    // Convert back to event array
+    EventArray result;
+    for (const auto& [time, values] : merged)
+    {
+      result.push_back(Cycle::Event(time, values));
+    }
+
+    return {Fraction(1), result};
+  }
+
+private:
+  RenderNodePtr mpLeft;
+  RenderNodePtr mpRight;
+};
+
+static RenderNodePtr makeAddRenderNode(RenderNodePtr left, RenderNodePtr right)
+{
+  return std::make_shared<AddRenderNode>(left, right);
+}
+
+//------------------------------------------------------------------------------
 // TimelineRenderNode:
 // Plays children cycles one after the other
 
