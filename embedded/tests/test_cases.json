@@ -571,6 +571,7 @@
     },
     {
       "source": "rotR 0.125 $ 'bd ~ sd ~'",
+      "use": true,
       "expected": {
         "1/8": [
           "bd"
@@ -588,6 +589,7 @@
     },
     {
       "source": "rotL 0.125 $ 'bd ~ sd ~'",
+      "use": true,
       "expected": {
         "1/8": [
           "~"

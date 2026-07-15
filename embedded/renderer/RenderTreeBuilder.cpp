@@ -59,6 +59,12 @@ RenderNodePtr makeOperatorRenderNode(const std::string& type, const rj::Value& a
     return makeFixedStepRenderNode(childNode, stepDivision);
   }
 
+  if (type == "shift")
+  {
+    Fraction offset = detail::fractionFromValue(arguments[0]);
+    return makeShiftRenderNode(childNode, offset);
+  }
+
   assert(0);
   return nullptr;
 }

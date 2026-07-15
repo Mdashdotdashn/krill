@@ -3,6 +3,7 @@
 #include "cycle/Cycle.hpp"
 #include "utils/jsonUtils.hpp"
 
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <numeric>
@@ -225,6 +226,54 @@ static RenderNodePtr makeFixedStepRenderNode(RenderNodePtr child, Fraction stepD
 {
   const auto stretchFactor = Fraction(double(child->stepCount())) / Fraction(1) / stepDivision;
   return std::make_shared<StretchRenderNode>(child, stretchFactor);
+}
+
+//------------------------------------------------------------------------------
+// ShiftRenderNode:
+// Shifts all events in the cycle by a fixed time offset (rotR / rotL).
+// Events that shift past the end of the cycle wrap around to the beginning.
+
+class ShiftRenderNode : public RenderNode
+{
+public:
+  ShiftRenderNode(RenderNodePtr child, Fraction shift)
+    : mpChild(child)
+    , mShift(shift)
+  {}
+
+  void tick() override { mpChild->tick(); }
+
+  Cycle render() override
+  {
+    Cycle result = mpChild->render();
+    const auto length = result.length;
+
+    for (auto& e : result.events)
+    {
+      e.time = e.time + mShift;
+      // Wrap into [0, length)
+      while (e.time >= length) e.time = e.time - length;
+      while (e.time < Fraction(0)) e.time = e.time + length;
+      e.time.reduce();
+    }
+
+    // Re-sort after wrap-around may have changed order
+    std::sort(result.events.begin(), result.events.end(),
+              [](const Cycle::Event& a, const Cycle::Event& b) {
+                return a.time < b.time;
+              });
+
+    return result;
+  }
+
+private:
+  RenderNodePtr mpChild;
+  Fraction      mShift;
+};
+
+static RenderNodePtr makeShiftRenderNode(RenderNodePtr child, Fraction shift)
+{
+  return std::make_shared<ShiftRenderNode>(child, shift);
 }
 
 //------------------------------------------------------------------------------
