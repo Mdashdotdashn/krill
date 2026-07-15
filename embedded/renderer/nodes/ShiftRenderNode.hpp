@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RenderNodeBase.hpp"
+#include "RenderNode.hpp"
 
 #include <algorithm>
 

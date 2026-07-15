@@ -1,5 +1,6 @@
 #pragma once
 
+#include "RenderNode.hpp"
 #include "CycleRenderNode.hpp"
 #include "SliceRenderNode.hpp"
 #include "WeightedPatternRenderNode.hpp"

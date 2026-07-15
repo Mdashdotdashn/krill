@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RenderNode.hpp"
+#include "nodes/AllNodes.hpp"
 
 #include "cycle/Cycle.hpp"
 
