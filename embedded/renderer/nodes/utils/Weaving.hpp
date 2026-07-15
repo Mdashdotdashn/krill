@@ -3,6 +3,7 @@
 #include "../RenderNode.hpp"
 
 #include <cctype>
+#include <map>
 
 namespace krill
 {
@@ -38,6 +39,23 @@ static std::vector<std::string> sampleCycle(const Cycle& cycle, Fraction time)
   }
 
   return {"~"};
+}
+
+static EventArray mergeEventsByTime(const EventArray& events)
+{
+  std::map<Fraction, std::vector<std::string>> merged;
+  for (const auto& event : events)
+  {
+    merged[event.time].insert(merged[event.time].end(), event.values.begin(), event.values.end());
+  }
+
+  EventArray result;
+  for (const auto& [time, values] : merged)
+  {
+    result.push_back(Cycle::Event(time, values));
+  }
+
+  return result;
 }
 } // namespace detail
 } // namespace krill

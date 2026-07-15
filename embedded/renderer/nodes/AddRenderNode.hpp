@@ -4,8 +4,6 @@
 #include "utils/Numeric.hpp"
 #include "utils/Weaving.hpp"
 
-#include <map>
-
 namespace krill
 {
 class AddRenderNode : public RenderNode
@@ -50,19 +48,7 @@ public:
       }
     }
 
-    std::map<Fraction, std::vector<std::string>> merged;
-    for (const auto& event : events)
-    {
-      merged[event.time].insert(merged[event.time].end(), event.values.begin(), event.values.end());
-    }
-
-    EventArray result;
-    for (const auto& [time, values] : merged)
-    {
-      result.push_back(Cycle::Event(time, values));
-    }
-
-    return {Fraction(1), result};
+    return {Fraction(1), detail::mergeEventsByTime(events)};
   }
 
 private:
