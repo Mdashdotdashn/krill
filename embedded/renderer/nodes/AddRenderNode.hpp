@@ -25,21 +25,12 @@ public:
     const auto leftCycle = mpLeft->render();
     const auto rightCycle = mpRight->render();
 
-    const auto eventTimes = detail::collectEventTimes(leftCycle, rightCycle);
-
-    EventArray events;
-
-    for (const auto& time : eventTimes)
-    {
-      const auto leftValues = detail::sampleCycle(leftCycle, time);
-      const auto rightValues = detail::sampleCycle(rightCycle, time);
-
-      for (const auto& leftVal : leftValues)
-        for (const auto& rightVal : rightValues)
-          events.push_back(Cycle::Event{time, {detail::addValues(leftVal, rightVal)}});
-    }
-
-    return {Fraction(1), detail::mergeEventsByTime(events)};
+    return detail::weaveCycles(leftCycle,
+                               rightCycle,
+                               detail::WeaveSamplingMode::both,
+                               [](const std::string& leftValue, const std::string& rightValue) {
+                                 return detail::addValues(leftValue, rightValue);
+                               });
   }
 
 private:

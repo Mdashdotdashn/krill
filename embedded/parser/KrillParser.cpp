@@ -5,6 +5,7 @@
 
 #include <peglib.h>
 #include <cassert>
+#include <cstdlib>
 #include <memory>
 #include <string>
 
@@ -314,6 +315,57 @@ struct KrillParser::Impl {
             return args;
         };
 
+        auto shiftArgs = [](const peg::SemanticValues& vs,
+                            rapidjson::Document::AllocatorType& alloc,
+                            double factor = 1.0) {
+            auto args = std::make_shared<rapidjson::Value>(rapidjson::kArrayType);
+
+            for (const auto& v : vs)
+            {
+                if (v.type() == typeid(double))
+                {
+                    args->PushBack(rapidjson::Value(std::any_cast<double>(v) * factor), alloc);
+                    return args;
+                }
+
+                if (v.type() == typeid(PValue))
+                {
+                    const auto pv = std::any_cast<PValue>(v);
+
+                    // Keep scalar rot behavior for plain numeric step arguments
+                    // like `rotR 0.125` by emitting a numeric argument, not an AST node.
+                    if (pv && pv->IsObject()
+                        && pv->HasMember("type_")
+                        && (*pv)["type_"].IsString()
+                        && std::string((*pv)["type_"].GetString()) == "element"
+                        && pv->HasMember("source_")
+                        && (*pv)["source_"].IsString())
+                    {
+                        const auto src = (*pv)["source_"].GetString();
+                        char* end = nullptr;
+                        const auto parsed = std::strtod(src, &end);
+                        if (end && *end == '\0')
+                        {
+                            args->PushBack(rapidjson::Value(parsed * factor), alloc);
+                            return args;
+                        }
+                    }
+
+                    rapidjson::Value copy;
+                    copy.CopyFrom(*pv, alloc);
+                    args->PushBack(copy, alloc);
+
+                    if (factor != 1.0)
+                    {
+                        args->PushBack(rapidjson::Value(factor), alloc);
+                    }
+                    return args;
+                }
+            }
+
+            return args;
+        };
+
         parser_["slow"] = [singleNumArgs](const peg::SemanticValues& vs, std::any& dt) -> std::any {
             auto& ud = std::any_cast<UserData&>(dt);
             return OperatorInfo{"stretch", singleNumArgs(vs, ud.ctx.document().GetAllocator())};
@@ -330,14 +382,14 @@ struct KrillParser::Impl {
                 }
             return OperatorInfo{"stretch", args};
         };
-        parser_["rotR"] = [singleNumArgs](const peg::SemanticValues& vs, std::any& dt) -> std::any {
+        parser_["rotR"] = [shiftArgs](const peg::SemanticValues& vs, std::any& dt) -> std::any {
             auto& ud = std::any_cast<UserData&>(dt);
-            return OperatorInfo{"shift", singleNumArgs(vs, ud.ctx.document().GetAllocator())};
+            return OperatorInfo{"shift", shiftArgs(vs, ud.ctx.document().GetAllocator())};
         };
-        parser_["rotL"] = [singleNumArgs](const peg::SemanticValues& vs, std::any& dt) -> std::any {
+        parser_["rotL"] = [shiftArgs](const peg::SemanticValues& vs, std::any& dt) -> std::any {
             // rotL N → shift -N
             auto& ud = std::any_cast<UserData&>(dt);
-            return OperatorInfo{"shift", singleNumArgs(vs, ud.ctx.document().GetAllocator(), -1.0)};
+            return OperatorInfo{"shift", shiftArgs(vs, ud.ctx.document().GetAllocator(), -1.0)};
         };
         parser_["bjorklund"] = [](const peg::SemanticValues& vs, std::any& dt) -> std::any {
             auto& ud    = std::any_cast<UserData&>(dt);

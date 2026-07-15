@@ -46,6 +46,7 @@ TEST_CASE("Rendertree")
       REQUIRE(parseResult.has_value());
 
       const auto pRenderTree = RenderTreeBuilder::fromJson(parseResult.value());
+
       RenderTreePlayer player;
       player.setTree(pRenderTree);
 

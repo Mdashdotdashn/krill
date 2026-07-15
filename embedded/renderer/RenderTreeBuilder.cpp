@@ -206,6 +206,15 @@ RenderNodePtr makeOperatorRenderNode(const std::string& type,
 
   if (type == "shift")
   {
+    if (arguments[0].IsObject())
+    {
+      const auto shiftNode = makeRenderNode(arguments[0]);
+      const auto direction = arguments.Size() > 1
+                               ? detail::fractionFromValue(arguments[1])
+                               : Fraction(1);
+      return makeShiftRenderNode(childNode, shiftNode, direction);
+    }
+
     Fraction offset = detail::fractionFromValue(arguments[0]);
     return makeShiftRenderNode(childNode, offset);
   }

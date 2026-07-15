@@ -24,23 +24,14 @@ public:
     const auto leftCycle = mpLeft->render();
     const auto rightCycle = mpRight->render();
 
-    EventArray result;
-
-    for (const auto& rightEvent : rightCycle.events)
-    {
-      const auto leftValues = detail::sampleCycle(leftCycle, rightEvent.time);
-      std::vector<std::string> values;
-      for (const auto& leftVal : leftValues)
-      {
-        for (const auto& rightVal : rightEvent.values)
-        {
-          values.push_back(detail::boolValue(rightVal) ? leftVal : std::string("~"));
-        }
-      }
-      result.push_back(Cycle::Event{rightEvent.time, std::move(values)});
-    }
-
-    return {Fraction(1), result};
+    return detail::weaveCycles(leftCycle,
+                               rightCycle,
+                               detail::WeaveSamplingMode::right,
+                               [](const std::string& leftValue, const std::string& rightValue) {
+                                 return detail::boolValue(rightValue)
+                                          ? leftValue
+                                          : std::string("~");
+                               });
   }
 
 private:

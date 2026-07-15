@@ -96,8 +96,8 @@ struct              <- 'struct' ws sequence_or_operator
 bjorklund           <- 'euclid' ws int ws int
 slow                <- 'slow' ws number
 fast                <- 'fast' ws number
-rotL                <- 'rotL' ws number
-rotR                <- 'rotR' ws number
+rotL                <- 'rotL' ws operator_argument
+rotR                <- 'rotR' ws operator_argument
 scale               <- 'scale' ws quote step_char+ quote
 
 comment             <- '//' [^\n]*

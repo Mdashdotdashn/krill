@@ -45,8 +45,8 @@ struct              <- 'struct' ws sequence_or_operator
 bjorklund           <- 'euclid' ws int ws int
 slow                <- 'slow' ws number
 fast                <- 'fast' ws number
-rotL                <- 'rotL' ws number
-rotR                <- 'rotR' ws number
+rotL                <- 'rotL' ws operator_argument
+rotR                <- 'rotR' ws operator_argument
 scale               <- 'scale' ws quote step_char+ quote
 comment             <- '//' [^\n]*
 cat                 <- 'cat' ws '[' ws sequence_or_operator (comma sequence_or_operator)* ws ']'
@@ -104,6 +104,8 @@ TEST_CASE("S2.4 rotL / rotR", "[operators]")
 {
     REQUIRE(matchesRule("rotL", "rotL 1"));
     REQUIRE(matchesRule("rotR", "rotR 0.5"));
+    REQUIRE(matchesRule("rotL", "rotL \"0 0.125\""));
+    REQUIRE(matchesRule("rotR", "rotR '<0 0.125>'"));
 
     REQUIRE_FALSE(matchesRule("rotL", "rotL"));
 }
