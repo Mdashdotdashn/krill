@@ -12,12 +12,12 @@ namespace detail
 {
 static EventArray computeEventsFromWeightedArray(const RenderNodeArray& renderNodes)
 {
-  const float totalWeight = std::accumulate(renderNodes.begin(),
-                                            renderNodes.end(),
-                                            0.f,
-                                            [](float acc, const RenderNodePtr& pRenderNode) {
-                                              return acc + pRenderNode->weight();
-                                            });
+  const double totalWeight = std::accumulate(renderNodes.begin(),
+                                             renderNodes.end(),
+                                             0.0,
+                                             [](double acc, const RenderNodePtr& pRenderNode) {
+                                               return acc + pRenderNode->weight();
+                                             });
   Fraction weightFactor;
   weightFactor.convertDoubleToFraction(totalWeight);
 
