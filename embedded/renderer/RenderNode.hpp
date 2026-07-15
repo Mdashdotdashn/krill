@@ -4,6 +4,7 @@
 #include "utils/jsonUtils.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <map>
 #include <memory>
 #include <numeric>
@@ -274,6 +275,128 @@ private:
 static RenderNodePtr makeShiftRenderNode(RenderNodePtr child, Fraction shift)
 {
   return std::make_shared<ShiftRenderNode>(child, shift);
+}
+
+//------------------------------------------------------------------------------
+// StructRenderNode:
+// Weaves two patterns: samples at right pattern's event times,
+// applies a boolean filter: keeps left if right is truthy, else substitutes rest
+
+namespace detail
+{
+  // Parse a value as boolean: true for 't', 'T', '1', 'true', etc.
+  // false for 'f', 'F', '0', 'false', '~', etc.
+  static bool boolValue(const std::string& s)
+  {
+    if (s.empty()) return false;
+    const auto lower = [](char c) { return std::tolower(c); };
+    const auto first = lower(s[0]);
+    return first == 't' || first == '1';
+  }
+
+  // Sample a cycle at a specific time
+  // Returns the values from the event at or before that time
+  static std::vector<std::string> sampleCycle(const Cycle& cycle, Fraction time)
+  {
+    // Find the event at or before this time
+    const Cycle::Event* lastEvent = nullptr;
+    
+    for (const auto& event : cycle.events)
+    {
+      if (event.time <= time)
+      {
+        lastEvent = &event;
+      }
+      else
+      {
+        break;
+      }
+    }
+    
+    if (lastEvent)
+    {
+      return lastEvent->values;
+    }
+    
+    // No event at or before time, return rest
+    return {"~"};
+  }
+}
+
+class StructRenderNode : public RenderNode
+{
+public:
+  StructRenderNode(RenderNodePtr left, RenderNodePtr right)
+    : mpLeft(left)
+    , mpRight(right)
+  {}
+
+  void tick() override
+  {
+    mpLeft->tick();
+    mpRight->tick();
+  }
+
+  Cycle render() override
+  {
+    // Render both patterns
+    const auto leftCycle = mpLeft->render();
+    const auto rightCycle = mpRight->render();
+
+    // Sample at right pattern's event times
+    EventArray events;
+    
+    for (const auto& rightEvent : rightCycle.events)
+    {
+      // Sample left at this time
+      const auto leftValues = detail::sampleCycle(leftCycle, rightEvent.time);
+      
+      // Apply struct operation: for each left value, 
+      // keep it if right value is truthy, else use rest
+      for (const auto& leftVal : leftValues)
+      {
+        for (const auto& rightVal : rightEvent.values)
+        {
+          const auto keep = detail::boolValue(rightVal);
+          const auto result = keep ? leftVal : std::string("~");
+          
+          Cycle::Event event;
+          event.time = rightEvent.time;
+          event.values.push_back(result);
+          events.push_back(event);
+        }
+      }
+    }
+
+    // Merge duplicate times
+    std::map<Fraction, std::vector<std::string>> merged;
+    for (const auto& event : events)
+    {
+      merged[event.time].insert(
+        merged[event.time].end(),
+        event.values.begin(),
+        event.values.end()
+      );
+    }
+
+    // Convert back to event array
+    EventArray result;
+    for (const auto& [time, values] : merged)
+    {
+      result.push_back(Cycle::Event(time, values));
+    }
+
+    return {Fraction(1), result};
+  }
+
+private:
+  RenderNodePtr mpLeft;
+  RenderNodePtr mpRight;
+};
+
+static RenderNodePtr makeStructRenderNode(RenderNodePtr left, RenderNodePtr right)
+{
+  return std::make_shared<StructRenderNode>(left, right);
 }
 
 //------------------------------------------------------------------------------

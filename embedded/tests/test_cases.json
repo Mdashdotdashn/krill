@@ -429,6 +429,7 @@
     },
     {
       "source": "struct 't f f t' $ 'bd'",
+      "use": true,
       "expected": {
         "0/1": [
           "bd"

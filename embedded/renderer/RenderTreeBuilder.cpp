@@ -65,6 +65,15 @@ RenderNodePtr makeOperatorRenderNode(const std::string& type, const rj::Value& a
     return makeShiftRenderNode(childNode, offset);
   }
 
+  if (type == "struct")
+  {
+    assert(arguments.Size() >= 1);
+    // arguments[0] is the struct pattern (right operand)
+    // childNode is the left operand
+    const auto rightNode = makeRenderNode(arguments[0]);
+    return makeStructRenderNode(childNode, rightNode);
+  }
+
   assert(0);
   return nullptr;
 }
