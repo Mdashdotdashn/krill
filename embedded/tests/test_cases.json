@@ -7,18 +7,6 @@
         "0/1": [
           "true"
         ]
-      },
-      "model": {
-        "type_": "pattern",
-        "arguments_": {
-          "alignment": "h"
-        },
-        "source_": [
-          {
-            "type_": "element",
-            "source_": "true"
-          }
-        ]
       }
     },
     {
@@ -34,26 +22,6 @@
         "2/3": [
           "3"
         ]
-      },
-      "model": {
-        "type_": "pattern",
-        "arguments_": {
-          "alignment": "h"
-        },
-        "source_": [
-          {
-            "type_": "element",
-            "source_": "1"
-          },
-          {
-            "type_": "element",
-            "source_": "2"
-          },
-          {
-            "type_": "element",
-            "source_": "3"
-          }
-        ]
       }
     },
     {
@@ -68,37 +36,6 @@
         ],
         "2/3": [
           "3"
-        ]
-      },
-      "model": {
-        "type_": "pattern",
-        "arguments_": {
-          "alignment": "h"
-        },
-        "source_": [
-          {
-            "type_": "element",
-            "source_": "1"
-          },
-          {
-            "type_": "element",
-            "source_": "2"
-          },
-          {
-            "type_": "element",
-            "source_": {
-              "type_": "pattern",
-              "arguments_": {
-                "alignment": "h"
-              },
-              "source_": [
-                {
-                  "type_": "element",
-                  "source_": "3"
-                }
-              ]
-            }
-          }
         ]
       }
     },
@@ -119,50 +56,6 @@
         "2/3": [
           "3"
         ]
-      },
-      "model": {
-        "type_": "pattern",
-        "arguments_": {
-          "alignment": "v"
-        },
-        "source_": [
-          {
-            "type_": "pattern",
-            "arguments_": {
-              "alignment": "h"
-            },
-            "source_": [
-              {
-                "type_": "element",
-                "source_": "1"
-              },
-              {
-                "type_": "element",
-                "source_": "2"
-              },
-              {
-                "type_": "element",
-                "source_": "3"
-              }
-            ]
-          },
-          {
-            "type_": "pattern",
-            "arguments_": {
-              "alignment": "h"
-            },
-            "source_": [
-              {
-                "type_": "element",
-                "source_": "4"
-              },
-              {
-                "type_": "element",
-                "source_": "5"
-              }
-            ]
-          }
-        ]
       }
     },
     {
@@ -180,54 +73,6 @@
         "2/3": [
           "3",
           "flood"
-        ]
-      },
-      "model": {
-        "type_": "pattern",
-        "arguments_": {
-          "alignment": "v"
-        },
-        "source_": [
-          {
-            "type_": "pattern",
-            "arguments_": {
-              "alignment": "h"
-            },
-            "source_": [
-              {
-                "type_": "element",
-                "source_": "1"
-              },
-              {
-                "type_": "element",
-                "source_": "2"
-              },
-              {
-                "type_": "element",
-                "source_": "3"
-              }
-            ]
-          },
-          {
-            "type_": "pattern",
-            "arguments_": {
-              "alignment": "h"
-            },
-            "source_": [
-              {
-                "type_": "element",
-                "source_": "4"
-              },
-              {
-                "type_": "element",
-                "source_": "5"
-              },
-              {
-                "type_": "element",
-                "source_": "flood"
-              }
-            ]
-          }
         ]
       }
     },
@@ -248,90 +93,11 @@
           "6",
           "C4"
         ]
-      },
-      "model": {
-        "type_": "pattern",
-        "arguments_": {
-          "alignment": "v"
-        },
-        "source_": [
-          {
-            "type_": "pattern",
-            "arguments_": {
-              "alignment": "h"
-            },
-            "source_": [
-              {
-                "type_": "element",
-                "source_": "1"
-              },
-              {
-                "type_": "element",
-                "source_": "2"
-              },
-              {
-                "type_": "element",
-                "source_": "3"
-              }
-            ]
-          },
-          {
-            "type_": "pattern",
-            "arguments_": {
-              "alignment": "h"
-            },
-            "source_": [
-              {
-                "type_": "element",
-                "source_": "4"
-              },
-              {
-                "type_": "element",
-                "source_": "5"
-              },
-              {
-                "type_": "element",
-                "source_": {
-                  "type_": "pattern",
-                  "arguments_": {
-                    "alignment": "v"
-                  },
-                  "source_": [
-                    {
-                      "type_": "pattern",
-                      "arguments_": {
-                        "alignment": "h"
-                      },
-                      "source_": [
-                        {
-                          "type_": "element",
-                          "source_": "6"
-                        }
-                      ]
-                    },
-                    {
-                      "type_": "pattern",
-                      "arguments_": {
-                        "alignment": "h"
-                      },
-                      "source_": [
-                        {
-                          "type_": "element",
-                          "source_": "C4"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        ]
       }
     },
     {
       "source": "'<[1 2 3]>'",
-      "use": true,      
+      "use": true,
       "expected": {
         "0/1": [
           "1"
@@ -341,48 +107,6 @@
         ],
         "2/3": [
           "3"
-        ]
-      },
-      "model": {
-        "type_": "pattern",
-        "arguments_": {
-          "alignment": "h"
-        },
-        "source_": [
-          {
-            "type_": "element",
-            "source_": {
-              "type_": "pattern",
-              "arguments_": {
-                "alignment": "t"
-              },
-              "source_": [
-                {
-                  "type_": "element",
-                  "source_": {
-                    "type_": "pattern",
-                    "arguments_": {
-                      "alignment": "h"
-                    },
-                    "source_": [
-                      {
-                        "type_": "element",
-                        "source_": "1"
-                      },
-                      {
-                        "type_": "element",
-                        "source_": "2"
-                      },
-                      {
-                        "type_": "element",
-                        "source_": "3"
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          }
         ]
       }
     },
@@ -408,52 +132,6 @@
         "5/3": [
           "4"
         ]
-      },
-      "model": {
-        "type_": "pattern",
-        "arguments_": {
-          "alignment": "h"
-        },
-        "source_": [
-          {
-            "type_": "element",
-            "source_": {
-              "type_": "pattern",
-              "arguments_": {
-                "alignment": "h"
-              },
-              "source_": [
-                {
-                  "type_": "element",
-                  "source_": "1"
-                },
-                {
-                  "type_": "element",
-                  "source_": "2"
-                },
-                {
-                  "type_": "element",
-                  "source_": {
-                    "type_": "pattern",
-                    "arguments_": {
-                      "alignment": "t"
-                    },
-                    "source_": [
-                      {
-                        "type_": "element",
-                        "source_": "3"
-                      },
-                      {
-                        "type_": "element",
-                        "source_": "4"
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          }
-        ]
       }
     },
     {
@@ -469,32 +147,6 @@
         "4/3": [
           "3"
         ]
-      },
-      "model": {
-        "type_": "stretch",
-        "arguments_": [
-          2
-        ],
-        "source_": {
-          "type_": "pattern",
-          "arguments_": {
-            "alignment": "h"
-          },
-          "source_": [
-            {
-              "type_": "element",
-              "source_": "1"
-            },
-            {
-              "type_": "element",
-              "source_": "2"
-            },
-            {
-              "type_": "element",
-              "source_": "3"
-            }
-          ]
-        }
       }
     },
     {
@@ -514,61 +166,6 @@
         "2/3": [
           "5"
         ]
-      },
-      "model": {
-        "type_": "pattern",
-        "arguments_": {
-          "alignment": "h"
-        },
-        "source_": [
-          {
-            "type_": "element",
-            "source_": {
-              "type_": "pattern",
-              "arguments_": {
-                "alignment": "v"
-              },
-              "source_": [
-                {
-                  "type_": "pattern",
-                  "arguments_": {
-                    "alignment": "h"
-                  },
-                  "source_": [
-                    {
-                      "type_": "element",
-                      "source_": "1"
-                    },
-                    {
-                      "type_": "element",
-                      "source_": "2"
-                    }
-                  ]
-                },
-                {
-                  "type_": "pattern",
-                  "arguments_": {
-                    "alignment": "h"
-                  },
-                  "source_": [
-                    {
-                      "type_": "element",
-                      "source_": "3"
-                    },
-                    {
-                      "type_": "element",
-                      "source_": "4"
-                    },
-                    {
-                      "type_": "element",
-                      "source_": "5"
-                    }
-                  ]
-                }
-              ]
-            }
-          }
-        ]
       }
     },
     {
@@ -580,25 +177,6 @@
         ],
         "3/4": [
           "sd"
-        ]
-      },
-      "model": {
-        "type_": "pattern",
-        "arguments_": {
-          "alignment": "h"
-        },
-        "source_": [
-          {
-            "type_": "element",
-            "source_": "bd",
-            "options_": {
-              "weight": 3
-            }
-          },
-          {
-            "type_": "element",
-            "source_": "sd"
-          }
         ]
       }
     },
@@ -621,58 +199,6 @@
         "6/1": [
           "1"
         ]
-      },
-      "model": {
-        "type_": "pattern",
-        "arguments_": {
-          "alignment": "t"
-        },
-        "source_": [
-          {
-            "type_": "stretch",
-            "arguments_": [
-              2
-            ],
-            "source_": {
-              "type_": "pattern",
-              "arguments_": {
-                "alignment": "h"
-              },
-              "source_": [
-                {
-                  "type_": "element",
-                  "source_": "1"
-                },
-                {
-                  "type_": "element",
-                  "source_": "12"
-                }
-              ]
-            }
-          },
-          {
-            "type_": "stretch",
-            "arguments_": [
-              4
-            ],
-            "source_": {
-              "type_": "pattern",
-              "arguments_": {
-                "alignment": "h"
-              },
-              "source_": [
-                {
-                  "type_": "element",
-                  "source_": "5"
-                },
-                {
-                  "type_": "element",
-                  "source_": "17"
-                }
-              ]
-            }
-          }
-        ]
       }
     },
     {
@@ -691,41 +217,6 @@
         "5/6": [
           "g2"
         ]
-      },
-      "model": {
-        "type_": "pattern",
-        "arguments_": {
-          "alignment": "h"
-        },
-        "source_": [
-          {
-            "type_": "element",
-            "source_": "c2"
-          },
-          {
-            "type_": "element",
-            "source_": "c3"
-          },
-          {
-            "type_": "element",
-            "source_": {
-              "type_": "pattern",
-              "arguments_": {
-                "alignment": "h"
-              },
-              "source_": [
-                {
-                  "type_": "element",
-                  "source_": "d#3"
-                },
-                {
-                  "type_": "element",
-                  "source_": "g2"
-                }
-              ]
-            }
-          }
-        ]
       }
     },
     {
@@ -743,42 +234,6 @@
         "3/4": [
           "sd"
         ]
-      },
-      "model": {
-        "type_": "pattern",
-        "arguments_": {
-          "alignment": "h"
-        },
-        "source_": [
-          {
-            "type_": "element",
-            "source_": {
-              "type_": "pattern",
-              "arguments_": {
-                "alignment": "h"
-              },
-              "source_": [
-                {
-                  "type_": "element",
-                  "source_": "bd"
-                },
-                {
-                  "type_": "element",
-                  "source_": "sd"
-                }
-              ]
-            },
-            "options_": {
-              "operator": {
-                "type_": "bjorklund",
-                "arguments_": [
-                  2,
-                  8
-                ]
-              }
-            }
-          }
-        ]
       }
     },
     {
@@ -790,41 +245,6 @@
         ],
         "2/1": [
           "b"
-        ]
-      },
-      "model": {
-        "type_": "pattern",
-        "arguments_": {
-          "alignment": "h"
-        },
-        "source_": [
-          {
-            "type_": "element",
-            "source_": {
-              "type_": "pattern",
-              "arguments_": {
-                "alignment": "h"
-              },
-              "source_": [
-                {
-                  "type_": "element",
-                  "source_": "a"
-                },
-                {
-                  "type_": "element",
-                  "source_": "b"
-                }
-              ]
-            },
-            "options_": {
-              "operator": {
-                "type_": "stretch",
-                "arguments_": [
-                  4
-                ]
-              }
-            }
-          }
         ]
       }
     },
@@ -844,37 +264,6 @@
         "3/4": [
           "a"
         ]
-      },
-      "model": {
-        "type_": "pattern",
-        "arguments_": {
-          "alignment": "h"
-        },
-        "source_": [
-          {
-            "type_": "element",
-            "source_": {
-              "type_": "pattern",
-              "arguments_": {
-                "alignment": "h"
-              },
-              "source_": [
-                {
-                  "type_": "element",
-                  "source_": "a"
-                }
-              ]
-            },
-            "options_": {
-              "operator": {
-                "type_": "stretch",
-                "arguments_": [
-                  "1/4"
-                ]
-              }
-            }
-          }
-        ]
       }
     },
     {
@@ -892,56 +281,6 @@
         ],
         "3/2": [
           "c"
-        ]
-      },
-      "model": {
-        "type_": "pattern",
-        "arguments_": {
-          "alignment": "h"
-        },
-        "source_": [
-          {
-            "type_": "element",
-            "source_": {
-              "type_": "pattern",
-              "arguments_": {
-                "alignment": "h"
-              },
-              "source_": [
-                {
-                  "type_": "element",
-                  "source_": {
-                    "type_": "pattern",
-                    "arguments_": {
-                      "alignment": "h"
-                    },
-                    "source_": [
-                      {
-                        "type_": "element",
-                        "source_": "a"
-                      },
-                      {
-                        "type_": "element",
-                        "source_": "b"
-                      }
-                    ]
-                  },
-                  "options_": {
-                    "operator": {
-                      "type_": "stretch",
-                      "arguments_": [
-                        2
-                      ]
-                    }
-                  }
-                },
-                {
-                  "type_": "element",
-                  "source_": "c"
-                }
-              ]
-            }
-          }
         ]
       }
     },
@@ -967,56 +306,6 @@
         "7/2": [
           "c"
         ]
-      },
-      "model": {
-        "type_": "pattern",
-        "arguments_": {
-          "alignment": "h"
-        },
-        "source_": [
-          {
-            "type_": "element",
-            "source_": {
-              "type_": "pattern",
-              "arguments_": {
-                "alignment": "h"
-              },
-              "source_": [
-                {
-                  "type_": "element",
-                  "source_": {
-                    "type_": "pattern",
-                    "arguments_": {
-                      "alignment": "h"
-                    },
-                    "source_": [
-                      {
-                        "type_": "element",
-                        "source_": "a"
-                      },
-                      {
-                        "type_": "element",
-                        "source_": "b"
-                      }
-                    ]
-                  },
-                  "options_": {
-                    "operator": {
-                      "type_": "stretch",
-                      "arguments_": [
-                        4
-                      ]
-                    }
-                  }
-                },
-                {
-                  "type_": "element",
-                  "source_": "c"
-                }
-              ]
-            }
-          }
-        ]
       }
     },
     {
@@ -1032,45 +321,6 @@
         "2/1": [
           "c"
         ]
-      },
-      "model": {
-        "type_": "pattern",
-        "arguments_": {
-          "alignment": "h"
-        },
-        "source_": [
-          {
-            "type_": "element",
-            "source_": {
-              "type_": "pattern",
-              "arguments_": {
-                "alignment": "h"
-              },
-              "source_": [
-                {
-                  "type_": "element",
-                  "source_": "a"
-                },
-                {
-                  "type_": "element",
-                  "source_": "b"
-                },
-                {
-                  "type_": "element",
-                  "source_": "c"
-                }
-              ]
-            },
-            "options_": {
-              "operator": {
-                "type_": "fixed-step",
-                "arguments_": [
-                  1
-                ]
-              }
-            }
-          }
-        ]
       }
     },
     {
@@ -1085,45 +335,6 @@
         ],
         "1/1": [
           "c"
-        ]
-      },
-      "model": {
-        "type_": "pattern",
-        "arguments_": {
-          "alignment": "h"
-        },
-        "source_": [
-          {
-            "type_": "element",
-            "source_": {
-              "type_": "pattern",
-              "arguments_": {
-                "alignment": "h"
-              },
-              "source_": [
-                {
-                  "type_": "element",
-                  "source_": "a"
-                },
-                {
-                  "type_": "element",
-                  "source_": "b"
-                },
-                {
-                  "type_": "element",
-                  "source_": "c"
-                }
-              ]
-            },
-            "options_": {
-              "operator": {
-                "type_": "fixed-step",
-                "arguments_": [
-                  2
-                ]
-              }
-            }
-          }
         ]
       }
     },
@@ -1142,73 +353,6 @@
         "1/1": [
           "c",
           "3"
-        ]
-      },
-      "model": {
-        "type_": "pattern",
-        "arguments_": {
-          "alignment": "h"
-        },
-        "source_": [
-          {
-            "type_": "element",
-            "source_": {
-              "type_": "pattern",
-              "arguments_": {
-                "alignment": "v"
-              },
-              "source_": [
-                {
-                  "type_": "pattern",
-                  "arguments_": {
-                    "alignment": "h"
-                  },
-                  "source_": [
-                    {
-                      "type_": "element",
-                      "source_": "a"
-                    },
-                    {
-                      "type_": "element",
-                      "source_": "b"
-                    },
-                    {
-                      "type_": "element",
-                      "source_": "c"
-                    }
-                  ]
-                },
-                {
-                  "type_": "pattern",
-                  "arguments_": {
-                    "alignment": "h"
-                  },
-                  "source_": [
-                    {
-                      "type_": "element",
-                      "source_": "1"
-                    },
-                    {
-                      "type_": "element",
-                      "source_": "2"
-                    },
-                    {
-                      "type_": "element",
-                      "source_": "3"
-                    }
-                  ]
-                }
-              ]
-            },
-            "options_": {
-              "operator": {
-                "type_": "fixed-step",
-                "arguments_": [
-                  2
-                ]
-              }
-            }
-          }
         ]
       }
     },
@@ -1246,98 +390,6 @@
         "7/4": [
           "sd"
         ]
-      },
-      "model": {
-        "type_": "pattern",
-        "arguments_": {
-          "alignment": "h"
-        },
-        "source_": [
-          {
-            "type_": "element",
-            "source_": {
-              "type_": "pattern",
-              "arguments_": {
-                "alignment": "h"
-              },
-              "source_": [
-                {
-                  "type_": "element",
-                  "source_": "bd"
-                },
-                {
-                  "type_": "element",
-                  "source_": "sd"
-                },
-                {
-                  "type_": "element",
-                  "source_": {
-                    "type_": "pattern",
-                    "arguments_": {
-                      "alignment": "h"
-                    },
-                    "source_": [
-                      {
-                        "type_": "element",
-                        "source_": "~"
-                      },
-                      {
-                        "type_": "element",
-                        "source_": "bd"
-                      }
-                    ]
-                  }
-                },
-                {
-                  "type_": "element",
-                  "source_": "sd"
-                },
-                {
-                  "type_": "element",
-                  "source_": "bd"
-                },
-                {
-                  "type_": "element",
-                  "source_": {
-                    "type_": "pattern",
-                    "arguments_": {
-                      "alignment": "h"
-                    },
-                    "source_": [
-                      {
-                        "type_": "element",
-                        "source_": "sd"
-                      },
-                      {
-                        "type_": "element",
-                        "source_": "bd",
-                        "options_": {
-                          "weight": 3
-                        }
-                      }
-                    ]
-                  }
-                },
-                {
-                  "type_": "element",
-                  "source_": "bd"
-                },
-                {
-                  "type_": "element",
-                  "source_": "sd"
-                }
-              ]
-            },
-            "options_": {
-              "operator": {
-                "type_": "fixed-step",
-                "arguments_": [
-                  4
-                ]
-              }
-            }
-          }
-        ]
       }
     },
     {
@@ -1355,40 +407,6 @@
         "3/4": [
           "sd"
         ]
-      },
-      "model": {
-        "type_": "bjorklund",
-        "arguments_": [
-          2,
-          8
-        ],
-        "source_": {
-          "type_": "pattern",
-          "arguments_": {
-            "alignment": "h"
-          },
-          "source_": [
-            {
-              "type_": "element",
-              "source_": {
-                "type_": "pattern",
-                "arguments_": {
-                  "alignment": "h"
-                },
-                "source_": [
-                  {
-                    "type_": "element",
-                    "source_": "bd"
-                  },
-                  {
-                    "type_": "element",
-                    "source_": "sd"
-                  }
-                ]
-              }
-            }
-          ]
-        }
       }
     },
     {
@@ -1407,39 +425,6 @@
         "3/4": [
           "sd"
         ]
-      },
-      "model": {
-        "type_": "stretch",
-        "arguments_": [
-          "1/2"
-        ],
-        "source_": {
-          "type_": "pattern",
-          "arguments_": {
-            "alignment": "h"
-          },
-          "source_": [
-            {
-              "type_": "element",
-              "source_": {
-                "type_": "pattern",
-                "arguments_": {
-                  "alignment": "h"
-                },
-                "source_": [
-                  {
-                    "type_": "element",
-                    "source_": "bd"
-                  },
-                  {
-                    "type_": "element",
-                    "source_": "sd"
-                  }
-                ]
-              }
-            }
-          ]
-        }
       }
     },
     {
@@ -1457,47 +442,6 @@
         "3/4": [
           "bd"
         ]
-      },
-      "model": {
-        "type_": "struct",
-        "arguments_": [
-          {
-            "type_": "pattern",
-            "arguments_": {
-              "alignment": "h"
-            },
-            "source_": [
-              {
-                "type_": "element",
-                "source_": "t"
-              },
-              {
-                "type_": "element",
-                "source_": "f"
-              },
-              {
-                "type_": "element",
-                "source_": "f"
-              },
-              {
-                "type_": "element",
-                "source_": "t"
-              }
-            ]
-          }
-        ],
-        "source_": {
-          "type_": "pattern",
-          "arguments_": {
-            "alignment": "h"
-          },
-          "source_": [
-            {
-              "type_": "element",
-              "source_": "bd"
-            }
-          ]
-        }
       }
     },
     {
@@ -1512,32 +456,6 @@
         "2/3": [
           "19.5"
         ]
-      },
-      "model": {
-        "type_": "add",
-        "arguments_": [
-          "7.5"
-        ],
-        "source_": {
-          "type_": "pattern",
-          "arguments_": {
-            "alignment": "h"
-          },
-          "source_": [
-            {
-              "type_": "element",
-              "source_": "10"
-            },
-            {
-              "type_": "element",
-              "source_": "11"
-            },
-            {
-              "type_": "element",
-              "source_": "12"
-            }
-          ]
-        }
       }
     },
     {
@@ -1552,51 +470,6 @@
         "2/3": [
           "14"
         ]
-      },
-      "model": {
-        "type_": "add",
-        "arguments_": [
-          {
-            "type_": "pattern",
-            "arguments_": {
-              "alignment": "h"
-            },
-            "source_": [
-              {
-                "type_": "element",
-                "source_": "0"
-              },
-              {
-                "type_": "element",
-                "source_": "1"
-              },
-              {
-                "type_": "element",
-                "source_": "2"
-              }
-            ]
-          }
-        ],
-        "source_": {
-          "type_": "pattern",
-          "arguments_": {
-            "alignment": "h"
-          },
-          "source_": [
-            {
-              "type_": "element",
-              "source_": "10"
-            },
-            {
-              "type_": "element",
-              "source_": "11"
-            },
-            {
-              "type_": "element",
-              "source_": "12"
-            }
-          ]
-        }
       }
     },
     {
@@ -1614,125 +487,6 @@
         "2/3": [
           "14"
         ]
-      },
-      "model": {
-        "type_": "add",
-        "arguments_": [
-          {
-            "type_": "pattern",
-            "arguments_": {
-              "alignment": "h"
-            },
-            "source_": [
-              {
-                "type_": "element",
-                "source_": "0"
-              },
-              {
-                "type_": "element",
-                "source_": "1"
-              },
-              {
-                "type_": "element",
-                "source_": "2"
-              }
-            ]
-          }
-        ],
-        "source_": {
-          "type_": "pattern",
-          "arguments_": {
-            "alignment": "h"
-          },
-          "source_": [
-            {
-              "type_": "element",
-              "source_": {
-                "type_": "pattern",
-                "arguments_": {
-                  "alignment": "v"
-                },
-                "source_": [
-                  {
-                    "type_": "pattern",
-                    "arguments_": {
-                      "alignment": "h"
-                    },
-                    "source_": [
-                      {
-                        "type_": "element",
-                        "source_": "10"
-                      }
-                    ]
-                  },
-                  {
-                    "type_": "pattern",
-                    "arguments_": {
-                      "alignment": "h"
-                    },
-                    "source_": [
-                      {
-                        "type_": "element",
-                        "source_": "20"
-                      }
-                    ]
-                  }
-                ]
-              }
-            },
-            {
-              "type_": "element",
-              "source_": {
-                "type_": "pattern",
-                "arguments_": {
-                  "alignment": "v"
-                },
-                "source_": [
-                  {
-                    "type_": "pattern",
-                    "arguments_": {
-                      "alignment": "h"
-                    },
-                    "source_": [
-                      {
-                        "type_": "element",
-                        "source_": "11"
-                      }
-                    ]
-                  },
-                  {
-                    "type_": "pattern",
-                    "arguments_": {
-                      "alignment": "h"
-                    },
-                    "source_": [
-                      {
-                        "type_": "element",
-                        "source_": "21"
-                      }
-                    ]
-                  },
-                  {
-                    "type_": "pattern",
-                    "arguments_": {
-                      "alignment": "h"
-                    },
-                    "source_": [
-                      {
-                        "type_": "element",
-                        "source_": "31"
-                      }
-                    ]
-                  }
-                ]
-              }
-            },
-            {
-              "type_": "element",
-              "source_": "12"
-            }
-          ]
-        }
       }
     },
     {
@@ -1765,62 +519,6 @@
         "8/3": [
           "14"
         ]
-      },
-      "model": {
-        "type_": "add",
-        "arguments_": [
-          {
-            "type_": "pattern",
-            "arguments_": {
-              "alignment": "h"
-            },
-            "source_": [
-              {
-                "type_": "element",
-                "source_": {
-                  "type_": "pattern",
-                  "arguments_": {
-                    "alignment": "t"
-                  },
-                  "source_": [
-                    {
-                      "type_": "element",
-                      "source_": "0"
-                    },
-                    {
-                      "type_": "element",
-                      "source_": "1"
-                    },
-                    {
-                      "type_": "element",
-                      "source_": "2"
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        ],
-        "source_": {
-          "type_": "pattern",
-          "arguments_": {
-            "alignment": "h"
-          },
-          "source_": [
-            {
-              "type_": "element",
-              "source_": "10"
-            },
-            {
-              "type_": "element",
-              "source_": "11"
-            },
-            {
-              "type_": "element",
-              "source_": "12"
-            }
-          ]
-        }
       }
     },
     {
@@ -1829,35 +527,6 @@
         "0/1": [
           "C#1"
         ]
-      },
-      "model": {
-        "type_": "add",
-        "arguments_": [
-          {
-            "type_": "pattern",
-            "arguments_": {
-              "alignment": "h"
-            },
-            "source_": [
-              {
-                "type_": "element",
-                "source_": "1"
-              }
-            ]
-          }
-        ],
-        "source_": {
-          "type_": "pattern",
-          "arguments_": {
-            "alignment": "h"
-          },
-          "source_": [
-            {
-              "type_": "element",
-              "source_": "c1"
-            }
-          ]
-        }
       }
     },
     {
@@ -1881,89 +550,6 @@
         "5/4": [
           "14"
         ]
-      },
-      "model": {
-        "type_": "add",
-        "arguments_": [
-          {
-            "type_": "pattern",
-            "arguments_": {
-              "alignment": "h"
-            },
-            "source_": [
-              {
-                "type_": "element",
-                "source_": {
-                  "type_": "pattern",
-                  "arguments_": {
-                    "alignment": "h"
-                  },
-                  "source_": [
-                    {
-                      "type_": "element",
-                      "source_": "0"
-                    },
-                    {
-                      "type_": "element",
-                      "source_": "1"
-                    },
-                    {
-                      "type_": "element",
-                      "source_": "2"
-                    }
-                  ]
-                },
-                "options_": {
-                  "operator": {
-                    "type_": "fixed-step",
-                    "arguments_": [
-                      4
-                    ]
-                  }
-                }
-              }
-            ]
-          }
-        ],
-        "source_": {
-          "type_": "pattern",
-          "arguments_": {
-            "alignment": "h"
-          },
-          "source_": [
-            {
-              "type_": "element",
-              "source_": {
-                "type_": "pattern",
-                "arguments_": {
-                  "alignment": "h"
-                },
-                "source_": [
-                  {
-                    "type_": "element",
-                    "source_": "10"
-                  },
-                  {
-                    "type_": "element",
-                    "source_": "11"
-                  },
-                  {
-                    "type_": "element",
-                    "source_": "12"
-                  }
-                ]
-              },
-              "options_": {
-                "operator": {
-                  "type_": "fixed-step",
-                  "arguments_": [
-                    2
-                  ]
-                }
-              }
-            }
-          ]
-        }
       }
     },
     {
@@ -1981,36 +567,6 @@
         "3/4": [
           "5"
         ]
-      },
-      "model": {
-        "type_": "scale",
-        "arguments_": [
-          "MiNor"
-        ],
-        "source_": {
-          "type_": "pattern",
-          "arguments_": {
-            "alignment": "h"
-          },
-          "source_": [
-            {
-              "type_": "element",
-              "source_": "0"
-            },
-            {
-              "type_": "element",
-              "source_": "1"
-            },
-            {
-              "type_": "element",
-              "source_": "2"
-            },
-            {
-              "type_": "element",
-              "source_": "3"
-            }
-          ]
-        }
       }
     },
     {
@@ -2028,36 +584,6 @@
         "7/8": [
           "~"
         ]
-      },
-      "model": {
-        "type_": "shift",
-        "arguments_": [
-          0.125
-        ],
-        "source_": {
-          "type_": "pattern",
-          "arguments_": {
-            "alignment": "h"
-          },
-          "source_": [
-            {
-              "type_": "element",
-              "source_": "bd"
-            },
-            {
-              "type_": "element",
-              "source_": "~"
-            },
-            {
-              "type_": "element",
-              "source_": "sd"
-            },
-            {
-              "type_": "element",
-              "source_": "~"
-            }
-          ]
-        }
       }
     },
     {
@@ -2075,36 +601,6 @@
         "7/8": [
           "bd"
         ]
-      },
-      "model": {
-        "type_": "shift",
-        "arguments_": [
-          "-0.125"
-        ],
-        "source_": {
-          "type_": "pattern",
-          "arguments_": {
-            "alignment": "h"
-          },
-          "source_": [
-            {
-              "type_": "element",
-              "source_": "bd"
-            },
-            {
-              "type_": "element",
-              "source_": "~"
-            },
-            {
-              "type_": "element",
-              "source_": "sd"
-            },
-            {
-              "type_": "element",
-              "source_": "~"
-            }
-          ]
-        }
       }
     }
   ]
