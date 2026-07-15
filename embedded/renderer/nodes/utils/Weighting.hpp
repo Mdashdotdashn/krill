@@ -16,7 +16,7 @@ static EventArray computeEventsFromWeightedArray(const RenderNodeArray& renderNo
                                             renderNodes.end(),
                                             0.f,
                                             [](float acc, const RenderNodePtr& pRenderNode) {
-                                              return acc + pRenderNode->weigth();
+                                              return acc + pRenderNode->weight();
                                             });
   Fraction weightFactor;
   weightFactor.convertDoubleToFraction(totalWeight);
@@ -28,7 +28,7 @@ static EventArray computeEventsFromWeightedArray(const RenderNodeArray& renderNo
   {
     const auto cycle = pNode->render();
     assert(cycle.length == Fraction(1));
-    const auto scaleFactor = Fraction(pNode->weigth()) / weightFactor;
+    const auto scaleFactor = Fraction(pNode->weight()) / weightFactor;
     for (const auto& event : cycle.events)
     {
       auto scaled = Cycle::Event{ position + (event.time * scaleFactor), event.values };

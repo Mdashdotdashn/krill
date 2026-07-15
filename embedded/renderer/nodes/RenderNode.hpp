@@ -20,7 +20,7 @@ public:
   }
 
   void setWeight(float weight) { mWeight = weight; }
-  float weigth() { return mWeight; }
+  float weight() { return mWeight; }
 
 private:
   float mWeight{ 1 };
