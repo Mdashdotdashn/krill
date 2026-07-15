@@ -151,11 +151,11 @@ bjorklund = "euclid" ws p:int ws s:int
 slow = "slow" ws a:number
   { return { name: "stretch", args : [a]}}
 
-rotL = "rotL" ws a:number
-  { return { name: "shift", args : ["-"+a]}}
+rotL = "rotL" ws a:operator_argument
+  { return { name: "shift", args : [a, -1]}}
 
-rotR = "rotR" ws a:number
-  { return { name: "shift", args : [a]}}
+rotR = "rotR" ws a:operator_argument
+  { return { name: "shift", args : [a, 1]}}
 
 trunc = "trunc" ws a:number
   { return { name: "trunc", args : [a]}}
