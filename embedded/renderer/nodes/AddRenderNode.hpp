@@ -35,17 +35,8 @@ public:
       const auto rightValues = detail::sampleCycle(rightCycle, time);
 
       for (const auto& leftVal : leftValues)
-      {
         for (const auto& rightVal : rightValues)
-        {
-          const auto value = detail::addValues(leftVal, rightVal);
-
-          Cycle::Event event;
-          event.time = time;
-          event.values.push_back(value);
-          events.push_back(event);
-        }
-      }
+          events.push_back(Cycle::Event{time, {detail::addValues(leftVal, rightVal)}});
     }
 
     return {Fraction(1), detail::mergeEventsByTime(events)};
