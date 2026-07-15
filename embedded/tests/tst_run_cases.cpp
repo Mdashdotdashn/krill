@@ -1,6 +1,7 @@
 #include "renderer/RenderTreeBuilder.hpp"
 
 #include "renderer/RenderTreePlayer.hpp"
+#include "parser/Parser.hpp"
 #include "utils/jsonUtils.hpp"
 #include "testUtils.hpp"
 
@@ -31,7 +32,6 @@ TEST_CASE("Rendertree")
     const auto source = v["source"].GetString();
     const auto use = optionOrValue(v, "use", false);
     const auto expected = v["expected"].GetObject();
-    const auto model = v["model"].GetObject();
 
     auto runTest = use;
     // If you want to run a single test, set the string here
@@ -39,7 +39,13 @@ TEST_CASE("Rendertree")
     if (runTest)
     {
       std::cout << source << std::endl;
-      const auto pRenderTree = RenderTreeBuilder::fromJson(model);
+
+      krill::Parser parser;
+      Document parseDoc;
+      auto parseResult = parser.parse(parseDoc, source);
+      REQUIRE(parseResult.has_value());
+
+      const auto pRenderTree = RenderTreeBuilder::fromJson(parseResult.value());
       RenderTreePlayer player;
       player.setTree(pRenderTree);
 

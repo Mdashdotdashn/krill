@@ -87,10 +87,121 @@ struct KrillParser::Impl {
             return firstPValue(vs);
         };
 
-        // ── S3.2: slice_with_modifier — pass-through (modifier ignored) ───────
-        // Modifier support (options_) added in a later story.
-        parser_["slice_with_modifier"] = [](const peg::SemanticValues& vs, std::any&) -> std::any {
+        // ── S3.2: slice modifiers → options_ objects ──────────────────────────
+
+        // slice_weight '@' number → {weight: n}
+        parser_["slice_weight"] = [](const peg::SemanticValues& vs, std::any& dt) -> std::any {
+            auto& ud = std::any_cast<UserData&>(dt);
+            auto& alloc = ud.ctx.document().GetAllocator();
+            rapidjson::Value opts(rapidjson::kObjectType);
+            for (const auto& v : vs)
+                if (v.type() == typeid(double)) {
+                    opts.AddMember("weight", rapidjson::Value(std::any_cast<double>(v)), alloc);
+                    break;
+                }
+            return std::make_shared<rapidjson::Value>(std::move(opts));
+        };
+
+        // slice_slow '/' number → {operator:{type_:"stretch",arguments_:[n]}}
+        parser_["slice_slow"] = [](const peg::SemanticValues& vs, std::any& dt) -> std::any {
+            auto& ud = std::any_cast<UserData&>(dt);
+            auto& alloc = ud.ctx.document().GetAllocator();
+            rapidjson::Value args(rapidjson::kArrayType);
+            for (const auto& v : vs)
+                if (v.type() == typeid(double)) {
+                    args.PushBack(rapidjson::Value(std::any_cast<double>(v)), alloc); break;
+                }
+            rapidjson::Value op(rapidjson::kObjectType);
+            op.AddMember("type_", rapidjson::StringRef("stretch"), alloc);
+            op.AddMember("arguments_", args, alloc);
+            rapidjson::Value opts(rapidjson::kObjectType);
+            opts.AddMember("operator", op, alloc);
+            return std::make_shared<rapidjson::Value>(std::move(opts));
+        };
+
+        // slice_fast '*' number → {operator:{type_:"stretch",arguments_:["1/n"]}}
+        parser_["slice_fast"] = [](const peg::SemanticValues& vs, std::any& dt) -> std::any {
+            auto& ud = std::any_cast<UserData&>(dt);
+            auto& alloc = ud.ctx.document().GetAllocator();
+            double n = 1.0;
+            for (const auto& v : vs)
+                if (v.type() == typeid(double)) { n = std::any_cast<double>(v); break; }
+            const auto frac = "1/" + std::to_string(static_cast<int>(n));
+            rapidjson::Value fracVal;
+            fracVal.SetString(frac.c_str(), rapidjson::SizeType(frac.size()), alloc);
+            rapidjson::Value args(rapidjson::kArrayType);
+            args.PushBack(fracVal, alloc);
+            rapidjson::Value op(rapidjson::kObjectType);
+            op.AddMember("type_", rapidjson::StringRef("stretch"), alloc);
+            op.AddMember("arguments_", args, alloc);
+            rapidjson::Value opts(rapidjson::kObjectType);
+            opts.AddMember("operator", op, alloc);
+            return std::make_shared<rapidjson::Value>(std::move(opts));
+        };
+
+        // slice_fixed_step '%' number → {operator:{type_:"fixed-step",arguments_:[n]}}
+        parser_["slice_fixed_step"] = [](const peg::SemanticValues& vs, std::any& dt) -> std::any {
+            auto& ud = std::any_cast<UserData&>(dt);
+            auto& alloc = ud.ctx.document().GetAllocator();
+            rapidjson::Value args(rapidjson::kArrayType);
+            for (const auto& v : vs)
+                if (v.type() == typeid(double)) {
+                    args.PushBack(rapidjson::Value(std::any_cast<double>(v)), alloc); break;
+                }
+            rapidjson::Value typeStr;
+            typeStr.SetString("fixed-step", 10, alloc);
+            rapidjson::Value op(rapidjson::kObjectType);
+            op.AddMember("type_", typeStr, alloc);
+            op.AddMember("arguments_", args, alloc);
+            rapidjson::Value opts(rapidjson::kObjectType);
+            opts.AddMember("operator", op, alloc);
+            return std::make_shared<rapidjson::Value>(std::move(opts));
+        };
+
+        // slice_modifier: pass the matched sub-rule's PValue up
+        parser_["slice_modifier"] = [](const peg::SemanticValues& vs, std::any&) -> std::any {
             return firstPValue(vs);
+        };
+
+        // ── S3.2: slice_with_modifier ─────────────────────────────────────────
+        // • wraps sub_cycle/timeline patterns in an ElementStub
+        // • applies modifier as options_ on the element
+        parser_["slice_with_modifier"] = [](const peg::SemanticValues& vs, std::any& dt) -> std::any {
+            auto& ud = std::any_cast<UserData&>(dt);
+            auto& alloc = ud.ctx.document().GetAllocator();
+
+            // Collect PValues in order: slice first, then optional modifier
+            std::vector<PValue> pvs;
+            for (const auto& v : vs)
+                if (v.type() == typeid(PValue)) pvs.push_back(std::any_cast<PValue>(v));
+
+            if (pvs.empty()) return std::any{};
+            auto slicePv = pvs[0];
+            PValue modPv = pvs.size() > 1 ? pvs[1] : nullptr;
+
+            const bool isElement = slicePv && slicePv->IsObject()
+                                   && slicePv->HasMember("type_")
+                                   && std::string((*slicePv)["type_"].GetString()) == "element";
+
+            if (isElement) {
+                // Step result is already an element — add modifier if present
+                if (!modPv) return slicePv;
+                rapidjson::Value copy; copy.CopyFrom(*slicePv, alloc);
+                rapidjson::Value optCopy; optCopy.CopyFrom(*modPv, alloc);
+                copy.AddMember("options_", optCopy, alloc);
+                return std::make_shared<rapidjson::Value>(std::move(copy));
+            } else {
+                // Pattern (sub_cycle / timeline) — wrap in element
+                rapidjson::Value elem(rapidjson::kObjectType);
+                elem.AddMember("type_", rapidjson::StringRef("element"), alloc);
+                rapidjson::Value srcCopy; srcCopy.CopyFrom(*slicePv, alloc);
+                elem.AddMember("source_", srcCopy, alloc);
+                if (modPv) {
+                    rapidjson::Value optCopy; optCopy.CopyFrom(*modPv, alloc);
+                    elem.AddMember("options_", optCopy, alloc);
+                }
+                return std::make_shared<rapidjson::Value>(std::move(elem));
+            }
         };
 
         // ── S3.4: single_cycle — horizontal pattern of slice_with_modifier ────
