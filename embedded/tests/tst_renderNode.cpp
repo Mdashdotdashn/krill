@@ -1,4 +1,4 @@
-#include "renderer/RenderNode.hpp"
+#include "renderer/nodes/CycleRenderNode.hpp"
 
 #include "testUtils.hpp"
 

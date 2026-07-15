@@ -1,5 +1,7 @@
 #include "RenderTreeBuilder.hpp"
 
+#include "utils/jsonUtils.hpp"
+
 #include <cassert>
 #include <cstdlib>
 #include <functional>
