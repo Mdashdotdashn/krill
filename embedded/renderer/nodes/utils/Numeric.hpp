@@ -27,9 +27,9 @@ static std::pair<bool, double> tryParseDouble(const std::string& s)
 
 static std::string formatDouble(double value)
 {
-  if (value == (long long)value)
+  if (value == static_cast<long long>(value))
   {
-    return std::to_string((long long)value);
+    return std::to_string(static_cast<long long>(value));
   }
 
   char buffer[32];
