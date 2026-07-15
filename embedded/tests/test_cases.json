@@ -221,6 +221,7 @@
     },
     {
       "source": "'[bd sd](2,8)'",
+      "use": true,
       "expected": {
         "0/1": [
           "bd"
@@ -394,6 +395,7 @@
     },
     {
       "source": "euclid 2 8 $ '[bd sd]'",
+      "use": true,
       "expected": {
         "0/1": [
           "bd"

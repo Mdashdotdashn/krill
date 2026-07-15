@@ -1,6 +1,8 @@
 #include "RenderTreeBuilder.hpp"
 
 #include <cassert>
+#include <cstdlib>
+#include <functional>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -26,9 +28,147 @@ namespace detail
     }
     return factor;
   }
+
+  int intFromValue(const rj::Value& v)
+  {
+    if (v.IsInt())
+    {
+      return v.GetInt();
+    }
+
+    if (v.IsNumber())
+    {
+      return static_cast<int>(v.GetDouble());
+    }
+
+    return std::atoi(v.GetString());
+  }
+
+  std::vector<int> bjorklundBits(int steps, int pulses)
+  {
+    steps = std::abs(steps);
+    pulses = std::abs(pulses);
+
+    if (pulses > steps || pulses == 0 || steps == 0)
+    {
+      return {};
+    }
+
+    std::vector<int> pattern;
+    std::vector<int> counts;
+    std::vector<int> remainders;
+
+    int divisor = steps - pulses;
+    remainders.push_back(pulses);
+    int level = 0;
+
+    while (true)
+    {
+      counts.push_back(divisor / remainders[level]);
+      remainders.push_back(divisor % remainders[level]);
+      divisor = remainders[level];
+      level += 1;
+      if (remainders[level] <= 1)
+      {
+        break;
+      }
+    }
+
+    counts.push_back(divisor);
+
+    std::function<void(int)> build = [&](int lvl) {
+      if (lvl > -1)
+      {
+        for (int i = 0; i < counts[lvl]; i++)
+        {
+          build(lvl - 1);
+        }
+        if (remainders[lvl] != 0)
+        {
+          build(lvl - 2);
+        }
+      }
+      else if (lvl == -1)
+      {
+        pattern.push_back(0);
+      }
+      else if (lvl == -2)
+      {
+        pattern.push_back(1);
+      }
+    };
+
+    build(level);
+    std::reverse(pattern.begin(), pattern.end());
+    return pattern;
+  }
+
+  struct BjorklundGroup
+  {
+    int value{0};
+    int weight{1};
+  };
+
+  std::vector<BjorklundGroup> bjorklundGroups(const std::vector<int>& bits)
+  {
+    std::vector<BjorklundGroup> result;
+    if (bits.empty())
+    {
+      return result;
+    }
+
+    result.push_back({bits.front(), 1});
+    for (size_t i = 1; i < bits.size(); i++)
+    {
+      const auto bit = bits[i];
+      if (bit == 0)
+      {
+        result.back().weight += 1;
+      }
+      else
+      {
+        result.push_back({1, 1});
+      }
+    }
+    return result;
+  }
 } // namespace detail
 
 RenderNodePtr makeRenderNode(const rj::Value& value);
+
+RenderNodePtr makeBjorklundRenderNode(const rj::Value& sourceNode, int pulses, int steps)
+{
+  const auto bits = detail::bjorklundBits(steps, pulses);
+  const auto groups = detail::bjorklundGroups(bits);
+
+  // Keep behavior deterministic for invalid inputs.
+  if (groups.empty())
+  {
+    return makeCycleRenderNode(makeSingleEventCycle("~"));
+  }
+
+  std::vector<RenderNodePtr> weightedNodes;
+  weightedNodes.reserve(groups.size());
+
+  for (const auto& g : groups)
+  {
+    RenderNodePtr node;
+    if (g.value == 0)
+    {
+      node = makeCycleRenderNode(makeSingleEventCycle("~"));
+    }
+    else
+    {
+      // Build a fresh subtree per pulse group to avoid shared tick state.
+      node = makeRenderNode(sourceNode);
+    }
+
+    node->setWeight(static_cast<float>(g.weight));
+    weightedNodes.push_back(node);
+  }
+
+  return makeWeightedPatternRenderNode(weightedNodes);
+}
 
 // Builds an array of RenderNodePtr from a rj array
 std::vector<RenderNodePtr> buildStepArray(const rj::Value& stepArray)
@@ -43,7 +183,10 @@ std::vector<RenderNodePtr> buildStepArray(const rj::Value& stepArray)
   return result;
 }
 
-RenderNodePtr makeOperatorRenderNode(const std::string& type, const rj::Value& arguments, RenderNodePtr childNode)
+RenderNodePtr makeOperatorRenderNode(const std::string& type,
+                                     const rj::Value& arguments,
+                                     RenderNodePtr childNode,
+                                     const rj::Value* sourceJson = nullptr)
 {
   assert(arguments.IsArray());
 
@@ -83,6 +226,15 @@ RenderNodePtr makeOperatorRenderNode(const std::string& type, const rj::Value& a
     return makeAddRenderNode(childNode, rightNode);
   }
 
+  if (type == "bjorklund")
+  {
+    assert(arguments.Size() >= 2);
+    assert(sourceJson != nullptr);
+    const int pulses = detail::intFromValue(arguments[0]);
+    const int steps = detail::intFromValue(arguments[1]);
+    return makeBjorklundRenderNode(*sourceJson, pulses, steps);
+  }
+
   assert(0);
   return nullptr;
 }
@@ -114,7 +266,7 @@ RenderNodePtr makeStepRenderNode(const rj::Value& source, const rj::Value& optio
     const auto op = options["operator"].GetObject();
     const auto type = op["type_"].GetString();
     const auto arguments = op["arguments_"].GetArray();
-    pRenderNode = makeOperatorRenderNode(type, arguments, pRenderNode);
+    pRenderNode = makeOperatorRenderNode(type, arguments, pRenderNode, &source);
   }
 
   // Wrap it with a slicer so every step
@@ -178,9 +330,10 @@ RenderNodePtr makeRenderNode(const rj::Value& node)
   {
     return makeStepRenderNode(source, options);
   }
+
   // All following are operator and have a single child node
   const auto childNode = makeRenderNode(source);
-  return makeOperatorRenderNode(typeString, arguments, childNode);
+  return makeOperatorRenderNode(typeString, arguments, childNode, &source);
 }
 } // namespace detail
 

@@ -139,6 +139,40 @@ struct KrillParser::Impl {
             return std::make_shared<rapidjson::Value>(std::move(opts));
         };
 
+        // slice_bjorklund '(' number ',' number ')' → {operator:{type_:"bjorklund",arguments_:[p,s]}}
+        parser_["slice_bjorklund"] = [](const peg::SemanticValues& vs, std::any& dt) -> std::any {
+            auto& ud = std::any_cast<UserData&>(dt);
+            auto& alloc = ud.ctx.document().GetAllocator();
+
+            std::vector<int> values;
+            values.reserve(2);
+            for (const auto& v : vs)
+            {
+                if (v.type() == typeid(double))
+                {
+                    values.push_back(static_cast<int>(std::any_cast<double>(v)));
+                }
+            }
+
+            rapidjson::Value args(rapidjson::kArrayType);
+            if (!values.empty())
+            {
+                args.PushBack(rapidjson::Value(values[0]), alloc);
+            }
+            if (values.size() > 1)
+            {
+                args.PushBack(rapidjson::Value(values[1]), alloc);
+            }
+
+            rapidjson::Value op(rapidjson::kObjectType);
+            op.AddMember("type_", rapidjson::StringRef("bjorklund"), alloc);
+            op.AddMember("arguments_", args, alloc);
+
+            rapidjson::Value opts(rapidjson::kObjectType);
+            opts.AddMember("operator", op, alloc);
+            return std::make_shared<rapidjson::Value>(std::move(opts));
+        };
+
         // slice_fixed_step '%' number → {operator:{type_:"fixed-step",arguments_:[n]}}
         parser_["slice_fixed_step"] = [](const peg::SemanticValues& vs, std::any& dt) -> std::any {
             auto& ud = std::any_cast<UserData&>(dt);
