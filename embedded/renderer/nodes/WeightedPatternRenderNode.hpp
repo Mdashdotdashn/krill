@@ -8,7 +8,7 @@ namespace krill
 class WeightedPatternRenderNode : public RenderNode
 {
 public:
-  explicit WeightedPatternRenderNode(RenderNodeArray& children)
+  explicit WeightedPatternRenderNode(const RenderNodeArray& children)
     : mChildren(children)
   {}
 

@@ -7,7 +7,7 @@ namespace krill
 class StackRenderNode : public RenderNode
 {
 public:
-  explicit StackRenderNode(RenderNodeArray& children)
+  explicit StackRenderNode(const RenderNodeArray& children)
     : mChildren(children)
   {}
 
