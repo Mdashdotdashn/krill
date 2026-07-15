@@ -1,5 +1,4 @@
  var fs = require("fs");
- var _ = require("lodash");
  require('./base.js');
 
 function runAllTestCases()
@@ -8,8 +7,6 @@ function runAllTestCases()
   renderingTreeBuilder = new RenderingTreeBuilder();
 
   var contents = fs.readFileSync("./tests/test-cases.json");
-  var cppTestData = new Object;
-  cppTestData["cases"] = new Array();
 
   var testCases = JSON.parse(contents).cases;
   for (var test in testCases)
@@ -19,14 +16,6 @@ function runAllTestCases()
     console.log("> "+ test);
 
     const model = evaluator.evaluate(test);
-
-    // add to the cppTestData
-    const cppTest = {
-      source: test,
-      expected: expected,
-      model: model,
-    };
-    cppTestData["cases"].push(cppTest);
 
     const renderingTree = renderingTreeBuilder.rebuild(model);
 
@@ -51,8 +40,6 @@ function runAllTestCases()
     throw err; //"Error trying to execute test case: " + test + "\n" + err;
   }
   }
-  let data = JSON.stringify(cppTestData, null, 2);
-  fs.writeFileSync('./embedded/tests/test_cases.json', data);
 }
 
 runAllTestCases();
