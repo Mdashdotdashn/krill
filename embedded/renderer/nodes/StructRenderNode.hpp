@@ -24,28 +24,23 @@ public:
     const auto leftCycle = mpLeft->render();
     const auto rightCycle = mpRight->render();
 
-    EventArray events;
+    EventArray result;
 
     for (const auto& rightEvent : rightCycle.events)
     {
       const auto leftValues = detail::sampleCycle(leftCycle, rightEvent.time);
-
+      std::vector<std::string> values;
       for (const auto& leftVal : leftValues)
       {
         for (const auto& rightVal : rightEvent.values)
         {
-          const auto keep = detail::boolValue(rightVal);
-          const auto value = keep ? leftVal : std::string("~");
-
-          Cycle::Event event;
-          event.time = rightEvent.time;
-          event.values.push_back(value);
-          events.push_back(event);
+          values.push_back(detail::boolValue(rightVal) ? leftVal : std::string("~"));
         }
       }
+      result.push_back(Cycle::Event{rightEvent.time, std::move(values)});
     }
 
-    return {Fraction(1), detail::mergeEventsByTime(events)};
+    return {Fraction(1), result};
   }
 
 private:
