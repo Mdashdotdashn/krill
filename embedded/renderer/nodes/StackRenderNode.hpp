@@ -24,7 +24,7 @@ public:
     EventArray events;
     for (auto& child : mChildren)
     {
-      Cycle childCycle = child->render();
+      Cycle childCycle = slice(child->render(), 0, 1);
       for (auto& event : childCycle.events)
       {
         events.push_back(event);
