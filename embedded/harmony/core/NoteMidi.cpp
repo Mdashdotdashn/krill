@@ -1,5 +1,6 @@
 #include "harmony/core/NoteMidi.hpp"
 
+#include <array>
 #include <cctype>
 
 namespace krill::harmony
@@ -25,6 +26,29 @@ int pitchClassFromLetter(char c)
 bool isValidMidi(int midi)
 {
   return midi >= 0 && midi <= 127;
+}
+
+std::optional<std::string> midiToNote(int midi, SpellingPolicy policy)
+{
+  static const std::array<const char*, 12> kSharpNames = {
+    "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
+  };
+  static const std::array<const char*, 12> kFlatNames = {
+    "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"
+  };
+
+  if (!isValidMidi(midi))
+  {
+    return std::nullopt;
+  }
+
+  const int pitchClass = midi % 12;
+  const int octave = (midi / 12) - 1;
+  const auto& names = (policy == SpellingPolicy::PreferFlats)
+    ? kFlatNames
+    : kSharpNames;
+
+  return std::string(names[pitchClass]) + std::to_string(octave);
 }
 
 std::optional<int> noteToMidi(const std::string& note)
