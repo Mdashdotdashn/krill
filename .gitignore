@@ -1,2 +1,7 @@
 node_modules/
 embedded/build
+*.o
+.DS_Store
+*.exe
+*.dSYM
+build/

@@ -45,7 +45,11 @@ buildOperator = function(type, arguments, source)
         return makeTruncOperator(source, arguments[0]);
 
       case "shift":
-  			return makeShiftOperator(source, arguments[0]);
+      const shiftArg = (arguments[0] instanceof Object || Array.isArray(arguments[0]))
+        ? buildTreeForNode(arguments[0])
+        : arguments[0];
+      const direction = arguments.length > 1 ? arguments[1] : 1;
+      return makeShiftOperator(source, shiftArg, direction);
 
       case "bjorklund":
   			return makeBjorklundOperator(source, arguments[0], arguments[1]);

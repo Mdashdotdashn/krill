@@ -1,17 +1,24 @@
  var fs = require("fs");
- var _ = require("lodash");
  require('./base.js');
 
 function runAllTestCases()
 {
+  evaluator = new Evaluator();
+  renderingTreeBuilder = new RenderingTreeBuilder();
+
   var contents = fs.readFileSync("./tests/test-cases.json");
+
   var testCases = JSON.parse(contents).cases;
   for (var test in testCases)
   {
     try {
     var expected = testCases[test];
     console.log("> "+ test);
-    const renderingTree = evaluator.evaluateRenderingTree(test);
+
+    const model = evaluator.evaluate(test);
+
+    const renderingTree = renderingTreeBuilder.rebuild(model);
+
     var player = new RenderingTreePlayer();
     player.setRenderingTree(renderingTree);
     var currentTime = "-0.0001";

@@ -30,10 +30,15 @@ Application.prototype.parse = function(commandString)
 	var result = this.evaluator_.evaluate(commandString);
   if (result.type_ == "command")
   {
+    Dump(result);
     this.processCommand(result);
   }
   else
   {
+    var dumper = new Object();
+    dumper["source"] = commandString;
+    dumper["model"] = result;
+    DumpForCpp(dumper);
     var renderingTree = this.renderingTreeBuilder_.rebuild(result);
   	this.engine_.setRenderingTree(renderingTree);
   	return JSON.stringify(result, undefined, 1);
