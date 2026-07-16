@@ -19,18 +19,30 @@ var degreeChord = function (scaleDef, degree)
     return Distance.add(interval, octave);
   }, this);
 
-    // We need to recover the chord type from the interval list.
-  // Since tonal list the result from (C->B) in the case there's several options
-  // we first re-root the progression so the first interval is 1P
-  const backToRoot = "-" + chordIntervals[0];
-  const transposed = chordIntervals.map(Distance.add(backToRoot));
-  const notes = transposed.map(Distance.transpose('C'));
-  const detected = Detect.chord(notes);
+  // Derive triad quality from semitone structure to avoid ambiguous chord-detect aliases.
+  const semitones = chordIntervals.map(Interval.semitones);
+  const root = semitones[0];
+  const normalized = semitones.map(x => ((x - root) % 12 + 12) % 12).sort((a,b)=>a-b);
 
-  const props = Chord.tokenize(detected[0]);
-  const chordType = props[1] =='64' ? "M" : props[1];
-  const chordName = note + chordType;
-  return chordName;
+  var chordType = "";
+  if (normalized[1] == 4 && normalized[2] == 7)
+  {
+    chordType = "M";
+  }
+  else if (normalized[1] == 3 && normalized[2] == 7)
+  {
+    chordType = "m";
+  }
+  else if (normalized[1] == 3 && normalized[2] == 6)
+  {
+    chordType = "dim";
+  }
+  else if (normalized[1] == 4 && normalized[2] == 8)
+  {
+    chordType = "aug";
+  }
+
+  return note + chordType;
 }
 
 // Apply inversion to a group of (sorted) notes
@@ -121,7 +133,7 @@ var parseChordFromToken = function(x, scaleDefinition)
 
   // is the token a chord?
   const token = Chord.tokenize(x);
-  if ((x[0] != "") && (Chord.exists(x[1])))
+  if ((token[0] != "") && (Chord.exists(token[1])))
   {
     return x;
   }
