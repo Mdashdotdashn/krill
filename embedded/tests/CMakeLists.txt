@@ -16,6 +16,7 @@ add_executable(Tests.exe
 ../harmony/core/NoteMidi.cpp
 ../harmony/core/Interval.cpp
 ../harmony/theory/Scale.cpp
+../harmony/theory/Roman.cpp
 
 ./test.cpp
 ./testUtils.cpp
