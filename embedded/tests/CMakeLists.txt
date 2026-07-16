@@ -15,6 +15,7 @@ add_executable(Tests.exe
 ../renderer/RenderTreeBuilder.cpp
 ../harmony/core/NoteMidi.cpp
 ../harmony/core/Interval.cpp
+../harmony/theory/Scale.cpp
 
 ./test.cpp
 ./testUtils.cpp
@@ -32,4 +33,5 @@ add_executable(Tests.exe
 ./tst_peglib_statement.cpp
 ./tst_harmony_noteMidi.cpp
 ./tst_harmony_interval.cpp
+./tst_harmony_scale.cpp
 )
