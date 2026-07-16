@@ -13,6 +13,7 @@ add_executable(Tests.exe
 ../parser/StringStream.cpp
 ../parser/XmlBuilder.cpp
 ../renderer/RenderTreeBuilder.cpp
+../harmony/core/NoteMidi.cpp
 
 ./test.cpp
 ./testUtils.cpp
@@ -28,4 +29,5 @@ add_executable(Tests.exe
 ./tst_peglib_mininotation.cpp
 ./tst_peglib_operators.cpp
 ./tst_peglib_statement.cpp
+./tst_harmony_noteMidi.cpp
 )
