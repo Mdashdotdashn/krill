@@ -14,6 +14,7 @@ add_executable(Tests.exe
 ../parser/XmlBuilder.cpp
 ../renderer/RenderTreeBuilder.cpp
 ../harmony/core/NoteMidi.cpp
+../harmony/core/Interval.cpp
 
 ./test.cpp
 ./testUtils.cpp
@@ -30,4 +31,5 @@ add_executable(Tests.exe
 ./tst_peglib_operators.cpp
 ./tst_peglib_statement.cpp
 ./tst_harmony_noteMidi.cpp
+./tst_harmony_interval.cpp
 )
