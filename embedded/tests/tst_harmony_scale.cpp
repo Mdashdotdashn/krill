@@ -29,6 +29,26 @@ TEST_CASE("Harmony Scale")
     CHECK(scale->notes == std::vector<std::string>{"A", "B", "C", "D", "E", "F", "G"});
   }
 
+  SECTION("Converts scale degrees to notes and MIDI with octave wrapping")
+  {
+    const auto scale = parseScale("a minor");
+    REQUIRE(scale.has_value());
+
+    CHECK(scaleDegreeToNote(*scale, 1).value() == "A");
+    CHECK(scaleDegreeToNote(*scale, 7).value() == "G");
+    CHECK(scaleDegreeToNote(*scale, 8).value() == "A");
+    CHECK(scaleDegreeToNote(*scale, 14).value() == "G");
+
+    CHECK(scaleDegreeToMidi(*scale, 1, 3).value() == 57);
+    CHECK(scaleDegreeToMidi(*scale, 7, 3).value() == 67);
+    CHECK(scaleDegreeToMidi(*scale, 8, 3).value() == 69);
+    CHECK(scaleDegreeToMidi(*scale, 14, 3).value() == 79);
+    CHECK(scaleDegreeToMidi(*scale, -1, 3).value() == 53);
+
+    CHECK(scaleDegreeToNote(*scale, 0) == std::nullopt);
+    CHECK(scaleDegreeToMidi(*scale, 0, 3) == std::nullopt);
+  }
+
   SECTION("Generates notes with key-signature spelling by default")
   {
     CHECK(scaleNotes("F#", "minor").value()

@@ -24,5 +24,12 @@ std::optional<std::vector<std::string>> scaleNotes(
   const std::string& root,
   const std::string& scaleName,
   SpellingPolicy policy);
+
+std::optional<std::string> scaleDegreeToNote(const ScaleDefinition& scale, int degree);
+std::optional<int> scaleDegreeToMidi(
+  const ScaleDefinition& scale,
+  int degree,
+  int rootOctave);
+
 std::optional<ScaleDefinition> parseScale(const std::string& scaleString);
 } // namespace krill::harmony

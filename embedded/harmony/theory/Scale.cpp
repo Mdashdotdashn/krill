@@ -173,6 +173,19 @@ std::optional<int> rootPitchClass(const std::string& normalizedRoot)
   }
   return normalizePitchClass(*midi);
 }
+
+int floorDiv(int a, int b)
+{
+  const int q = a / b;
+  const int r = a % b;
+  return (r != 0 && ((r < 0) != (b < 0))) ? (q - 1) : q;
+}
+
+int positiveMod(int a, int b)
+{
+  const int m = a % b;
+  return m < 0 ? m + b : m;
+}
 } // namespace
 
 std::optional<std::vector<int>> scaleIntervals(const std::string& scaleName)
@@ -290,6 +303,48 @@ std::optional<std::vector<std::string>> scaleNotes(
   }
 
   return out;
+}
+
+std::optional<std::string> scaleDegreeToNote(const ScaleDefinition& scale, int degree)
+{
+  if (degree == 0 || scale.notes.empty() || scale.notes.size() != scale.intervals.size())
+  {
+    return std::nullopt;
+  }
+
+  const int n = static_cast<int>(scale.notes.size());
+  const int zeroBased = degree - 1;
+  const int idx = positiveMod(zeroBased, n);
+  return scale.notes[static_cast<size_t>(idx)];
+}
+
+std::optional<int> scaleDegreeToMidi(
+  const ScaleDefinition& scale,
+  int degree,
+  int rootOctave)
+{
+  if (degree == 0 || scale.intervals.empty() || scale.notes.size() != scale.intervals.size())
+  {
+    return std::nullopt;
+  }
+
+  const auto baseMidi = noteToMidi(scale.root + std::to_string(rootOctave));
+  if (!baseMidi.has_value())
+  {
+    return std::nullopt;
+  }
+
+  const int n = static_cast<int>(scale.intervals.size());
+  const int zeroBased = degree - 1;
+  const int octaveShift = floorDiv(zeroBased, n);
+  const int idx = positiveMod(zeroBased, n);
+
+  const int midi = *baseMidi + scale.intervals[static_cast<size_t>(idx)] + (12 * octaveShift);
+  if (!isValidMidi(midi))
+  {
+    return std::nullopt;
+  }
+  return midi;
 }
 
 std::optional<ScaleDefinition> parseScale(const std::string& scaleString)
