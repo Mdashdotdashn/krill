@@ -89,13 +89,14 @@ sequence            <- ws quote stack quote
 # operator_argument: a bare step OR a full sequence_or_operator (e.g. a quoted pattern)
 operator_argument   <- step / sequence_or_operator
 
-operator            <- add / scale / slow / fast / bjorklund / struct / rotR / rotL
+operator            <- add / scale / slow / fast / trunc / bjorklund / struct / rotR / rotL
 
 add                 <- 'add' ws operator_argument
 struct              <- 'struct' ws sequence_or_operator
 bjorklund           <- 'euclid' ws int ws int
 slow                <- 'slow' ws number
 fast                <- 'fast' ws number
+trunc               <- 'trunc' ws number
 rotL                <- 'rotL' ws operator_argument
 rotR                <- 'rotR' ws operator_argument
 scale               <- 'scale' ws quote step_char+ quote

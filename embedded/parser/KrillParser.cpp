@@ -382,6 +382,10 @@ struct KrillParser::Impl {
                 }
             return OperatorInfo{"stretch", args};
         };
+        parser_["trunc"] = [singleNumArgs](const peg::SemanticValues& vs, std::any& dt) -> std::any {
+            auto& ud = std::any_cast<UserData&>(dt);
+            return OperatorInfo{"trunc", singleNumArgs(vs, ud.ctx.document().GetAllocator())};
+        };
         parser_["rotR"] = [shiftArgs](const peg::SemanticValues& vs, std::any& dt) -> std::any {
             auto& ud = std::any_cast<UserData&>(dt);
             return OperatorInfo{"shift", shiftArgs(vs, ud.ctx.document().GetAllocator())};

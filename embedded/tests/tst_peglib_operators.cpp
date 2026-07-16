@@ -39,12 +39,13 @@ single_cycle        <- slice_with_modifier+
 stack               <- single_cycle (comma single_cycle)*
 sequence            <- ws quote stack quote
 operator_argument   <- step / sequence_or_operator
-operator            <- add / scale / slow / fast / bjorklund / struct / rotR / rotL
+operator            <- add / scale / slow / fast / trunc / bjorklund / struct / rotR / rotL
 add                 <- 'add' ws operator_argument
 struct              <- 'struct' ws sequence_or_operator
 bjorklund           <- 'euclid' ws int ws int
 slow                <- 'slow' ws number
 fast                <- 'fast' ws number
+trunc               <- 'trunc' ws number
 rotL                <- 'rotL' ws operator_argument
 rotR                <- 'rotR' ws operator_argument
 scale               <- 'scale' ws quote step_char+ quote
@@ -89,6 +90,15 @@ TEST_CASE("S2.4 slow / fast", "[operators]")
 
     REQUIRE_FALSE(matchesRule("slow", "slow"));          // missing number
     REQUIRE_FALSE(matchesRule("slow", "2"));             // missing keyword
+}
+
+TEST_CASE("S2.4 trunc", "[operators]")
+{
+    REQUIRE(matchesRule("trunc", "trunc 0.75"));
+    REQUIRE(matchesRule("trunc", "trunc 2"));
+
+    REQUIRE_FALSE(matchesRule("trunc", "trunc"));
+    REQUIRE_FALSE(matchesRule("trunc", "0.75"));
 }
 
 TEST_CASE("S2.4 bjorklund (euclid)", "[operators]")

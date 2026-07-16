@@ -9,5 +9,6 @@
 #include "StructRenderNode.hpp"
 #include "AddRenderNode.hpp"
 #include "ScaleRenderNode.hpp"
+#include "TruncRenderNode.hpp"
 #include "TimelineRenderNode.hpp"
 #include "StackRenderNode.hpp"

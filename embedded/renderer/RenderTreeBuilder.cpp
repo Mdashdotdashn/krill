@@ -204,6 +204,12 @@ RenderNodePtr makeOperatorRenderNode(const std::string& type,
     return makeFixedStepRenderNode(childNode, stepDivision);
   }
 
+  if (type == "trunc")
+  {
+    Fraction length = detail::fractionFromValue(arguments[0]);
+    return makeTruncRenderNode(childNode, length);
+  }
+
   if (type == "shift")
   {
     if (arguments[0].IsObject())
