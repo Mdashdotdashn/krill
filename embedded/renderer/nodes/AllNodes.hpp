@@ -8,5 +8,6 @@
 #include "ShiftRenderNode.hpp"
 #include "StructRenderNode.hpp"
 #include "AddRenderNode.hpp"
+#include "ScaleRenderNode.hpp"
 #include "TimelineRenderNode.hpp"
 #include "StackRenderNode.hpp"

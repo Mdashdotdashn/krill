@@ -35,4 +35,5 @@ add_executable(Tests.exe
 ./tst_harmony_noteMidi.cpp
 ./tst_harmony_interval.cpp
 ./tst_harmony_scale.cpp
+./tst_harmony_roman.cpp
 )

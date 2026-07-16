@@ -530,6 +530,7 @@
     },
     {
       "source": "add '1' $ 'c1'",
+      "use": true,
       "expected": {
         "0/1": [
           "C#1"
@@ -562,6 +563,7 @@
     },
     {
       "source": "scale 'MiNor' $ '0 1 2 3'",
+      "use": true,
       "expected": {
         "0/1": [
           "0"

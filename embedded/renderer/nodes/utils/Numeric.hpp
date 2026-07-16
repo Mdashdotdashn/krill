@@ -2,8 +2,11 @@
 
 #include "../RenderNode.hpp"
 
+#include "harmony/core/NoteMidi.hpp"
+
 #include <algorithm>
 #include <cstdio>
+#include <cmath>
 #include <string>
 #include <utility>
 #include <vector>
@@ -42,6 +45,26 @@ static std::string addValues(const std::string& left, const std::string& right)
   if (left == "~" || right == "~")
   {
     return "~";
+  }
+
+  const auto leftMidi = harmony::noteToMidi(left);
+  if (leftMidi.has_value())
+  {
+    const auto [rightOk, rightVal] = detail::tryParseDouble(right);
+    if (!rightOk)
+    {
+      return "~";
+    }
+
+    const double rounded = std::round(rightVal);
+    if (std::fabs(rightVal - rounded) > 1e-9)
+    {
+      return "~";
+    }
+
+    const int target = *leftMidi + static_cast<int>(rounded);
+    const auto note = harmony::midiToNote(target, harmony::SpellingPolicy::PreferSharps);
+    return note.has_value() ? *note : "~";
   }
 
   const auto [leftOk, leftVal] = detail::tryParseDouble(left);

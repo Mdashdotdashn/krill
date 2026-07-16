@@ -237,6 +237,13 @@ RenderNodePtr makeOperatorRenderNode(const std::string& type,
     return makeAddRenderNode(childNode, rightNode);
   }
 
+  if (type == "scale")
+  {
+    assert(arguments.Size() >= 1);
+    assert(arguments[0].IsString());
+    return makeScaleRenderNode(childNode, arguments[0].GetString());
+  }
+
   if (type == "bjorklund")
   {
     assert(arguments.Size() >= 2);
