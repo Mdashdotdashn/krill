@@ -6,6 +6,8 @@ The aim of this project is preserve Tidal's wonderful flexibility while allowing
 
 It is presently under active development.
 
+If you are contributing to the codebase, see [CONTRIBUTING.md](CONTRIBUTING.md) for the Javascript architecture notes and [embedded/readme.md](embedded/readme.md) for the embedded parser and renderer guide.
+
 ## Installation
 
 Installing krill is pretty much your standard nodejs install:
@@ -36,7 +38,9 @@ Server running at: http://localhost:3000
 
 ## C++ Embedded
 
-The repository now also contains an embedded-oriented C++ implementation under `embedded/`. It is a separate codepath intended for embedded and lower-level runtime work, not a replacement for the Node/browser workflow.
+The repository now also contains an embedded-oriented C++ implementation under `embedded/`. It is a separate codepath intended as reusable parser and renderer building blocks for embedded or host-specific systems, not a replacement for the Node/browser workflow.
+
+It does not try to define a complete player or engine layer. Scheduling, transport, device I/O, and host integration are intentionally left to the system that embeds those components.
 
 The JS and C++ share the same test cases and should be in par with one another.
 
