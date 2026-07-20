@@ -34,6 +34,20 @@ Using midi interface Microsoft GS Wavetable Synth 0
 Server running at: http://localhost:3000
 ```
 
+## C++ Embedded
+
+The repository now also contains an embedded-oriented C++ implementation under `embedded/`. It is a separate codepath intended for embedded and lower-level runtime work, not a replacement for the Node/browser workflow.
+
+The JS and C++ share the same test cases and should be in par with one another.
+
+If you want to explore it, start in `embedded/` and use:
+
+```
+./prepare_build.sh
+```
+
+There is a short note in `embedded/readme.md`, and the top-level Javascript usage remains the recommended entry point for most users.
+
 
 
 ## Usage
