@@ -110,8 +110,12 @@ cat                 <- 'cat' ws '[' ws sequence_or_operator (comma sequence_or_o
 stack_op            <- 'stack' ws '[' ws sequence_or_operator (comma sequence_or_operator)* ws ']'
 group_operator      <- cat / stack_op
 
-# sequence_or_group: a quoted sequence or a functional group
-sequence_or_group   <- group_operator / sequence
+# grouped_expr: parenthesized sequence_or_operator
+# Pass through the inner expression unchanged — syntactic sugar for operator composition
+grouped_expr        <- ws '(' ws sequence_or_operator ws ')' ws
+
+# sequence_or_group: grouped expression, functional group, or quoted sequence
+sequence_or_group   <- grouped_expr / group_operator / sequence
 
 # sequence_or_operator: the main recursive rule for chaining operators via $
 sequence_or_operator <- sequence_or_group ws comment*

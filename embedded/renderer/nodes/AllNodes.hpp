@@ -2,6 +2,7 @@
 
 #include "RenderNode.hpp"
 #include "CycleRenderNode.hpp"
+#include "NormalizeCycleRenderNode.hpp"
 #include "SliceRenderNode.hpp"
 #include "WeightedPatternRenderNode.hpp"
 #include "StretchRenderNode.hpp"

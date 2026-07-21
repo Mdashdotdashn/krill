@@ -22,18 +22,30 @@ function buildTreeForNode(node)
   return makeSingleEventPattern(node);
 }
 
+// Ensure expression/operator arguments can be sampled as repeating cycles.
+// This prevents end-of-cycle edge behavior when a rendered argument is shorter than 1 cycle.
+function buildTreeForArgumentNode(node)
+{
+  var built = buildTreeForNode(node);
+  if (node instanceof Object)
+  {
+    return makeCycleNormalizeOperator(built);
+  }
+  return built;
+}
+
 buildOperator = function(type, arguments, source)
 {
     switch(type)
     {
       case "add":
-  			return makeAddOperator(source, buildTreeForNode(arguments[0]));
+      return makeAddOperator(source, buildTreeForArgumentNode(arguments[0]));
 
       case "scale":
   			return makeScaleOperator(source, arguments[0]);
 
       case "struct":
-        return makeStructOperator(source, buildTreeForNode(arguments[0]));
+        return makeStructOperator(source, buildTreeForArgumentNode(arguments[0]));
 
       case "target":
         return makeTargetOperator(source, arguments[0]);
@@ -46,7 +58,7 @@ buildOperator = function(type, arguments, source)
 
       case "shift":
       const shiftArg = (arguments[0] instanceof Object || Array.isArray(arguments[0]))
-        ? buildTreeForNode(arguments[0])
+        ? buildTreeForArgumentNode(arguments[0])
         : arguments[0];
       const direction = arguments.length > 1 ? arguments[1] : 1;
       return makeShiftOperator(source, shiftArg, direction);

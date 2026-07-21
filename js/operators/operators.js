@@ -47,10 +47,11 @@ Operator.prototype.render = function()
 
 require("./op-add.js");
 require("./op-bjorklund.js");
+require("./op-slice.js");
+require("./op-cycle-normalize.js");
 require("./op-pattern.js");
 require("./op-scale.js");
 require("./op-shift.js");
-require("./op-slice.js");
 require("./op-stack.js");
 require("./op-stretch.js");
 require("./op-struct.js");

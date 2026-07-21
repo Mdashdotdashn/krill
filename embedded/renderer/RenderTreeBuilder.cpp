@@ -185,6 +185,19 @@ std::vector<RenderNodePtr> buildStepArray(const rj::Value& stepArray)
   return result;
 }
 
+// Build a render node for operator arguments.
+// Object arguments are normalized to a repeating one-cycle view before
+// downstream sampling/weaving operators consume them.
+RenderNodePtr buildRenderNodeForArgument(const rj::Value& argument)
+{
+  if (argument.IsObject())
+  {
+    return std::make_shared<NormalizeCycleRenderNode>(makeRenderNode(argument));
+  }
+
+  return makeRenderNode(argument);
+}
+
 RenderNodePtr makeOperatorRenderNode(const std::string& type,
                                      const rj::Value& arguments,
                                      RenderNodePtr childNode,
@@ -214,7 +227,7 @@ RenderNodePtr makeOperatorRenderNode(const std::string& type,
   {
     if (arguments[0].IsObject())
     {
-      const auto shiftNode = makeRenderNode(arguments[0]);
+      const auto shiftNode = buildRenderNodeForArgument(arguments[0]);
       const auto direction = arguments.Size() > 1
                                ? detail::fractionFromValue(arguments[1])
                                : Fraction(1);
@@ -230,7 +243,7 @@ RenderNodePtr makeOperatorRenderNode(const std::string& type,
     assert(arguments.Size() >= 1);
     // arguments[0] is the struct pattern (right operand)
     // childNode is the left operand
-    const auto rightNode = makeRenderNode(arguments[0]);
+    const auto rightNode = buildRenderNodeForArgument(arguments[0]);
     return makeStructRenderNode(childNode, rightNode);
   }
 
@@ -239,7 +252,7 @@ RenderNodePtr makeOperatorRenderNode(const std::string& type,
     assert(arguments.Size() >= 1);
     // arguments[0] is the add pattern (right operand)
     // childNode is the left operand
-    const auto rightNode = makeRenderNode(arguments[0]);
+    const auto rightNode = buildRenderNodeForArgument(arguments[0]);
     return makeAddRenderNode(childNode, rightNode);
   }
 
