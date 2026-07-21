@@ -24,10 +24,18 @@ function buildTreeForNode(node)
 
 // Ensure expression/operator arguments can be sampled as repeating cycles.
 // This prevents end-of-cycle edge behavior when a rendered argument is shorter than 1 cycle.
-function buildTreeForArgumentNode(node)
+function isAstObjectNode(node)
+{
+  return node instanceof Object
+    && !Array.isArray(node)
+    && node.type_ !== undefined
+    && node.source_ !== undefined;
+}
+
+function buildRenderNodeForArgument(node)
 {
   var built = buildTreeForNode(node);
-  if (node instanceof Object)
+  if (isAstObjectNode(node))
   {
     return makeCycleNormalizeOperator(built);
   }
@@ -39,13 +47,13 @@ buildOperator = function(type, arguments, source)
     switch(type)
     {
       case "add":
-      return makeAddOperator(source, buildTreeForArgumentNode(arguments[0]));
+      return makeAddOperator(source, buildRenderNodeForArgument(arguments[0]));
 
       case "scale":
   			return makeScaleOperator(source, arguments[0]);
 
       case "struct":
-        return makeStructOperator(source, buildTreeForArgumentNode(arguments[0]));
+        return makeStructOperator(source, buildRenderNodeForArgument(arguments[0]));
 
   		case "stretch":
   			return makeStrechOperator(source, arguments[0]);
@@ -54,8 +62,8 @@ buildOperator = function(type, arguments, source)
         return makeTruncOperator(source, arguments[0]);
 
       case "shift":
-      const shiftArg = (arguments[0] instanceof Object || Array.isArray(arguments[0]))
-        ? buildTreeForArgumentNode(arguments[0])
+      const shiftArg = isAstObjectNode(arguments[0])
+        ? buildRenderNodeForArgument(arguments[0])
         : arguments[0];
       const direction = arguments.length > 1 ? arguments[1] : 1;
       return makeShiftOperator(source, shiftArg, direction);
