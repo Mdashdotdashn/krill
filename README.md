@@ -8,6 +8,27 @@ It is presently under active development.
 
 If you are contributing to the codebase, see [CONTRIBUTING.md](CONTRIBUTING.md) for the Javascript architecture notes and [embedded/readme.md](embedded/readme.md) for the embedded parser and renderer guide.
 
+## AST parity (JS/C++)
+
+Parser parity between JS and C++ is enforced with a shared AST snapshot generated from the test corpus.
+
+- Source corpus: `tests/test-cases.json`
+- Snapshot file: `tests/test-cases-ast.json`
+- Snapshot generator: `tests/update-ast-cases.js`
+
+Regenerate the snapshot when parser/grammar behavior intentionally changes:
+
+```
+npm run update-ast-cases
+```
+
+Validation is run on both sides:
+
+- JS: `node test.js` (includes `tests/test-ast-cases.js`)
+- C++: embedded tests include `embedded/tests/tst_ast_cases.cpp`
+
+If parity fails, the failing source expression is printed so mismatches can be fixed in parser semantic actions.
+
 ## Installation
 
 Installing krill is pretty much your standard nodejs install:

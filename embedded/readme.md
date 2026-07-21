@@ -12,6 +12,25 @@ To build the current code, start with:
 ./prepare_build.sh
 ```
 
+## AST parity with JS
+
+Parser parity between JS and C++ is enforced with a shared AST snapshot generated from the root test corpus.
+
+- Source corpus: `tests/test-cases.json`
+- Snapshot file: `tests/test-cases-ast.json`
+- Snapshot generator (run from repo root):
+
+```sh
+npm run update-ast-cases
+```
+
+Validation runs on both sides:
+
+- JS suite (`node test.js`) includes `tests/test-ast-cases.js`
+- C++ suite includes `tests/tst_ast_cases.cpp`
+
+If parity fails, the failing source expression is printed by the C++ test so semantic-action mismatches can be fixed quickly.
+
 ## Core principles
 
 The embedded code is organized as a pipeline:
