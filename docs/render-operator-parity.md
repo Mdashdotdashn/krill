@@ -99,6 +99,24 @@ Changes touching parser or render-tree behavior should keep all of the following
 - JS: [tests/test-render-structure.js](../tests/test-render-structure.js)
 - C++: [embedded/tests/tst_render_tree_mapping.cpp](../embedded/tests/tst_render_tree_mapping.cpp)
 
+## Execution shortcuts
+
+Use these commands to run the current contract gates quickly:
+
+1. JS full suite.
+- `npm test`
+
+2. JS parity-focused subset.
+- `npm run test-parity-contract-js`
+- Runner file: [tests/test-parity-contract.js](../tests/test-parity-contract.js)
+
+3. Embedded parity-focused subset (from `embedded/build`).
+- `./tests/Tests.exe "*AST parity*"`
+- `./tests/Tests.exe "*Parser*"`
+- `./tests/Tests.exe "*Rendertree*"`
+- `./tests/Tests.exe "*NormalizeCycleRenderNode*"`
+- `./tests/Tests.exe "*Render tree mapping*"`
+
 ## Explicitly unsupported in runtime contract
 
 - `target` operator dispatch is not part of the current JS/C++ runtime parity contract.
