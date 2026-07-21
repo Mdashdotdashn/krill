@@ -131,9 +131,18 @@ TEST_CASE("Parser")
   {
     // slow
     checkParsing("slow 2 $ 'a b'", "{'type_':'stretch','arguments_':[2.0],'source_':{'type_':'pattern','arguments_':{'alignment':'h'},'source_':[{'type_':'element','source_':'a'},{'type_':'element','source_':'b'}]}}");
+		// fast
+		checkParsing("fast 4 $ 'a b'", "{'type_':'stretch','arguments_':['1/4'],'source_':{'type_':'pattern','arguments_':{'alignment':'h'},'source_':[{'type_':'element','source_':'a'},{'type_':'element','source_':'b'}]}}");
     // euclid
     checkParsing("euclid 5 8 $ 'bd'", "{'type_':'bjorklund','arguments_':[5,8],'source_':{'type_':'element','source_':'bd'}}");
     // chained: slow $ euclid $ sequence
     checkParsing("slow 2 $ euclid 5 8 $ 'bd'", "{'type_':'stretch','arguments_':[2.0],'source_':{'type_':'bjorklund','arguments_':[5,8],'source_':{'type_':'element','source_':'bd'}}}");
   }
+
+	SECTION("timing transform canonicalization")
+	{
+		checkParsingFromXml("{ 'source': '[a]/2', 'model': { 'type_':'element', 'source_': {'type_':'element','source_':'a'}, 'options_': {'operator': {'type_':'stretch','arguments_':[2.0]}} } }");
+		checkParsingFromXml("{ 'source': '[a]*4', 'model': { 'type_':'element', 'source_': {'type_':'element','source_':'a'}, 'options_': {'operator': {'type_':'stretch','arguments_':['1/4']}} } }");
+		checkParsingFromXml("{ 'source': '[a]%3', 'model': { 'type_':'element', 'source_': {'type_':'element','source_':'a'}, 'options_': {'operator': {'type_':'fixed-step','arguments_':[3.0]}} } }");
+	}
 }

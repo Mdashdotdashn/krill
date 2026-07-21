@@ -207,12 +207,14 @@ RenderNodePtr makeOperatorRenderNode(const std::string& type,
 
   if (type == "stretch")
   {
+    // Parser-level slow/fast and slice /,* canonicalize to stretch.
     Fraction factor = detail::fractionFromValue(arguments[0]);
     return makeStretchRenderNode(childNode, factor);
   }
 
   if (type == "fixed-step")
   {
+    // Parser-level % slice modifier canonicalizes to fixed-step.
     Fraction stepDivision = detail::fractionFromValue(arguments[0]);
     return makeFixedStepRenderNode(childNode, stepDivision);
   }

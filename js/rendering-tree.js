@@ -56,6 +56,7 @@ buildOperator = function(type, arguments, source)
         return makeStructOperator(source, buildRenderNodeForArgument(arguments[0]));
 
   		case "stretch":
+      // Parser-level slow/fast and slice /,* canonicalize to stretch.
   			return makeStrechOperator(source, arguments[0]);
 
       case "trunc":
@@ -72,6 +73,7 @@ buildOperator = function(type, arguments, source)
   			return makeBjorklundOperator(source, arguments[0], arguments[1]);
 
       case "fixed-step":
+      // Parser-level % slice modifier canonicalizes to fixed-step.
       return makeFixedStepOperator(source, arguments[0]);
 
       case "pattern":
