@@ -7,6 +7,7 @@
     "test": "node test.js",
     "test-js": "node test.js",
     "test-parity-contract-js": "node tests/test-parity-contract.js",
+    "test-parity-contract-all": "bash tests/test-parity-contract-all.sh",
     "start": "node server.js",
     "update-ast-cases": "node tests/update-ast-cases.js"
   },

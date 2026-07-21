@@ -110,7 +110,14 @@ Use these commands to run the current contract gates quickly:
 - `npm run test-parity-contract-js`
 - Runner file: [tests/test-parity-contract.js](../tests/test-parity-contract.js)
 
-3. Embedded parity-focused subset (from `embedded/build`).
+3. Full JS+C++ parity contract gates from repo root.
+- `npm run test-parity-contract-all`
+- Runner file: [tests/test-parity-contract-all.sh](../tests/test-parity-contract-all.sh)
+- Default mode runs JS gates plus embedded AST/parser/lifecycle/mapping gates.
+- To include embedded shared run-cases in the same command:
+	- `PARITY_INCLUDE_RUN_CASES=1 npm run test-parity-contract-all`
+
+4. Embedded parity-focused subset (from `embedded/build`).
 - `./tests/Tests.exe "*AST parity*"`
 - `./tests/Tests.exe "*Parser*"`
 - `./tests/Tests.exe "*Rendertree*"`
