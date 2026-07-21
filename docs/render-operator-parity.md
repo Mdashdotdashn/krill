@@ -59,6 +59,46 @@ For operators that sample another expression as an argument (`add`, `struct`, dy
 Goal:
 - Stable cycle-boundary behavior when argument expressions are shorter or longer than one cycle.
 
+## Lifecycle invariants
+
+The following runtime lifecycle behavior is part of the parity contract:
+
+1. One-cycle slicing invariant.
+- Normalization wrappers expose exactly one cycle per `render()` after sufficient `tick()` accumulation.
+
+2. Boundary continuity invariant.
+- Repeated `tick()` + `render()` calls on normalized argument nodes must produce stable cross-cycle progression for expression arguments.
+
+3. Scalar argument invariant.
+- Scalar shift/add/struct arguments are not wrapped in cycle-normalize wrappers; only AST object arguments are normalized.
+
+4. Canonical transform invariant.
+- `slow`/`fast` and slice modifiers must remain canonicalized to `stretch`/`fixed-step` at parser output, not reintroduced as separate runtime node kinds.
+
+## Test gates
+
+Changes touching parser or render-tree behavior should keep all of the following green:
+
+1. Parser AST parity gate.
+- JS: [tests/test-ast-cases.js](../tests/test-ast-cases.js)
+- C++: [embedded/tests/tst_ast_cases.cpp](../embedded/tests/tst_ast_cases.cpp)
+
+2. Shared runtime corpus gate.
+- JS: [tests/test-run-cases.js](../tests/test-run-cases.js)
+- C++: [embedded/tests/tst_run_cases.cpp](../embedded/tests/tst_run_cases.cpp)
+
+3. Timing canonicalization gate.
+- JS: [tests/test-parser-canonicalization.js](../tests/test-parser-canonicalization.js)
+- C++: [embedded/tests/tst_parser.cpp](../embedded/tests/tst_parser.cpp) (`timing transform canonicalization` section)
+
+4. Lifecycle wrapper gate.
+- JS: [tests/test-operator.js](../tests/test-operator.js) (`testCycleNormalizeOperatorPrefetch`)
+- C++: [embedded/tests/tst_renderNode.cpp](../embedded/tests/tst_renderNode.cpp) (`NormalizeCycleRenderNode slices one cycle per render`)
+
+5. Render-structure mapping gate.
+- JS: [tests/test-render-structure.js](../tests/test-render-structure.js)
+- C++: [embedded/tests/tst_render_tree_mapping.cpp](../embedded/tests/tst_render_tree_mapping.cpp)
+
 ## Explicitly unsupported in runtime contract
 
 - `target` operator dispatch is not part of the current JS/C++ runtime parity contract.
