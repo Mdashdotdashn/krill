@@ -2,13 +2,14 @@ const math = require("mathjs");
 require("./op-pattern.js");
 const Scale = require("tonal-scale");
 const Interval = require("tonal-interval");
+const Note = require("tonal-note");
 
 
 makeScaleOperator = function(source, scale)
 {
   const scaledef = Scale.tokenize(scale.toLowerCase());
   const intervals = Scale.props(scaledef[1]).intervals.map(w => Interval.semitones(w));
-  const offset = scaledef[0] != '' ? Note.chroma(scaleddef[0]) : 0;
+  const offset = scaledef[0] != '' ? Note.chroma(scaledef[0]) : 0;
 
   var scaleFn = function(args)
   {
@@ -20,7 +21,7 @@ makeScaleOperator = function(source, scale)
           const remainder = (degree - modulo) / intervals.length;
           const interval = v < 0 ? intervals.length + modulo : modulo;
           const octave = (v < 0 ? remainder -1 : remainder) * 12;
-          return intervals[interval] + octave;
+          return intervals[interval] + octave + offset;
       });
       return new PatternEvent(e.time_, values);
     })

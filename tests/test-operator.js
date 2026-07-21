@@ -183,6 +183,20 @@ function testScaleOperator()
   testPatternMatches(operator.render(), expected);
 }
 
+function testScaleOperatorWithRoot()
+{
+  var sequence = evaluator.evaluatePattern("'0 1 2'");
+
+  var expected = [
+    { "0/1" : ["2"] },
+    { "1/3" : ["4"] },
+    { "2/3" : ["6"] }
+  ]
+
+  var operator = makeScaleOperator(sequence, "d major");
+  testPatternMatches(operator.render(), expected);
+}
+
 function test()
 {
   var sequence = evaluator.evaluatePattern("'0 1 2 3'");
@@ -206,4 +220,5 @@ testStrechOperator();
 testShiftOperator();
 testBjorklundOperator();
 testScaleOperator();
+testScaleOperatorWithRoot();
 test();

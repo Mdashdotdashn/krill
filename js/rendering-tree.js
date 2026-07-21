@@ -47,9 +47,6 @@ buildOperator = function(type, arguments, source)
       case "struct":
         return makeStructOperator(source, buildTreeForArgumentNode(arguments[0]));
 
-      case "target":
-        return makeTargetOperator(source, arguments[0]);
-
   		case "stretch":
   			return makeStrechOperator(source, arguments[0]);
 
