@@ -31,6 +31,12 @@ Validation runs on both sides:
 
 If parity fails, the failing source expression is printed by the C++ test so semantic-action mismatches can be fixed quickly.
 
+## Render/operator parity contract
+
+Cross-runtime render-node and operator mapping is tracked in [../docs/render-operator-parity.md](../docs/render-operator-parity.md).
+
+Use that file as the source of truth before introducing new operators or changing existing runtime semantics.
+
 ## Core principles
 
 The embedded code is organized as a pipeline:

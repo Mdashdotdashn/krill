@@ -29,6 +29,12 @@ Validation is run on both sides:
 
 If parity fails, the failing source expression is printed so mismatches can be fixed in parser semantic actions.
 
+## Render/operator parity contract (JS/C++)
+
+Runtime operator coverage and naming parity are documented in [docs/render-operator-parity.md](docs/render-operator-parity.md).
+
+Use this matrix when adding, renaming, or changing operators so JS and C++ stay aligned at the render-tree level.
+
 ## Installation
 
 Installing krill is pretty much your standard nodejs install:
