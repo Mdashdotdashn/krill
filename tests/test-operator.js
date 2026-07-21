@@ -197,6 +197,26 @@ function testScaleOperatorWithRoot()
   testPatternMatches(operator.render(), expected);
 }
 
+function testCycleNormalizeOperatorPrefetch()
+{
+  var sequence = evaluator.evaluatePattern("slow 2 $ 'a b'");
+  var normalized = makeCycleNormalizeOperator(sequence);
+
+  testPatternMatches(normalized.render(), [
+    { "0/1" : ["a"] }
+  ]);
+
+  normalized.tick();
+  testPatternMatches(normalized.render(), [
+    { "0/1" : ["b"] }
+  ]);
+
+  normalized.tick();
+  testPatternMatches(normalized.render(), [
+    { "0/1" : ["a"] }
+  ]);
+}
+
 function test()
 {
   var sequence = evaluator.evaluatePattern("'0 1 2 3'");
@@ -221,4 +241,5 @@ testShiftOperator();
 testBjorklundOperator();
 testScaleOperator();
 testScaleOperatorWithRoot();
+testCycleNormalizeOperatorPrefetch();
 test();
