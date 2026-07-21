@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <functional>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -195,7 +196,44 @@ RenderNodePtr buildRenderNodeForArgument(const rj::Value& argument)
     return std::make_shared<NormalizeCycleRenderNode>(makeRenderNode(argument));
   }
 
-  return makeRenderNode(argument);
+  if (argument.IsString())
+  {
+    return makeCycleRenderNode(makeSingleEventCycle(argument.GetString()));
+  }
+
+  if (argument.IsBool())
+  {
+    return makeCycleRenderNode(makeSingleEventCycle(argument.GetBool() ? "true" : "false"));
+  }
+
+  if (argument.IsNumber())
+  {
+    std::ostringstream ss;
+    if (argument.IsInt())
+    {
+      ss << argument.GetInt();
+    }
+    else if (argument.IsInt64())
+    {
+      ss << argument.GetInt64();
+    }
+    else if (argument.IsUint())
+    {
+      ss << argument.GetUint();
+    }
+    else if (argument.IsUint64())
+    {
+      ss << argument.GetUint64();
+    }
+    else
+    {
+      ss << argument.GetDouble();
+    }
+    return makeCycleRenderNode(makeSingleEventCycle(ss.str()));
+  }
+
+  assert(0);
+  return nullptr;
 }
 
 RenderNodePtr makeOperatorRenderNode(const std::string& type,

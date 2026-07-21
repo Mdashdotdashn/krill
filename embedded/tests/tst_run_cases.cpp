@@ -7,8 +7,50 @@
 #include <third_party/rapidjson/istreamwrapper.h>
 
 #include <cassert>
+#include <sstream>
 #include <iostream>
 #include <fstream>
+#include <string>
+
+namespace
+{
+std::string expectedValueAsString(const rapidjson::Value& v)
+{
+  if (v.IsString())
+  {
+    return v.GetString();
+  }
+
+  if (v.IsInt())
+  {
+    return std::to_string(v.GetInt());
+  }
+
+  if (v.IsInt64())
+  {
+    return std::to_string(v.GetInt64());
+  }
+
+  if (v.IsUint())
+  {
+    return std::to_string(v.GetUint());
+  }
+
+  if (v.IsUint64())
+  {
+    return std::to_string(v.GetUint64());
+  }
+
+  if (v.IsDouble())
+  {
+    std::ostringstream ss;
+    ss << v.GetDouble();
+    return ss.str();
+  }
+
+  return "";
+}
+} // namespace
 
 TEST_CASE("Rendertree")
 {
@@ -52,8 +94,11 @@ TEST_CASE("Rendertree")
     for (const auto& m : expected.GetObject())
     {
       std::optional<Cycle::Event> oEvent;
+      int guard = 0;
       while (!(oEvent))
       {
+        INFO("No event produced while evaluating source: " << source);
+        REQUIRE(guard++ < 10000);
         const auto nextTime = player.advance(currentTime);
         oEvent = player.eventForTime(nextTime);
         currentTime = nextTime;
@@ -72,7 +117,8 @@ TEST_CASE("Rendertree")
       size_t index = 0;
       for (const auto& v : expectedValues)
       {
-        CHECK(v.GetString() == values[index++]);
+        const auto expectedValue = expectedValueAsString(v);
+        CHECK(expectedValue == values[index++]);
       }
     }
   }
