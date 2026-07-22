@@ -27,7 +27,26 @@ namespace detail
     }
     else
     {
-      factor.convertStringToFraction(v.GetString());
+      const auto text = std::string(v.GetString());
+      // FractionClass string parser accepts only "a/b"; support decimal literals too.
+      if (text.find('/') != std::string::npos)
+      {
+        if (!factor.convertStringToFraction(text))
+        {
+          factor = Fraction(0);
+        }
+      }
+      else
+      {
+        try
+        {
+          factor.convertDoubleToFraction(std::stod(text));
+        }
+        catch (...)
+        {
+          factor = Fraction(0);
+        }
+      }
     }
     return factor;
   }
@@ -275,6 +294,10 @@ RenderNodePtr makeOperatorRenderNode(const std::string& type,
     }
 
     Fraction offset = detail::fractionFromValue(arguments[0]);
+    if (arguments.Size() > 1)
+    {
+      offset *= detail::fractionFromValue(arguments[1]);
+    }
     return makeShiftRenderNode(childNode, offset);
   }
 

@@ -1,5 +1,6 @@
 #include "renderer/nodes/CycleRenderNode.hpp"
 #include "renderer/nodes/NormalizeCycleRenderNode.hpp"
+#include "renderer/nodes/ShiftRenderNode.hpp"
 
 #include "testUtils.hpp"
 
@@ -30,4 +31,23 @@ TEST_CASE("NormalizeCycleRenderNode slices one cycle per render")
 
   renderNode.tick();
   REQUIRE(test::compare(renderNode.render(), test::simpleCycle({"a"})));
+}
+
+TEST_CASE("ShiftRenderNode rotates scalar offsets")
+{
+  const auto base = test::simpleCycle({"bd", "~", "sd", "~"});
+  auto child = std::make_shared<CycleRenderNode>(base);
+  auto renderNode = ShiftRenderNode(child, Fraction(1, 8));
+
+  renderNode.tick();
+  const auto shifted = renderNode.render();
+
+  const auto expected = test::makeCycle(Fraction(1), {
+    {Fraction(1, 8), "bd"},
+    {Fraction(3, 8), "~"},
+    {Fraction(5, 8), "sd"},
+    {Fraction(7, 8), "~"},
+  });
+
+  REQUIRE(test::compare(shifted, expected));
 }
