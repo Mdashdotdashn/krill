@@ -11,9 +11,34 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <array>
 
 namespace
 {
+std::ifstream openSharedRunCasesFile()
+{
+  // Support common CWDs (repo root, embedded/build, embedded/build/tests).
+  const std::array<const char*, 6> candidatePaths = {
+    "tests/test-cases.json",
+    "../tests/test-cases.json",
+    "../../tests/test-cases.json",
+    "../../../tests/test-cases.json",
+    "../../../../tests/test-cases.json",
+    "../../../../../tests/test-cases.json"
+  };
+
+  for (const auto* path : candidatePaths)
+  {
+    std::ifstream ifs(path);
+    if (ifs.is_open())
+    {
+      return ifs;
+    }
+  }
+
+  return std::ifstream{};
+}
+
 std::string expectedValueAsString(const rapidjson::Value& v)
 {
   if (v.IsString())
@@ -56,8 +81,8 @@ TEST_CASE("Rendertree")
 {
   using namespace rapidjson;
 
-  // Load shared JS test cases from repository root.
-  std::ifstream ifs{ R"(../../../tests/test-cases.json)" };
+  // Load shared JS test cases from repository root across common CWDs.
+  std::ifstream ifs = openSharedRunCasesFile();
   REQUIRE(ifs.is_open());
 
   IStreamWrapper isw{ ifs };
@@ -95,12 +120,28 @@ TEST_CASE("Rendertree")
     {
       std::optional<Cycle::Event> oEvent;
       int guard = 0;
+      int noProgressGuard = 0;
+      auto lastTime = currentTime;
       while (!(oEvent))
       {
         INFO("No event produced while evaluating source: " << source);
-        REQUIRE(guard++ < 10000);
+        INFO("Current expected time: " << m.name.GetString());
+        REQUIRE(guard++ < 64);
         const auto nextTime = player.advance(currentTime);
         oEvent = player.eventForTime(nextTime);
+
+        if (nextTime == lastTime)
+        {
+          noProgressGuard++;
+          INFO("No-progress advance time: " << nextTime.convertFractionToDouble());
+          REQUIRE(noProgressGuard < 64);
+        }
+        else
+        {
+          noProgressGuard = 0;
+        }
+
+        lastTime = nextTime;
         currentTime = nextTime;
       }
 
