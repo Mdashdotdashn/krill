@@ -106,7 +106,7 @@ var shiftPatternByPattern = function(pattern, amountPattern, direction)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-makeShiftOperator = function(source, shiftAmount, direction)
+makeShiftRenderNode = function(source, shiftAmount, direction)
 {
   var stretchFn = function(args)
   {
@@ -122,5 +122,7 @@ makeShiftOperator = function(source, shiftAmount, direction)
     return shiftPattern(sourcePattern, math.multiply(math.fraction(amountArg), directionArg));
   }
 
-  return new Operator(stretchFn, [source, shiftAmount, direction ? direction : 1]);
+  return new RenderNode(stretchFn, [source, shiftAmount, direction ? direction : 1]);
 }
+
+makeShiftOperator = makeShiftRenderNode;

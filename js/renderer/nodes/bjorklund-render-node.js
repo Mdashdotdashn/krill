@@ -1,5 +1,5 @@
 const math = require("mathjs");
-require("./op-pattern.js");
+require("./weighted-pattern-render-node.js");
 
 function bjorklund(steps, pulses) {
 
@@ -81,7 +81,7 @@ var buildWeightArray = function(step, pulse, source)
    return weightArray;
 }
 
-makeBjorklundOperator = function(source, pulse, step)
+makeBjorklundRenderNode = function(source, pulse, step)
 {
   var bjorklundFn = function(args)
   {
@@ -92,5 +92,7 @@ makeBjorklundOperator = function(source, pulse, step)
     return makePatternFromWeightArray(weightArray);
   }
 
-  return new Operator(bjorklundFn, [source, pulse, step]);
+	return new RenderNode(bjorklundFn, [source, pulse, step]);
 }
+
+makeBjorklundOperator = makeBjorklundRenderNode;

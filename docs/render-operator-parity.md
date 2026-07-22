@@ -13,7 +13,7 @@ Non-scope:
 
 ## Builder mapping
 
-- JS builder entry: [js/rendering-tree.js](../js/rendering-tree.js)
+- JS builder entry: [js/renderer/render-tree.js](../js/renderer/render-tree.js)
 - C++ builder entry: [embedded/renderer/RenderTreeBuilder.cpp](../embedded/renderer/RenderTreeBuilder.cpp)
 
 Both runtimes follow the same pattern:
@@ -25,17 +25,17 @@ Both runtimes follow the same pattern:
 
 | AST type | JS runtime mapping | C++ runtime mapping | Parity status | Notes |
 |---|---|---|---|---|
-| `add` | `makeAddOperator` | `makeAddRenderNode` | Aligned | Binary weave/add behavior on sampled values. |
-| `struct` | `makeStructOperator` | `makeStructRenderNode` | Aligned | Right pattern gates left content. |
-| `shift` | `makeShiftOperator` | `makeShiftRenderNode` | Aligned | Supports static offset and expression argument node. |
-| `stretch` | `makeStrechOperator` | `makeStretchRenderNode` | Aligned (naming differs) | JS symbol keeps legacy spelling `Strech`. |
-| `trunc` | `makeTruncOperator` | `makeTruncRenderNode` | Aligned | Length truncation of rendered cycle. |
-| `scale` | `makeScaleOperator` | `makeScaleRenderNode` | Aligned | Scale-name argument expected as string. |
-| `bjorklund` | `makeBjorklundOperator` | `makeBjorklundRenderNode` | Aligned | C++ builds per-group subtree clones to avoid shared tick state. |
-| `fixed-step` | `makeFixedStepOperator` | `makeFixedStepRenderNode` | Aligned | Step-division-driven stretch variant. |
-| `pattern` (`h`) | `makePatternRenderingOperator` | `makeWeightedPatternRenderNode` | Aligned | Horizontal pattern composition. |
-| `pattern` (`v`) | `makeStackRenderingOperator` | `makeStackRenderNode` | Aligned | Parallel stack composition. |
-| `pattern` (`t`) | `makeTimelineOperator` | `makeTimelineRenderNode` | Aligned | Timeline/round-robin composition. |
+| `add` | `makeAddRenderNode` | `makeAddRenderNode` | Aligned | Binary weave/add behavior on sampled values. |
+| `struct` | `makeStructRenderNode` | `makeStructRenderNode` | Aligned | Right pattern gates left content. |
+| `shift` | `makeShiftRenderNode` | `makeShiftRenderNode` | Aligned | Supports static offset and expression argument node. |
+| `stretch` | `makeStretchRenderNode` | `makeStretchRenderNode` | Aligned | Legacy JS alias `makeStrechOperator` remains for compatibility. |
+| `trunc` | `makeTruncRenderNode` | `makeTruncRenderNode` | Aligned | Length truncation of rendered cycle. |
+| `scale` | `makeScaleRenderNode` | `makeScaleRenderNode` | Aligned | Scale-name argument expected as string. |
+| `bjorklund` | `makeBjorklundRenderNode` | `makeBjorklundRenderNode` | Aligned | C++ builds per-group subtree clones to avoid shared tick state. |
+| `fixed-step` | `makeFixedStepRenderNode` | `makeFixedStepRenderNode` | Aligned | Step-division-driven stretch variant. |
+| `pattern` (`h`) | `makeWeightedPatternRenderNode` | `makeWeightedPatternRenderNode` | Aligned | Horizontal pattern composition. |
+| `pattern` (`v`) | `makeStackRenderNode` | `makeStackRenderNode` | Aligned | Parallel stack composition. |
+| `pattern` (`t`) | `makeTimelineRenderNode` | `makeTimelineRenderNode` | Aligned | Timeline/round-robin composition. |
 
 ## Timing transform canonicalization
 
@@ -92,7 +92,7 @@ Changes touching parser or render-tree behavior should keep all of the following
 - C++: [embedded/tests/tst_parser.cpp](../embedded/tests/tst_parser.cpp) (`timing transform canonicalization` section)
 
 4. Lifecycle wrapper gate.
-- JS: [tests/test-operator.js](../tests/test-operator.js) (`testCycleNormalizeOperatorPrefetch`)
+- JS: [tests/test-render-node.js](../tests/test-render-node.js) (`testCycleNormalizeOperatorPrefetch`)
 - C++: [embedded/tests/tst_renderNode.cpp](../embedded/tests/tst_renderNode.cpp) (`NormalizeCycleRenderNode slices one cycle per render`)
 
 5. Render-structure mapping gate.

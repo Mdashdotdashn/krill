@@ -1,4 +1,4 @@
-require("../patterns/weaving.js");
+require("../../patterns/weaving.js");
 
 var boolValue = function(b)
 {
@@ -14,7 +14,7 @@ var boolValue = function(b)
   return true;
 }
 
-makeStructOperator = function(source, pattern)
+makeStructRenderNode = function(source, pattern)
 {
   var applyStructFn = function(args)
   {
@@ -26,5 +26,7 @@ makeStructOperator = function(source, pattern)
     return weavePatterns(args[0], args[1], "right", operator);
   }
 
-  return new Operator(applyStructFn, [source, pattern]);
+  return new RenderNode(applyStructFn, [source, pattern]);
 }
+
+makeStructOperator = makeStructRenderNode;

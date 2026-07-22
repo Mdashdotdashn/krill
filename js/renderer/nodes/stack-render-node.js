@@ -65,8 +65,10 @@ StackRenderingOperator.prototype.render = function()
 
 //////////////////////////////////////////////////////////////////////////////
 
-makeStackRenderingOperator = function(childArray)
+makeStackRenderNode = function(childArray)
 {
   if (!Array.isArray(childArray)) throw ("Unexpected child data type");
   return new StackRenderingOperator(childArray);
 }
+
+makeStackRenderingOperator = makeStackRenderNode;

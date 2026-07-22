@@ -16,12 +16,14 @@ var truncPattern = function(pattern, length)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-makeTruncOperator = function(source, truncSize)
+makeTruncRenderNode = function(source, truncSize)
 {
   var truncFn = function(args)
   {
     return truncPattern(args[0], args[1]);
   }
 
-  return new Operator(truncFn, [source, truncSize]);
+  return new RenderNode(truncFn, [source, truncSize]);
 }
+
+makeTruncOperator = makeTruncRenderNode;

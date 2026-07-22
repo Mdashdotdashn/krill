@@ -1,11 +1,11 @@
 const math = require("mathjs");
-require("./op-pattern.js");
+require("./weighted-pattern-render-node.js");
 const Scale = require("tonal-scale");
 const Interval = require("tonal-interval");
 const Note = require("tonal-note");
 
 
-makeScaleOperator = function(source, scale)
+makeScaleRenderNode = function(source, scale)
 {
   const scaledef = Scale.tokenize(scale.toLowerCase());
   const intervals = Scale.props(scaledef[1]).intervals.map(w => Interval.semitones(w));
@@ -29,5 +29,7 @@ makeScaleOperator = function(source, scale)
     return makePatternFromEventArray(eventArray);
   }
 
-  return new Operator(scaleFn,[source]);
+  return new RenderNode(scaleFn,[source]);
 }
+
+makeScaleOperator = makeScaleRenderNode;

@@ -19,22 +19,25 @@ var stretchPattern = function(pattern, factor)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-makeStrechOperator = function(source, stretchFactor)
+makeStretchRenderNode = function(source, stretchFactor)
 {
   var stretchFn = function(args)
   {
     return stretchPattern(args[0], args[1]);
   }
 
-  return new Operator(stretchFn, [source, stretchFactor], "stretch");
+  return new RenderNode(stretchFn, [source, stretchFactor], "stretch");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-makeFixedStepOperator = function(source, stepDivision)
+makeFixedStepRenderNode = function(source, stepDivision)
 {
   var sourceWeight = source.size();
   var stretchFactor = math.divide(sourceWeight, stepDivision);
 
-  return makeStrechOperator(source, stretchFactor);
+  return makeStretchRenderNode(source, stretchFactor);
 }
+
+makeStrechOperator = makeStretchRenderNode;
+makeFixedStepOperator = makeFixedStepRenderNode;

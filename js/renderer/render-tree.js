@@ -1,6 +1,6 @@
 var math = require('mathjs');
 
-require("./operators/operators.js");
+require("./nodes/render-nodes.js");
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -37,7 +37,7 @@ function buildRenderNodeForArgument(node)
   var built = buildTreeForNode(node);
   if (isAstObjectNode(node))
   {
-    return makeCycleNormalizeOperator(built);
+    return makeNormalizeCycleRenderNode(built);
   }
   return built;
 }
@@ -47,46 +47,46 @@ buildOperator = function(type, arguments, source)
     switch(type)
     {
       case "add":
-      return makeAddOperator(source, buildRenderNodeForArgument(arguments[0]));
+      return makeAddRenderNode(source, buildRenderNodeForArgument(arguments[0]));
 
       case "scale":
-  			return makeScaleOperator(source, arguments[0]);
+			return makeScaleRenderNode(source, arguments[0]);
 
       case "struct":
-        return makeStructOperator(source, buildRenderNodeForArgument(arguments[0]));
+        return makeStructRenderNode(source, buildRenderNodeForArgument(arguments[0]));
 
   		case "stretch":
       // Parser-level slow/fast and slice /,* canonicalize to stretch.
-  			return makeStrechOperator(source, arguments[0]);
+			return makeStretchRenderNode(source, arguments[0]);
 
       case "trunc":
-        return makeTruncOperator(source, arguments[0]);
+        return makeTruncRenderNode(source, arguments[0]);
 
       case "shift":
       const shiftArg = isAstObjectNode(arguments[0])
         ? buildRenderNodeForArgument(arguments[0])
         : arguments[0];
       const direction = arguments.length > 1 ? arguments[1] : 1;
-      return makeShiftOperator(source, shiftArg, direction);
+      return makeShiftRenderNode(source, shiftArg, direction);
 
       case "bjorklund":
-  			return makeBjorklundOperator(source, arguments[0], arguments[1]);
+			return makeBjorklundRenderNode(source, arguments[0], arguments[1]);
 
       case "fixed-step":
       // Parser-level % slice modifier canonicalizes to fixed-step.
-      return makeFixedStepOperator(source, arguments[0]);
+      return makeFixedStepRenderNode(source, arguments[0]);
 
       case "pattern":
         switch(arguments.alignment)
         {
           case "h":
-            return makePatternRenderingOperator(source);
+            return makeWeightedPatternRenderNode(source);
 
           case "v":
-            return makeStackRenderingOperator(source);
+            return makeStackRenderNode(source);
 
           case "t":
-            return makeTimelineOperator(source);
+            return makeTimelineRenderNode(source);
         }
   	}
   	throw "Unknown operator type: " + type;

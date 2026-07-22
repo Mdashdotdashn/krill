@@ -1,5 +1,5 @@
 math = require("mathjs");
-require("../patterns/pattern.js");
+require("../../patterns/pattern.js");
 
 ////////////////////////////////////////////////////////////////////////////////
 

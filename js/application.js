@@ -1,5 +1,5 @@
 require('./input-evaluator.js');
-require('./rendering-tree.js');
+require('./renderer/render-tree.js');
 require('./playback/engine.js');
 require('./playback/playback-device.js');
 require('./playback/sync-device.js');

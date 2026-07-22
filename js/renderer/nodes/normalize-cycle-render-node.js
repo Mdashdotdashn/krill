@@ -1,4 +1,4 @@
-require("./op-slice.js");
+require("./slice-render-node.js");
 
 // A named one-cycle slicer used to normalize expression/operator arguments.
 // Inherits PatternSlicerOperator so tick() accumulates child material until
@@ -16,7 +16,9 @@ CycleNormalizeOperator = function(content)
 CycleNormalizeOperator.prototype = Object.create(PatternSlicerOperator.prototype);
 CycleNormalizeOperator.prototype.constructor = CycleNormalizeOperator;
 
-makeCycleNormalizeOperator = function(source)
+makeNormalizeCycleRenderNode = function(source)
 {
   return new CycleNormalizeOperator(source);
 }
+
+makeCycleNormalizeOperator = makeNormalizeCycleRenderNode;

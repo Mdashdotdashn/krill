@@ -1,7 +1,7 @@
 assert = require("assert");
 math = require("mathjs");
 require('../js/input-evaluator.js');
-require('../js/rendering-tree.js');
+require('../js/renderer/render-tree.js');
 
 TestEvaluator = function()
 {

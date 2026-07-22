@@ -1,5 +1,5 @@
 require('./base.js');
-require('../js/operators/operators.js')
+require('../js/renderer/nodes/render-nodes.js')
 
 // In this test we create a simple operator that returns the sequence
 // stored in the first argument. This ensures the sequence properly
@@ -104,7 +104,7 @@ function testStrechOperator()
       { "4/3" : ["3"] },
     ];
 
-  var operator = makeStrechOperator(sequence, 2);
+  var operator = makeStretchRenderNode(sequence, 2);
 
   operator.tick();
   testPatternMatches(operator.render(), expected);
@@ -123,7 +123,7 @@ function testShiftOperator()
       { "3/4" : ["2"] },
     ];
 
-  var operator = makeShiftOperator(sequence, 0.5);
+  var operator = makeShiftRenderNode(sequence, 0.5);
 
   operator.tick();
   testPatternMatches(operator.render(), expected);
@@ -143,7 +143,7 @@ function testAddOperator()
       { "3/4" : ["-4"] },
     ];
 
-  var operator = makeAddOperator(sequence, argument);
+  var operator = makeAddRenderNode(sequence, argument);
 
   operator.tick();
   testPatternMatches(operator.render(), expected);
@@ -161,7 +161,7 @@ function testBjorklundOperator()
       { "3/4" : ["bd"] }
     ];
 
-  var operator = makeBjorklundOperator(sequence, 3 ,8);
+  var operator = makeBjorklundRenderNode(sequence, 3 ,8);
   operator.tick();
   testPatternMatches(operator.render(), expected);
 }
@@ -179,7 +179,7 @@ function testScaleOperator()
     { "3/4" : ["11"] }
   ]
 
-  var operator = makeScaleOperator(sequence, "major");
+  var operator = makeScaleRenderNode(sequence, "major");
   testPatternMatches(operator.render(), expected);
 }
 
@@ -193,14 +193,14 @@ function testScaleOperatorWithRoot()
     { "2/3" : ["6"] }
   ]
 
-  var operator = makeScaleOperator(sequence, "d major");
+  var operator = makeScaleRenderNode(sequence, "d major");
   testPatternMatches(operator.render(), expected);
 }
 
 function testCycleNormalizeOperatorPrefetch()
 {
   var sequence = evaluator.evaluatePattern("slow 2 $ 'a b'");
-  var normalized = makeCycleNormalizeOperator(sequence);
+  var normalized = makeNormalizeCycleRenderNode(sequence);
 
   testPatternMatches(normalized.render(), [
     { "0/1" : ["a"] }
@@ -227,7 +227,7 @@ function test()
     { "1/2" : ["2"] }
   ]
 
-  var operator = makeTruncOperator(sequence, 0.75);
+  var operator = makeTruncRenderNode(sequence, 0.75);
   testPatternMatches(operator.render(), expected);
 }
 ////////////////////////////////////////////////////////////////////////////////

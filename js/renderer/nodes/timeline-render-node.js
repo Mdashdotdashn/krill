@@ -16,7 +16,9 @@ TimelineOperator.prototype.render = function()
   return this.nodes_[this.current_].render();
 }
 
-makeTimelineOperator = function(operatorArray)
+makeTimelineRenderNode = function(operatorArray)
 {
   return new TimelineOperator(operatorArray);
 }
+
+makeTimelineOperator = makeTimelineRenderNode;

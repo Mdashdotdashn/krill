@@ -1,9 +1,9 @@
-require("../patterns/weaving.js");
+require("../../patterns/weaving.js");
 
 var parser = require('note-parser');
 var note = require('tonal-note');
 
-makeAddOperator = function(source, pattern)
+makeAddRenderNode = function(source, pattern)
 {
   var applyFn = function(args)
   {
@@ -20,5 +20,7 @@ makeAddOperator = function(source, pattern)
     return weavePatterns(args[0], args[1], "both", operator);
   }
 
-  return new Operator(applyFn, [source, pattern]);
+  return new RenderNode(applyFn, [source, pattern]);
 }
+
+makeAddOperator = makeAddRenderNode;

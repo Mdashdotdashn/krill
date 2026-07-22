@@ -1,7 +1,7 @@
 const math = require("mathjs");
 const _ = require("lodash");
 
-require("../patterns/pattern.js");
+require("../../patterns/pattern.js");
 
 ////////////////////////////////////////////////////////////////////////////////
 //! holds information about characteristics (like weigth a pattern step has)
@@ -104,8 +104,10 @@ SequenceRenderingOperator.prototype.render = function()
 
 //////////////////////////////////////////////////////////////////////////////
 
-makePatternRenderingOperator = function(childArray)
+makeWeightedPatternRenderNode = function(childArray)
 {
   if (!Array.isArray(childArray)) throw ("Unexpected child data type");
     return new SequenceRenderingOperator(childArray);
 }
+
+makePatternRenderingOperator = makeWeightedPatternRenderNode;
