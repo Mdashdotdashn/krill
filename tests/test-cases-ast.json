@@ -1151,6 +1151,19 @@
           }
         ]
       }
+    },
+    "add '1' $ 'c1'": {
+      "type_": "add",
+      "arguments_": [
+        {
+          "type_": "element",
+          "source_": "1"
+        }
+      ],
+      "source_": {
+        "type_": "element",
+        "source_": "c1"
+      }
     }
   }
 }
