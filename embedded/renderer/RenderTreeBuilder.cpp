@@ -2,6 +2,7 @@
 
 #include <optional>
 
+#include "nodes/AddRenderNode.hpp"
 #include "nodes/BjorklundRenderNode.hpp"
 #include "nodes/ElementRenderNode.hpp"
 #include "nodes/EmptyRenderNode.hpp"
@@ -429,6 +430,23 @@ namespace krill
       return v["arguments_"].GetArray().Size() > 0;
     }
 
+    bool isAddNode(const rapidjson::Value& v)
+    {
+      if (!v.IsObject() || !v.HasMember("type_") || !v["type_"].IsString())
+      {
+        return false;
+      }
+      if (std::string(v["type_"].GetString()) != "add")
+      {
+        return false;
+      }
+      if (!v.HasMember("source_") || !v.HasMember("arguments_") || !v["arguments_"].IsArray())
+      {
+        return false;
+      }
+      return v["arguments_"].GetArray().Size() > 0;
+    }
+
     std::optional<std::pair<RenderTreePtr, Fraction>> stretchSourceAndFactor(const rapidjson::Value& v)
     {
       if (!isStretchNode(v))
@@ -473,6 +491,28 @@ namespace krill
 
       const auto& args = v["arguments_"].GetArray();
       return std::make_pair(buildRenderTree(args[0]), buildRenderTree(v["source_"]));
+    }
+
+    std::optional<std::pair<RenderTreePtr, RenderTreePtr>> addOperands(const rapidjson::Value& v)
+    {
+      if (!isAddNode(v))
+      {
+        return std::nullopt;
+      }
+
+      const auto& args = v["arguments_"].GetArray();
+      RenderTreePtr lhs;
+      if (args[0].IsObject())
+      {
+        lhs = buildRenderTree(args[0]);
+      }
+      else
+      {
+        lhs = std::make_shared<ElementRenderNode>(sourceAsString(args[0]));
+      }
+
+      auto rhs = buildRenderTree(v["source_"]);
+      return std::make_pair(lhs, rhs);
     }
 
     RenderTreePtr buildRenderTree(const rapidjson::Value& v)
@@ -526,6 +566,12 @@ namespace krill
       if (structData.has_value())
       {
         return std::make_shared<StructRenderNode>(structData->first, structData->second);
+      }
+
+      const auto addData = addOperands(v);
+      if (addData.has_value())
+      {
+        return std::make_shared<AddRenderNode>(addData->first, addData->second);
       }
 
       return std::make_shared<EmptyRenderNode>();

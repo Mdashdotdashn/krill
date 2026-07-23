@@ -953,6 +953,32 @@
         "type_": "element",
         "source_": "bd"
       }
+    },
+    "add 7.5 $ '10 11 12'": {
+      "type_": "add",
+      "arguments_": [
+        "7.5"
+      ],
+      "source_": {
+        "type_": "pattern",
+        "arguments_": {
+          "alignment": "h"
+        },
+        "source_": [
+          {
+            "type_": "element",
+            "source_": "10"
+          },
+          {
+            "type_": "element",
+            "source_": "11"
+          },
+          {
+            "type_": "element",
+            "source_": "12"
+          }
+        ]
+      }
     }
   }
 }

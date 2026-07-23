@@ -5,6 +5,7 @@ var math = require("mathjs");
 
 require("./nodes/empty-render-node.js");
 require("./nodes/element-render-node.js");
+require("./nodes/add-render-node.js");
 require("./nodes/bjorklund-render-node.js");
 require("./nodes/horizontal-pattern-render-node.js");
 require("./nodes/stretch-render-node.js");
@@ -199,6 +200,17 @@ function buildRenderNode(modelNode)
       buildRenderNode(modelNode.arguments_[0]),
       buildRenderNode(modelNode.source_)
     );
+  }
+
+  if (modelNode.type_ === "add"
+      && Array.isArray(modelNode.arguments_)
+      && modelNode.arguments_.length > 0)
+  {
+    var arg = modelNode.arguments_[0];
+    var lhs = (arg && arg instanceof Object)
+      ? buildRenderNode(arg)
+      : new ElementRenderNode(String(arg));
+    return new AddRenderNode(lhs, buildRenderNode(modelNode.source_));
   }
 
   return new EmptyRenderNode();
