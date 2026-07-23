@@ -31,18 +31,29 @@ namespace krill
         return mpSourceNode->query(request);
       }
 
+      const auto numerator = request.start.getNumerator();
+      const auto denominator = request.start.getDenominator();
+      auto cycleIndex = numerator / denominator;
+      if (((numerator < 0) != (denominator < 0)) && ((numerator % denominator) != 0))
+      {
+        cycleIndex -= 1;
+      }
+
+      const auto localStart = request.start - Fraction(cycleIndex);
+      const auto localEnd = request.end - Fraction(cycleIndex);
+
       const Fraction wholeStart(0);
       const Fraction wholeEnd(1);
-      if (request.end <= wholeStart || request.start >= wholeEnd)
+      if (localEnd <= wholeStart || localStart >= wholeEnd)
       {
         return {};
       }
 
       QueryFragment fragment;
-      fragment.wholeStart = wholeStart;
-      fragment.wholeEnd = wholeEnd;
-      fragment.partStart = request.start > wholeStart ? request.start : wholeStart;
-      fragment.partEnd = request.end < wholeEnd ? request.end : wholeEnd;
+      fragment.wholeStart = wholeStart + Fraction(cycleIndex);
+      fragment.wholeEnd = wholeEnd + Fraction(cycleIndex);
+      fragment.partStart = (localStart > wholeStart ? localStart : wholeStart) + Fraction(cycleIndex);
+      fragment.partEnd = (localEnd < wholeEnd ? localEnd : wholeEnd) + Fraction(cycleIndex);
       fragment.value = mValue;
       return {fragment};
     }

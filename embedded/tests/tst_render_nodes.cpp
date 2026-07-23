@@ -1,6 +1,7 @@
 #include "renderer/nodes/ElementRenderNode.hpp"
 #include "renderer/nodes/EmptyRenderNode.hpp"
 #include "renderer/nodes/HorizontalPatternRenderNode.hpp"
+#include "renderer/nodes/TimelinePatternRenderNode.hpp"
 #include "renderer/nodes/VerticalPatternRenderNode.hpp"
 
 #include <third_party/catch2/catch.hpp>
@@ -153,5 +154,28 @@ TEST_CASE("Render nodes query behavior")
 
     const auto noWidth = node.query({Fraction(1, 2), Fraction(1, 2)});
     CHECK(noWidth.empty());
+  }
+
+  SECTION("TimelinePatternRenderNode alternates by cycle")
+  {
+    std::vector<RenderTreePtr> children;
+    children.push_back(std::make_shared<ElementRenderNode>("3"));
+    children.push_back(std::make_shared<ElementRenderNode>("4"));
+
+    TimelinePatternRenderNode node(std::move(children));
+
+    const auto cycle0 = node.query({Fraction(2, 3), Fraction(2, 3) + Fraction(1, 1024)});
+    REQUIRE(cycle0.size() == 1);
+    CHECK(cycle0[0].value == "3");
+    CHECK(cycle0[0].wholeStart == Fraction(0));
+    CHECK(cycle0[0].wholeEnd == Fraction(1));
+    CHECK(cycle0[0].partStart == Fraction(2, 3));
+
+    const auto cycle1 = node.query({Fraction(5, 3), Fraction(5, 3) + Fraction(1, 1024)});
+    REQUIRE(cycle1.size() == 1);
+    CHECK(cycle1[0].value == "4");
+    CHECK(cycle1[0].wholeStart == Fraction(1));
+    CHECK(cycle1[0].wholeEnd == Fraction(2));
+    CHECK(cycle1[0].partStart == Fraction(5, 3));
   }
 }

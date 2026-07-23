@@ -1,3 +1,5 @@
+var math = require("mathjs");
+
 require("./query-node-utils.js");
 
 ElementRenderNode = function(source)
@@ -20,19 +22,23 @@ ElementRenderNode.prototype.query = function(start, end)
     return this.source_.query(requestStart, requestEnd);
   }
 
+  var cycleIndex = math.floor(requestStart);
+  var localStart = math.subtract(requestStart, cycleIndex);
+  var localEnd = math.subtract(requestEnd, cycleIndex);
+
   var wholeStart = QueryNodeUtils.toFraction(0);
   var wholeEnd = QueryNodeUtils.toFraction(1);
-  var bounds = QueryNodeUtils.overlapBounds(requestStart, requestEnd, wholeStart, wholeEnd);
+  var bounds = QueryNodeUtils.overlapBounds(localStart, localEnd, wholeStart, wholeEnd);
   if (!bounds)
   {
     return [];
   }
 
   return [{
-    wholeStart: wholeStart,
-    wholeEnd: wholeEnd,
-    partStart: bounds.partStart,
-    partEnd: bounds.partEnd,
+    wholeStart: math.add(wholeStart, cycleIndex),
+    wholeEnd: math.add(wholeEnd, cycleIndex),
+    partStart: math.add(bounds.partStart, cycleIndex),
+    partEnd: math.add(bounds.partEnd, cycleIndex),
     value: String(this.source_)
   }];
 }

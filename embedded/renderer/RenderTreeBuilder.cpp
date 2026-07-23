@@ -5,6 +5,7 @@
 #include "nodes/ElementRenderNode.hpp"
 #include "nodes/EmptyRenderNode.hpp"
 #include "nodes/HorizontalPatternRenderNode.hpp"
+#include "nodes/TimelinePatternRenderNode.hpp"
 #include "nodes/VerticalPatternRenderNode.hpp"
 
 namespace krill
@@ -134,9 +135,53 @@ namespace krill
       return v.HasMember("source_") && v["source_"].IsArray();
     }
 
+    bool isTimelinePatternNode(const rapidjson::Value& v)
+    {
+      if (!v.IsObject() || !v.HasMember("type_") || !v["type_"].IsString())
+      {
+        return false;
+      }
+      if (std::string(v["type_"].GetString()) != "pattern")
+      {
+        return false;
+      }
+      if (!v.HasMember("arguments_") || !v["arguments_"].IsObject())
+      {
+        return false;
+      }
+      const auto& args = v["arguments_"];
+      if (!args.HasMember("alignment") || !args["alignment"].IsString())
+      {
+        return false;
+      }
+      if (std::string(args["alignment"].GetString()) != "t")
+      {
+        return false;
+      }
+      return v.HasMember("source_") && v["source_"].IsArray();
+    }
+
     std::optional<std::vector<RenderTreePtr>> verticalPatternChildren(const rapidjson::Value& v)
     {
       if (!isVerticalPatternNode(v))
+      {
+        return std::nullopt;
+      }
+
+      std::vector<RenderTreePtr> children;
+      const auto& source = v["source_"].GetArray();
+      children.reserve(source.Size());
+      for (const auto& child : source)
+      {
+        children.push_back(buildRenderTree(child));
+      }
+
+      return children;
+    }
+
+    std::optional<std::vector<RenderTreePtr>> timelinePatternChildren(const rapidjson::Value& v)
+    {
+      if (!isTimelinePatternNode(v))
       {
         return std::nullopt;
       }
@@ -174,6 +219,12 @@ namespace krill
       if (verticalChildren.has_value())
       {
         return std::make_shared<VerticalPatternRenderNode>(verticalChildren.value());
+      }
+
+      const auto timelineChildren = timelinePatternChildren(v);
+      if (timelineChildren.has_value())
+      {
+        return std::make_shared<TimelinePatternRenderNode>(timelineChildren.value());
       }
 
       return std::make_shared<EmptyRenderNode>();

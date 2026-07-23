@@ -4,6 +4,7 @@ var math = require("mathjs");
 require("../js/renderer/nodes/empty-render-node.js");
 require("../js/renderer/nodes/element-render-node.js");
 require("../js/renderer/nodes/horizontal-pattern-render-node.js");
+require("../js/renderer/nodes/timeline-pattern-render-node.js");
 require("../js/renderer/nodes/vertical-pattern-render-node.js");
 
 function fracToString(v)
@@ -56,7 +57,14 @@ function fragmentToComparable(fragment)
   }]);
 
   assert.deepStrictEqual(node.query("1", "1"), []);
-  assert.deepStrictEqual(node.query("2", "3"), []);
+  var nextCycle = node.query("2", "3").map(fragmentToComparable);
+  assert.deepStrictEqual(nextCycle, [{
+    wholeStart: F("2"),
+    wholeEnd: F("3"),
+    partStart: F("2"),
+    partEnd: F("3"),
+    value: "kick"
+  }]);
 })();
 
 (function testElementRenderNodeDelegatesToSourceNode()
@@ -153,4 +161,26 @@ function fragmentToComparable(fragment)
   ]);
 
   assert.deepStrictEqual(node.query("1/2", "1/2"), []);
+})();
+
+(function testTimelinePatternRenderNodeAlternatesByCycle()
+{
+  var node = new TimelinePatternRenderNode([
+    new ElementRenderNode("3"),
+    new ElementRenderNode("4")
+  ]);
+
+  var start0 = math.fraction(2, 3);
+  var end0 = math.add(start0, math.fraction(1, 1024));
+  var cycle0 = node.query(start0, end0).map(fragmentToComparable);
+  assert.deepStrictEqual(cycle0, [
+    { wholeStart: F("0"), wholeEnd: F("1"), partStart: F(start0), partEnd: F(end0), value: "3" }
+  ]);
+
+  var start1 = math.fraction(5, 3);
+  var end1 = math.add(start1, math.fraction(1, 1024));
+  var cycle1 = node.query(start1, end1).map(fragmentToComparable);
+  assert.deepStrictEqual(cycle1, [
+    { wholeStart: F("1"), wholeEnd: F("2"), partStart: F(start1), partEnd: F(end1), value: "4" }
+  ]);
 })();
