@@ -410,6 +410,96 @@
           }
         }
       ]
+    },
+    "'c2 c3 [d#3 g2]'": {
+      "type_": "pattern",
+      "arguments_": {
+        "alignment": "h"
+      },
+      "source_": [
+        {
+          "type_": "element",
+          "source_": "c2"
+        },
+        {
+          "type_": "element",
+          "source_": "c3"
+        },
+        {
+          "type_": "element",
+          "source_": {
+            "type_": "pattern",
+            "arguments_": {
+              "alignment": "h"
+            },
+            "source_": [
+              {
+                "type_": "element",
+                "source_": "d#3"
+              },
+              {
+                "type_": "element",
+                "source_": "g2"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "'[bd sd](2,8)'": {
+      "type_": "element",
+      "source_": {
+        "type_": "pattern",
+        "arguments_": {
+          "alignment": "h"
+        },
+        "source_": [
+          {
+            "type_": "element",
+            "source_": "bd"
+          },
+          {
+            "type_": "element",
+            "source_": "sd"
+          }
+        ]
+      },
+      "options_": {
+        "operator": {
+          "type_": "bjorklund",
+          "arguments_": [
+            2,
+            8
+          ]
+        }
+      }
+    },
+    "'[a b]/4'": {
+      "type_": "element",
+      "source_": {
+        "type_": "pattern",
+        "arguments_": {
+          "alignment": "h"
+        },
+        "source_": [
+          {
+            "type_": "element",
+            "source_": "a"
+          },
+          {
+            "type_": "element",
+            "source_": "b"
+          }
+        ]
+      },
+      "options_": {
+        "operator": {
+          "type_": "stretch",
+          "arguments_": [
+            4
+          ]
+        }
+      }
     }
   }
 }
