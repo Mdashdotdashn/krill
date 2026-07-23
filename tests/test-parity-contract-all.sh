@@ -26,18 +26,8 @@ echo "[parity] Embedded AST parity"
 echo "[parity] Embedded parser"
 ./tests/Tests.exe "*Parser*"
 
-if [[ "${PARITY_INCLUDE_RUN_CASES:-0}" == "1" ]]; then
-  echo "[parity] Embedded run cases"
-  (cd tests && ./Tests.exe "*Rendertree*")
-else
-  echo "[parity] Embedded run cases skipped (set PARITY_INCLUDE_RUN_CASES=1 to enable)"
-fi
-
-echo "[parity] Embedded normalize lifecycle"
-./tests/Tests.exe "*NormalizeCycleRenderNode*"
-
-echo "[parity] Embedded render tree mapping"
-./tests/Tests.exe "*Render tree mapping*"
+echo "[parity] Embedded run cases"
+(cd tests && ./Tests.exe "*Rendertree*")
 
 popd >/dev/null
 

@@ -1,23 +1,19 @@
 #include "renderer/RenderTreeBuilder.hpp"
-
 #include "renderer/RenderTreePlayer.hpp"
 #include "parser/Parser.hpp"
-#include "testUtils.hpp"
 
+#include <third_party/catch2/catch.hpp>
+#include <third_party/rapidjson/document.h>
 #include <third_party/rapidjson/istreamwrapper.h>
 
-#include <cassert>
-#include <sstream>
-#include <iostream>
+#include <array>
 #include <fstream>
 #include <string>
-#include <array>
 
 namespace
 {
 std::ifstream openSharedRunCasesFile()
 {
-  // Support common CWDs (repo root, embedded/build, embedded/build/tests).
   const std::array<const char*, 6> candidatePaths = {
     "tests/test-cases.json",
     "../tests/test-cases.json",
@@ -39,41 +35,17 @@ std::ifstream openSharedRunCasesFile()
   return std::ifstream{};
 }
 
-std::string expectedValueAsString(const rapidjson::Value& v)
+std::vector<std::string> valuesAtTime(const std::vector<krill::QueryFragment>& fragments, const Fraction& expectedTime)
 {
-  if (v.IsString())
+  std::vector<std::string> values;
+  for (const auto& fragment : fragments)
   {
-    return v.GetString();
+    if (fragment.wholeStart == expectedTime)
+    {
+      values.push_back(fragment.value);
+    }
   }
-
-  if (v.IsInt())
-  {
-    return std::to_string(v.GetInt());
-  }
-
-  if (v.IsInt64())
-  {
-    return std::to_string(v.GetInt64());
-  }
-
-  if (v.IsUint())
-  {
-    return std::to_string(v.GetUint());
-  }
-
-  if (v.IsUint64())
-  {
-    return std::to_string(v.GetUint64());
-  }
-
-  if (v.IsDouble())
-  {
-    std::ostringstream ss;
-    ss << v.GetDouble();
-    return ss.str();
-  }
-
-  return "";
+  return values;
 }
 } // namespace
 
@@ -81,86 +53,52 @@ TEST_CASE("Rendertree")
 {
   using namespace rapidjson;
 
-  // Load shared JS test cases from repository root across common CWDs.
   std::ifstream ifs = openSharedRunCasesFile();
   REQUIRE(ifs.is_open());
 
-  IStreamWrapper isw{ ifs };
+  IStreamWrapper isw{ifs};
   Document document{};
   REQUIRE(!document.ParseStream(isw).HasParseError());
   REQUIRE(document.HasMember("cases"));
+  REQUIRE(document["cases"].IsObject());
 
-  const auto& cases = document["cases"];
-  REQUIRE(cases.IsObject());
+  const auto& cases = document["cases"].GetObject();
 
-  for (auto it = cases.MemberBegin(); it != cases.MemberEnd(); ++it)
+  for (const auto& entry : cases)
   {
-    REQUIRE(it->name.IsString());
-    REQUIRE(it->value.IsObject());
+    REQUIRE(entry.name.IsString());
+    REQUIRE(entry.value.IsObject());
 
-    const auto source = it->name.GetString();
-    const auto& expected = it->value;
-
-    std::cout << source << std::endl;
+    const std::string source = entry.name.GetString();
+    const auto& expected = entry.value.GetObject();
 
     krill::Parser parser;
     Document parseDoc;
     auto parseResult = parser.parse(parseDoc, source);
+    INFO("source: " << source);
     REQUIRE(parseResult.has_value());
 
-    const auto pRenderTree = RenderTreeBuilder::fromJson(parseResult.value());
+    auto pTree = krill::RenderTreeBuilder::fromJson(parseResult.value());
+    krill::RenderTreePlayer player;
+    player.setTree(pTree);
 
-    RenderTreePlayer player;
-    player.setTree(pRenderTree);
-
-    Fraction currentTime(-.001);
-
-    // Loop over the test's expected values.
-    for (const auto& m : expected.GetObject())
+    for (const auto& expectedEntry : expected)
     {
-      std::optional<Cycle::Event> oEvent;
-      int guard = 0;
-      int noProgressGuard = 0;
-      auto lastTime = currentTime;
-      while (!(oEvent))
+      REQUIRE(expectedEntry.name.IsString());
+      REQUIRE(expectedEntry.value.IsArray());
+
+      const auto expectedTime = Fraction(std::string(expectedEntry.name.GetString()));
+      const auto fragments = player.queryPointWindow(expectedTime);
+      const auto actualValues = valuesAtTime(fragments, expectedTime);
+
+      std::vector<std::string> expectedValues;
+      for (const auto& v : expectedEntry.value.GetArray())
       {
-        INFO("No event produced while evaluating source: " << source);
-        INFO("Current expected time: " << m.name.GetString());
-        REQUIRE(guard++ < 64);
-        const auto nextTime = player.advance(currentTime);
-        oEvent = player.eventForTime(nextTime);
-
-        if (nextTime == lastTime)
-        {
-          noProgressGuard++;
-          INFO("No-progress advance time: " << nextTime.convertFractionToDouble());
-          REQUIRE(noProgressGuard < 64);
-        }
-        else
-        {
-          noProgressGuard = 0;
-        }
-
-        lastTime = nextTime;
-        currentTime = nextTime;
+        REQUIRE(v.IsString());
+        expectedValues.push_back(v.GetString());
       }
 
-      const auto expectedTimeAsString = m.name.GetString();
-      const auto expectedValues = m.value.GetArray();
-
-      currentTime.reduce();
-      const auto currentTimeAsString = std::string(currentTime);
-      const auto values = oEvent->values;
-
-      CHECK(currentTimeAsString == expectedTimeAsString);
-      CHECK(expectedValues.Size() == values.size());
-
-      size_t index = 0;
-      for (const auto& v : expectedValues)
-      {
-        const auto expectedValue = expectedValueAsString(v);
-        CHECK(expectedValue == values[index++]);
-      }
+      CHECK(actualValues == expectedValues);
     }
   }
 }

@@ -1,128 +1,30 @@
-require("../patterns/pattern.js");
 var math = require("mathjs");
-const _ = require("lodash");
 
+// Minimal query-only player used during teardown/rebuild.
+// It preserves the player seam while delegating behavior to RenderTree.query().
 RenderingTreePlayer = function()
 {
-  // current rendering tree
-  this.renderingTree_ = undefined;
-  // Next queued sequence
-  this.queued_ = undefined;
-  // Specify we're heading toward a cycle reset (no sequence/end of sequence)
-  this.cycleReset_ = false;
-  // Current sequence
-  this.sequence_ = undefined;
-  // Local cycle offset
-  this.cycleOffset_ = math.fraction(0);
+  this.renderingTree_ = null;
 }
 
 RenderingTreePlayer.prototype.setRenderingTree = function(tree)
 {
-  this.queued_ = _.cloneDeep(tree);
+  this.renderingTree_ = tree;
 }
 
-RenderingTreePlayer.prototype.cycleLength = function()
+RenderingTreePlayer.prototype.queryArc = function(start, end)
 {
-  return math.fraction(this.sequence_ ? this.sequence_.cycleLength_ : "1/1");
-}
-
-RenderingTreePlayer.prototype.cycleTimeAndStart = function(time)
-{
-  var localTime = math.subtract(math.fraction(time), this.cycleOffset_);
-  var cycleLength = this.cycleLength();
-  var cycleTime = math.mod(localTime,cycleLength);
-  var cycleStart = math.multiply(math.floor(math.divide(localTime, cycleLength)), cycleLength) + this.cycleOffset_;
-  return { cycleTime: cycleTime, start: cycleStart};
-}
-
-RenderingTreePlayer.prototype.advance = function(time)
-{
-//  console.log("-----------------------------"+ time);
-//  console.log("length = "+ cycleLength);
-//  console.log("inner cycle time = "+cycleTime);
-//  console.log("cycle offset = "+offset);
-
-  const cycleTimeAndStart = this.cycleTimeAndStart(time);
-  const cycleStart = cycleTimeAndStart.start;
-  const cycleTime = cycleTimeAndStart.cycleTime;
-  const cycleLength = this.cycleLength();
-
-  // If we don't have a sequence, we reply we should be triggered
-  // at next cycle. We also flag resetCycle so that we queue an incoming
-  // sequence if queued
-  if (!this.sequence_)
+  if (!this.renderingTree_ || !this.renderingTree_.query)
   {
-    var position = math.add(cycleStart, cycleLength);
-    this.current_ = new PatternEvent(position,undefined);
-    this.resetCycle_ = true;
+    return [];
   }
-  else {
-    var nextData = this.sequence_.nextTimeFrom(cycleTime);
-    if (!nextData) this.resetCycle_ = true;
-    var position = fracToString(math.add(cycleStart, nextData ? nextData.time() : cycleLength));
-    this.current_ = new PatternEvent(position, nextData ? nextData.values() : undefined);
-  }
-  return this.current_.time();
+  return this.renderingTree_.query(start, end) || [];
 }
 
-RenderingTreePlayer.prototype.clear = function()
+RenderingTreePlayer.prototype.queryPointWindow = function(time)
 {
-  // probably a lot more complex than this
-  this.resetCycle_ = true;
-  this.sequence_ = undefined;
-  this.renderingTree_ = undefined;
-  this.queued_ = undefined;
-  this.cycleOffset_ = math.fraction(0);
-  this.current_ = new PatternEvent("0", null);
-}
-
-// Returns the event queued for the current time if it matches the time
-
-RenderingTreePlayer.prototype.eventForTime = function(currentTime)
-{
-  // If the last advance lead to a cycle end we evaluate possible
-  // queueing and set data to the start of the next cycle
-  if (this.resetCycle_)
-  {
-    if (this.queued_)
-    {
-      // trigger the sequence and update the current values
-      // to be the data at the beginning of it.
-      this.renderingTree_ = this.queued_;
-    }
-    // This is a shortcut not taking into account there could be no data at
-    // for 0/1 (for example "rotL 0.01 $ [1, 2]")
-
-    if (this.renderingTree_)
-    {
-      this.sequence_ = this.renderingTree_.render();
-      this.cycleOffset_ = currentTime;
-      if (this.sequence_.size() > 0)
-      {
-        var firstSlice = this.sequence_.dataAtIndex(0);
-        this.current_.values_ = math.equal(firstSlice.time_, math.fraction(0)) ? firstSlice.values_ : null;
-      }
-      else
-      {
-        this.current_.values_ = null;
-      }
-      this.renderingTree_.tick();
-    }
-    else
-    {
-      this.current_.values_ = null;
-    }
-    this.queued_ = undefined;
-    this.resetCycle_ = false;
-  }
-
-  // Look if an event is set for this player
-  if (this.current_ && this.current_.values_)
-  {
-    // Look if it matches the current time
-    if (math.equal(math.fraction(currentTime), this.current_.time()))
-    {
-      return { values: this.current_.values() };
-    }
-  }
+  var start = math.fraction(time);
+  var epsilon = math.fraction(1, 1024);
+  var end = math.add(start, epsilon);
+  return this.queryArc(start, end);
 }

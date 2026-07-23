@@ -8,7 +8,7 @@ var Application = function()
 {
 	this.evaluator_ = new Evaluator();
   this.renderingTreeBuilder_ = new RenderingTreeBuilder();
-	this.engine_ = new Engine();
+  this.engine_ = new Engine();
 //  this.playbackDevice_ = new GMDevice('Microsoft GS Wavetable Synth 0');
 //  this.playbackDevice_ = new VCVDevice('loopMIDI Port 1');
 }

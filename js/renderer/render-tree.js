@@ -1,127 +1,59 @@
-var math = require('mathjs');
+// RenderTree compiles the model into query nodes once.
+// Query paths delegate to the compiled node tree, not raw model inspection.
 
-require("./nodes/render-nodes.js");
+require("./nodes/empty-render-node.js");
+require("./nodes/element-render-node.js");
+require("./nodes/horizontal-pattern-render-node.js");
 
-///////////////////////////////////////////////////////////////////////////////
-
-// nodes can be values, arrays or nodes
-function buildTreeForNode(node)
+function buildRenderNode(modelNode)
 {
-  // If it is an array, create an array of equivalent operator
-  if (Array.isArray(node))
+  if (!modelNode || !(modelNode instanceof Object))
   {
-    return node.map((x) => buildTreeForNode(x));
+    return new EmptyRenderNode();
   }
 
-  // If the node is an object, it is expected to be an operator node
-  if (node instanceof Object)
+  if (modelNode.type_ === "element")
   {
-    return buildOperatorNode(node);
-  }
-
-  return makeSingleEventPattern(node);
-}
-
-// Ensure expression/operator arguments can be sampled as repeating cycles.
-// This prevents end-of-cycle edge behavior when a rendered argument is shorter than 1 cycle.
-function isAstObjectNode(node)
-{
-  return node instanceof Object
-    && !Array.isArray(node)
-    && node.type_ !== undefined
-    && node.source_ !== undefined;
-}
-
-function buildRenderNodeForArgument(node)
-{
-  var built = buildTreeForNode(node);
-  if (isAstObjectNode(node))
-  {
-    return makeNormalizeCycleRenderNode(built);
-  }
-  return built;
-}
-
-buildOperator = function(type, arguments, source)
-{
-    switch(type)
+    if (modelNode.source_ && modelNode.source_ instanceof Object)
     {
-      case "add":
-      return makeAddRenderNode(source, buildRenderNodeForArgument(arguments[0]));
-
-      case "scale":
-			return makeScaleRenderNode(source, arguments[0]);
-
-      case "struct":
-        return makeStructRenderNode(source, buildRenderNodeForArgument(arguments[0]));
-
-  		case "stretch":
-      // Parser-level slow/fast and slice /,* canonicalize to stretch.
-			return makeStretchRenderNode(source, arguments[0]);
-
-      case "trunc":
-        return makeTruncRenderNode(source, arguments[0]);
-
-      case "shift":
-      const shiftArg = isAstObjectNode(arguments[0])
-        ? buildRenderNodeForArgument(arguments[0])
-        : arguments[0];
-      const direction = arguments.length > 1 ? arguments[1] : 1;
-      return makeShiftRenderNode(source, shiftArg, direction);
-
-      case "bjorklund":
-			return makeBjorklundRenderNode(source, arguments[0], arguments[1]);
-
-      case "fixed-step":
-      // Parser-level % slice modifier canonicalizes to fixed-step.
-      return makeFixedStepRenderNode(source, arguments[0]);
-
-      case "pattern":
-        switch(arguments.alignment)
-        {
-          case "h":
-            return makeWeightedPatternRenderNode(source);
-
-          case "v":
-            return makeStackRenderNode(source);
-
-          case "t":
-            return makeTimelineRenderNode(source);
-        }
-  	}
-  	throw "Unknown operator type: " + type;
-}
-
-// Builds a rendering tree composed of operator nodes that can be
-// ticked (advanced) && rendered
-
-var buildOperatorNode = function(node)
-{
-  // First build the tree for the source of the current node
-	var source = buildTreeForNode(node.source_);
-
-  // Create the appropriate operator from the current type
-
-	switch (node.type_)
-	{
-    case "element":
-      return buildPatternStep(source, node.options_);
-
-    default:
-      return buildOperator(node.type_, node.arguments_, source);
+      return new ElementRenderNode(buildRenderNode(modelNode.source_));
+    }
+    return new ElementRenderNode(modelNode.source_);
   }
+
+  if (modelNode.type_ === "pattern"
+      && modelNode.arguments_
+      && modelNode.arguments_.alignment === "h"
+      && Array.isArray(modelNode.source_))
+  {
+    var children = modelNode.source_.map(function(child)
+    {
+      return buildRenderNode(child);
+    });
+    return new HorizontalPatternRenderNode(children);
+  }
+
+  return new EmptyRenderNode();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Render tree builder. Constructs the operator tree from the model data
+RenderTree = function(modelNodeTree)
+{
+  this.rootNode_ = buildRenderNode(modelNodeTree);
+}
 
-RenderingTreeBuilder = function()
+RenderTree.prototype.query = function(start, end)
+{
+  return this.rootNode_.query(start, end);
+}
+
+RenderTreeBuilder = function()
 {
 }
 
-// Rebuilds a whole tree from the model tree
-RenderingTreeBuilder.prototype.rebuild = function(modelNodeTree)
+RenderTreeBuilder.prototype.rebuild = function(modelNodeTree)
 {
-  var tree =  buildTreeForNode(modelNodeTree);
-  return tree;
+  return new RenderTree(modelNodeTree);
 }
+
+// Backward compatibility with existing JS call sites.
+RenderingTreeBuilder = RenderTreeBuilder;
