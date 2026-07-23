@@ -3,6 +3,7 @@ var math = require("mathjs");
 
 require("../js/renderer/nodes/empty-render-node.js");
 require("../js/renderer/nodes/element-render-node.js");
+require("../js/renderer/nodes/bjorklund-render-node.js");
 require("../js/renderer/nodes/horizontal-pattern-render-node.js");
 require("../js/renderer/nodes/stretch-render-node.js");
 require("../js/renderer/nodes/timeline-pattern-render-node.js");
@@ -258,5 +259,34 @@ function fragmentToComparable(fragment)
   var at4 = node.query(math.fraction(4), math.add(math.fraction(4), math.fraction(1, 1024))).map(fragmentToComparable);
   assert.deepStrictEqual(at4, [
     { wholeStart: F("4"), wholeEnd: F("6"), partStart: F("4"), partEnd: F("4097/1024"), value: "17" }
+  ]);
+})();
+
+(function testBjorklundRenderNode()
+{
+  var source = new HorizontalPatternRenderNode([
+    new ElementRenderNode("bd"),
+    new ElementRenderNode("sd")
+  ]);
+  var node = new BjorklundRenderNode(source, 2, 8);
+
+  function queryAt(time)
+  {
+    var start = math.fraction(time);
+    var end = math.add(start, math.fraction(1, 1024));
+    return node.query(start, end).map(fragmentToComparable);
+  }
+
+  assert.deepStrictEqual(queryAt("0"), [
+    { wholeStart: F("0"), wholeEnd: F("1/4"), partStart: F("0"), partEnd: F("1/1024"), value: "bd" }
+  ]);
+  assert.deepStrictEqual(queryAt("1/4"), [
+    { wholeStart: F("1/4"), wholeEnd: F("1/2"), partStart: F("1/4"), partEnd: F("257/1024"), value: "sd" }
+  ]);
+  assert.deepStrictEqual(queryAt("1/2"), [
+    { wholeStart: F("1/2"), wholeEnd: F("3/4"), partStart: F("1/2"), partEnd: F("513/1024"), value: "bd" }
+  ]);
+  assert.deepStrictEqual(queryAt("3/4"), [
+    { wholeStart: F("3/4"), wholeEnd: F("1"), partStart: F("3/4"), partEnd: F("769/1024"), value: "sd" }
   ]);
 })();

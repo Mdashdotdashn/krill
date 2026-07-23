@@ -3,10 +3,37 @@
 
 require("./nodes/empty-render-node.js");
 require("./nodes/element-render-node.js");
+require("./nodes/bjorklund-render-node.js");
 require("./nodes/horizontal-pattern-render-node.js");
 require("./nodes/stretch-render-node.js");
 require("./nodes/vertical-pattern-render-node.js");
 require("./nodes/timeline-pattern-render-node.js");
+
+function applyElementOperator(node, modelNode)
+{
+  if (!modelNode || !modelNode.options_ || !modelNode.options_.operator)
+  {
+    return node;
+  }
+
+  var operator = modelNode.options_.operator;
+  if (!operator || !(operator instanceof Object) || !operator.type_)
+  {
+    return node;
+  }
+
+  if (operator.type_ === "bjorklund" && Array.isArray(operator.arguments_) && operator.arguments_.length >= 2)
+  {
+    return new BjorklundRenderNode(node, operator.arguments_[0], operator.arguments_[1]);
+  }
+
+  if (operator.type_ === "stretch" && Array.isArray(operator.arguments_) && operator.arguments_.length > 0)
+  {
+    return new StretchRenderNode(node, operator.arguments_[0]);
+  }
+
+  return node;
+}
 
 function buildRenderNode(modelNode)
 {
@@ -17,11 +44,14 @@ function buildRenderNode(modelNode)
 
   if (modelNode.type_ === "element")
   {
+    var elementNode;
     if (modelNode.source_ && modelNode.source_ instanceof Object)
     {
-      return new ElementRenderNode(buildRenderNode(modelNode.source_));
+      elementNode = new ElementRenderNode(buildRenderNode(modelNode.source_));
+      return applyElementOperator(elementNode, modelNode);
     }
-    return new ElementRenderNode(modelNode.source_);
+    elementNode = new ElementRenderNode(modelNode.source_);
+    return applyElementOperator(elementNode, modelNode);
   }
 
   if (modelNode.type_ === "pattern"

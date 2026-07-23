@@ -2,6 +2,7 @@
 
 #include <optional>
 
+#include "nodes/BjorklundRenderNode.hpp"
 #include "nodes/ElementRenderNode.hpp"
 #include "nodes/EmptyRenderNode.hpp"
 #include "nodes/HorizontalPatternRenderNode.hpp"
@@ -88,6 +89,75 @@ namespace krill
         return Fraction(std::string(v.GetString()));
       }
       return std::nullopt;
+    }
+
+    std::optional<long> valueAsLong(const rapidjson::Value& v)
+    {
+      if (v.IsInt()) return static_cast<long>(v.GetInt());
+      if (v.IsInt64()) return static_cast<long>(v.GetInt64());
+      if (v.IsUint()) return static_cast<long>(v.GetUint());
+      if (v.IsUint64()) return static_cast<long>(v.GetUint64());
+      if (v.IsDouble()) return static_cast<long>(v.GetDouble());
+      if (v.IsString())
+      {
+        try
+        {
+          return std::stol(std::string(v.GetString()));
+        }
+        catch (...)
+        {
+          return std::nullopt;
+        }
+      }
+      return std::nullopt;
+    }
+
+    RenderTreePtr applyElementOperator(RenderTreePtr node, const rapidjson::Value& elementNode)
+    {
+      if (!elementNode.IsObject() || !elementNode.HasMember("options_") || !elementNode["options_"].IsObject())
+      {
+        return node;
+      }
+
+      const auto& options = elementNode["options_"];
+      if (!options.HasMember("operator") || !options["operator"].IsObject())
+      {
+        return node;
+      }
+
+      const auto& op = options["operator"];
+      if (!op.HasMember("type_") || !op["type_"].IsString())
+      {
+        return node;
+      }
+      if (!op.HasMember("arguments_") || !op["arguments_"].IsArray())
+      {
+        return node;
+      }
+
+      const auto opType = std::string(op["type_"].GetString());
+      const auto& args = op["arguments_"].GetArray();
+
+      if (opType == "bjorklund" && args.Size() >= 2)
+      {
+        const auto pulses = valueAsLong(args[0]);
+        const auto steps = valueAsLong(args[1]);
+        if (pulses.has_value() && steps.has_value())
+        {
+          return std::make_shared<BjorklundRenderNode>(node, pulses.value(), steps.value());
+        }
+      }
+
+      if (opType == "stretch" && args.Size() > 0)
+      {
+        const auto factor = valueAsFraction(args[0]);
+        if (factor.has_value())
+        {
+          return std::make_shared<StretchRenderNode>(node, factor.value());
+        }
+      }
+
+      return node;
     }
 
     bool isHorizontalPatternNode(const rapidjson::Value& v)
@@ -285,9 +355,11 @@ namespace krill
         const auto& source = v["source_"];
         if (source.IsObject())
         {
-          return std::make_shared<ElementRenderNode>(buildRenderTree(source));
+          auto element = std::make_shared<ElementRenderNode>(buildRenderTree(source));
+          return applyElementOperator(element, v);
         }
-        return std::make_shared<ElementRenderNode>(sourceAsString(source));
+        auto element = std::make_shared<ElementRenderNode>(sourceAsString(source));
+        return applyElementOperator(element, v);
       }
 
       const auto horizontalChildrenAndWeights = horizontalPatternChildrenAndWeights(v);
