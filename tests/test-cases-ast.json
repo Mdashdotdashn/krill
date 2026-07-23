@@ -500,6 +500,21 @@
           ]
         }
       }
+    },
+    "'[a]*4'": {
+      "type_": "element",
+      "source_": {
+        "type_": "element",
+        "source_": "a"
+      },
+      "options_": {
+        "operator": {
+          "type_": "stretch",
+          "arguments_": [
+            "1/4"
+          ]
+        }
+      }
     }
   }
 }
