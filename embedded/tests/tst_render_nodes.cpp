@@ -3,6 +3,7 @@
 #include "renderer/nodes/ElementRenderNode.hpp"
 #include "renderer/nodes/EmptyRenderNode.hpp"
 #include "renderer/nodes/HorizontalPatternRenderNode.hpp"
+#include "renderer/nodes/ScaleRenderNode.hpp"
 #include "renderer/nodes/StretchRenderNode.hpp"
 #include "renderer/nodes/StructRenderNode.hpp"
 #include "renderer/nodes/TimelinePatternRenderNode.hpp"
@@ -378,6 +379,24 @@ TEST_CASE("Render nodes query behavior")
     const auto full = node.query({Fraction(0), Fraction(1)});
     REQUIRE(full.size() == 1);
     CHECK(full[0].value == "C#1");
+  }
+
+  SECTION("ScaleRenderNode")
+  {
+    std::vector<RenderTreePtr> children;
+    children.push_back(std::make_shared<ElementRenderNode>("0"));
+    children.push_back(std::make_shared<ElementRenderNode>("1"));
+    children.push_back(std::make_shared<ElementRenderNode>("2"));
+    children.push_back(std::make_shared<ElementRenderNode>("3"));
+    auto source = std::make_shared<HorizontalPatternRenderNode>(std::move(children));
+
+    ScaleRenderNode node("MiNor", source);
+    const auto full = node.query({Fraction(0), Fraction(1)});
+    REQUIRE(full.size() == 4);
+    CHECK(full[0].value == "0");
+    CHECK(full[1].value == "2");
+    CHECK(full[2].value == "3");
+    CHECK(full[3].value == "5");
   }
 
   SECTION("HorizontalPatternRenderNode weights")

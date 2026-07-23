@@ -8,6 +8,7 @@ require("./nodes/element-render-node.js");
 require("./nodes/add-render-node.js");
 require("./nodes/bjorklund-render-node.js");
 require("./nodes/horizontal-pattern-render-node.js");
+require("./nodes/scale-render-node.js");
 require("./nodes/stretch-render-node.js");
 require("./nodes/struct-render-node.js");
 require("./nodes/vertical-pattern-render-node.js");
@@ -211,6 +212,13 @@ function buildRenderNode(modelNode)
       ? buildRenderNode(arg)
       : new ElementRenderNode(String(arg));
     return new AddRenderNode(lhs, buildRenderNode(modelNode.source_));
+  }
+
+  if (modelNode.type_ === "scale"
+      && Array.isArray(modelNode.arguments_)
+      && modelNode.arguments_.length > 0)
+  {
+    return new ScaleRenderNode(String(modelNode.arguments_[0]), buildRenderNode(modelNode.source_));
   }
 
   return new EmptyRenderNode();

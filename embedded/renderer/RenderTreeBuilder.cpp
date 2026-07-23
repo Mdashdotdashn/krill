@@ -7,6 +7,7 @@
 #include "nodes/ElementRenderNode.hpp"
 #include "nodes/EmptyRenderNode.hpp"
 #include "nodes/HorizontalPatternRenderNode.hpp"
+#include "nodes/ScaleRenderNode.hpp"
 #include "nodes/StretchRenderNode.hpp"
 #include "nodes/StructRenderNode.hpp"
 #include "nodes/TimelinePatternRenderNode.hpp"
@@ -447,6 +448,23 @@ namespace krill
       return v["arguments_"].GetArray().Size() > 0;
     }
 
+    bool isScaleNode(const rapidjson::Value& v)
+    {
+      if (!v.IsObject() || !v.HasMember("type_") || !v["type_"].IsString())
+      {
+        return false;
+      }
+      if (std::string(v["type_"].GetString()) != "scale")
+      {
+        return false;
+      }
+      if (!v.HasMember("source_") || !v.HasMember("arguments_") || !v["arguments_"].IsArray())
+      {
+        return false;
+      }
+      return v["arguments_"].GetArray().Size() > 0;
+    }
+
     std::optional<std::pair<RenderTreePtr, Fraction>> stretchSourceAndFactor(const rapidjson::Value& v)
     {
       if (!isStretchNode(v))
@@ -515,6 +533,18 @@ namespace krill
       return std::make_pair(lhs, rhs);
     }
 
+    std::optional<std::pair<std::string, RenderTreePtr>> scaleNameAndSource(const rapidjson::Value& v)
+    {
+      if (!isScaleNode(v))
+      {
+        return std::nullopt;
+      }
+
+      const auto& args = v["arguments_"].GetArray();
+      const auto scaleName = sourceAsString(args[0]);
+      return std::make_pair(scaleName, buildRenderTree(v["source_"]));
+    }
+
     RenderTreePtr buildRenderTree(const rapidjson::Value& v)
     {
       if (isElementNode(v))
@@ -572,6 +602,12 @@ namespace krill
       if (addData.has_value())
       {
         return std::make_shared<AddRenderNode>(addData->first, addData->second);
+      }
+
+      const auto scaleData = scaleNameAndSource(v);
+      if (scaleData.has_value())
+      {
+        return std::make_shared<ScaleRenderNode>(scaleData->first, scaleData->second);
       }
 
       return std::make_shared<EmptyRenderNode>();
