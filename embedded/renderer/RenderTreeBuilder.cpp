@@ -13,6 +13,7 @@
 #include "nodes/StretchRenderNode.hpp"
 #include "nodes/StructRenderNode.hpp"
 #include "nodes/TimelinePatternRenderNode.hpp"
+#include "nodes/TruncRenderNode.hpp"
 #include "nodes/VerticalPatternRenderNode.hpp"
 
 namespace krill
@@ -554,6 +555,23 @@ namespace krill
       return v["arguments_"].GetArray().Size() >= 2;
     }
 
+    bool isTruncNode(const rapidjson::Value& v)
+    {
+      if (!v.IsObject() || !v.HasMember("type_") || !v["type_"].IsString())
+      {
+        return false;
+      }
+      if (std::string(v["type_"].GetString()) != "trunc")
+      {
+        return false;
+      }
+      if (!v.HasMember("source_") || !v.HasMember("arguments_") || !v["arguments_"].IsArray())
+      {
+        return false;
+      }
+      return v["arguments_"].GetArray().Size() > 0;
+    }
+
     std::optional<std::pair<RenderTreePtr, Fraction>> stretchSourceAndFactor(const rapidjson::Value& v)
     {
       if (!isStretchNode(v))
@@ -672,6 +690,23 @@ namespace krill
       return data;
     }
 
+    std::optional<std::pair<RenderTreePtr, Fraction>> truncSourceAndLength(const rapidjson::Value& v)
+    {
+      if (!isTruncNode(v))
+      {
+        return std::nullopt;
+      }
+
+      const auto& args = v["arguments_"].GetArray();
+      const auto maybeLength = valueAsFraction(args[0]);
+      if (!maybeLength.has_value())
+      {
+        return std::nullopt;
+      }
+
+      return std::make_pair(buildRenderTree(v["source_"]), maybeLength.value());
+    }
+
     RenderTreePtr buildRenderTree(const rapidjson::Value& v)
     {
       if (isElementNode(v))
@@ -748,6 +783,12 @@ namespace krill
         {
           return std::make_shared<ShiftRenderNode>(shift->source, shift->amount.value(), shift->direction);
         }
+      }
+
+      const auto trunc = truncSourceAndLength(v);
+      if (trunc.has_value())
+      {
+        return std::make_shared<TruncRenderNode>(trunc->first, trunc->second);
       }
 
       return std::make_shared<EmptyRenderNode>();

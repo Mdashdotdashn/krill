@@ -14,6 +14,7 @@ require("./nodes/stretch-render-node.js");
 require("./nodes/struct-render-node.js");
 require("./nodes/vertical-pattern-render-node.js");
 require("./nodes/timeline-pattern-render-node.js");
+require("./nodes/trunc-render-node.js");
 
 function sourceUnitsForFixedStep(modelNode)
 {
@@ -230,6 +231,13 @@ function buildRenderNode(modelNode)
     var direction = modelNode.arguments_[1];
     var amountNode = (amountArg && amountArg instanceof Object) ? buildRenderNode(amountArg) : amountArg;
     return new ShiftRenderNode(buildRenderNode(modelNode.source_), amountNode, direction);
+  }
+
+  if (modelNode.type_ === "trunc"
+      && Array.isArray(modelNode.arguments_)
+      && modelNode.arguments_.length > 0)
+  {
+    return new TruncRenderNode(buildRenderNode(modelNode.source_), modelNode.arguments_[0]);
   }
 
   return new EmptyRenderNode();
