@@ -712,6 +712,79 @@
           }
         ]
       }
+    },
+    "'[[a b c]%2, [1 2 3]%2]'": {
+      "type_": "element",
+      "source_": {
+        "type_": "pattern",
+        "arguments_": {
+          "alignment": "v"
+        },
+        "source_": [
+          {
+            "type_": "element",
+            "source_": {
+              "type_": "pattern",
+              "arguments_": {
+                "alignment": "h"
+              },
+              "source_": [
+                {
+                  "type_": "element",
+                  "source_": "a"
+                },
+                {
+                  "type_": "element",
+                  "source_": "b"
+                },
+                {
+                  "type_": "element",
+                  "source_": "c"
+                }
+              ]
+            },
+            "options_": {
+              "operator": {
+                "type_": "fixed-step",
+                "arguments_": [
+                  2
+                ]
+              }
+            }
+          },
+          {
+            "type_": "element",
+            "source_": {
+              "type_": "pattern",
+              "arguments_": {
+                "alignment": "h"
+              },
+              "source_": [
+                {
+                  "type_": "element",
+                  "source_": "1"
+                },
+                {
+                  "type_": "element",
+                  "source_": "2"
+                },
+                {
+                  "type_": "element",
+                  "source_": "3"
+                }
+              ]
+            },
+            "options_": {
+              "operator": {
+                "type_": "fixed-step",
+                "arguments_": [
+                  2
+                ]
+              }
+            }
+          }
+        ]
+      }
     }
   }
 }
