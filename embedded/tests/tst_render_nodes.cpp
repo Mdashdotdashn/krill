@@ -114,6 +114,87 @@ TEST_CASE("Render nodes query behavior")
     CHECK(middleOnly[0].partEnd == Fraction(2, 3));
   }
 
+  SECTION("HorizontalPatternRenderNode constructor values")
+  {
+    HorizontalPatternRenderNode node({"a", "b", "c"});
+    const auto full = node.query({Fraction(0), Fraction(1)});
+
+    REQUIRE(full.size() == 3);
+    CHECK(values(full) == std::vector<std::string>{"a", "b", "c"});
+    CHECK(full[0].wholeStart == Fraction(0));
+    CHECK(full[0].wholeEnd == Fraction(1, 3));
+    CHECK(full[1].wholeStart == Fraction(1, 3));
+    CHECK(full[1].wholeEnd == Fraction(2, 3));
+    CHECK(full[2].wholeStart == Fraction(2, 3));
+    CHECK(full[2].wholeEnd == Fraction(1));
+  }
+
+  SECTION("HorizontalPatternRenderNode constructor children defaults weights")
+  {
+    std::vector<RenderTreePtr> children;
+    children.push_back(std::make_shared<ElementRenderNode>("a"));
+    children.push_back(std::make_shared<ElementRenderNode>("b"));
+
+    HorizontalPatternRenderNode node(std::move(children));
+    const auto full = node.query({Fraction(0), Fraction(1)});
+
+    REQUIRE(full.size() == 2);
+    CHECK(values(full) == std::vector<std::string>{"a", "b"});
+    CHECK(full[0].wholeStart == Fraction(0));
+    CHECK(full[0].wholeEnd == Fraction(1, 2));
+    CHECK(full[1].wholeStart == Fraction(1, 2));
+    CHECK(full[1].wholeEnd == Fraction(1));
+  }
+
+  SECTION("HorizontalPatternRenderNode constructor children with explicit weights")
+  {
+    std::vector<RenderTreePtr> children;
+    children.push_back(std::make_shared<ElementRenderNode>("a"));
+    children.push_back(std::make_shared<ElementRenderNode>("b"));
+
+    HorizontalPatternRenderNode node(std::move(children), {Fraction(3), Fraction(1)});
+    const auto full = node.query({Fraction(0), Fraction(1)});
+
+    REQUIRE(full.size() == 2);
+    CHECK(values(full) == std::vector<std::string>{"a", "b"});
+    CHECK(full[0].wholeStart == Fraction(0));
+    CHECK(full[0].wholeEnd == Fraction(3, 4));
+    CHECK(full[1].wholeStart == Fraction(3, 4));
+    CHECK(full[1].wholeEnd == Fraction(1));
+  }
+
+  SECTION("HorizontalPatternRenderNode constructor children weight size mismatch")
+  {
+    std::vector<RenderTreePtr> children;
+    children.push_back(std::make_shared<ElementRenderNode>("a"));
+    children.push_back(std::make_shared<ElementRenderNode>("b"));
+
+    HorizontalPatternRenderNode node(std::move(children), {Fraction(3)});
+    const auto full = node.query({Fraction(0), Fraction(1)});
+
+    REQUIRE(full.size() == 2);
+    CHECK(full[0].wholeStart == Fraction(0));
+    CHECK(full[0].wholeEnd == Fraction(1, 2));
+    CHECK(full[1].wholeStart == Fraction(1, 2));
+    CHECK(full[1].wholeEnd == Fraction(1));
+  }
+
+  SECTION("HorizontalPatternRenderNode constructor non-positive weights normalize")
+  {
+    std::vector<RenderTreePtr> children;
+    children.push_back(std::make_shared<ElementRenderNode>("a"));
+    children.push_back(std::make_shared<ElementRenderNode>("b"));
+
+    HorizontalPatternRenderNode node(std::move(children), {Fraction(0), Fraction(-2)});
+    const auto full = node.query({Fraction(0), Fraction(1)});
+
+    REQUIRE(full.size() == 2);
+    CHECK(full[0].wholeStart == Fraction(0));
+    CHECK(full[0].wholeEnd == Fraction(1, 2));
+    CHECK(full[1].wholeStart == Fraction(1, 2));
+    CHECK(full[1].wholeEnd == Fraction(1));
+  }
+
   SECTION("HorizontalPatternRenderNode delegates nested child query")
   {
     std::vector<RenderTreePtr> nested;
@@ -201,5 +282,26 @@ TEST_CASE("Render nodes query behavior")
     CHECK(atTwoThirds[0].value == "2");
     CHECK(atTwoThirds[0].wholeStart == Fraction(2, 3));
     CHECK(atTwoThirds[0].wholeEnd == Fraction(4, 3));
+  }
+
+  SECTION("HorizontalPatternRenderNode weights")
+  {
+    std::vector<RenderTreePtr> children;
+    children.push_back(std::make_shared<ElementRenderNode>("bd"));
+    children.push_back(std::make_shared<ElementRenderNode>("sd"));
+
+    HorizontalPatternRenderNode node(std::move(children), {Fraction(3), Fraction(1)});
+
+    const auto at0 = node.query({Fraction(0), Fraction(1, 1024)});
+    REQUIRE(at0.size() == 1);
+    CHECK(at0[0].value == "bd");
+    CHECK(at0[0].wholeStart == Fraction(0));
+    CHECK(at0[0].wholeEnd == Fraction(3, 4));
+
+    const auto atThreeQuarters = node.query({Fraction(3, 4), Fraction(3, 4) + Fraction(1, 1024)});
+    REQUIRE(atThreeQuarters.size() == 1);
+    CHECK(atThreeQuarters[0].value == "sd");
+    CHECK(atThreeQuarters[0].wholeStart == Fraction(3, 4));
+    CHECK(atThreeQuarters[0].wholeEnd == Fraction(1));
   }
 }

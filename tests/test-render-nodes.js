@@ -210,3 +210,23 @@ function fragmentToComparable(fragment)
     { wholeStart: F("2/3"), wholeEnd: F("4/3"), partStart: F(start1), partEnd: F(end1), value: "2" }
   ]);
 })();
+
+(function testHorizontalPatternRenderNodeWeights()
+{
+  var node = HorizontalPatternRenderNode.withWeights([
+    new ElementRenderNode("bd"),
+    new ElementRenderNode("sd")
+  ], [3, 1]);
+
+  var at0 = node.query(math.fraction(0), math.fraction(1, 1024)).map(fragmentToComparable);
+  assert.deepStrictEqual(at0, [
+    { wholeStart: F("0"), wholeEnd: F("3/4"), partStart: F("0"), partEnd: F("1/1024"), value: "bd" }
+  ]);
+
+  var start = math.fraction(3, 4);
+  var end = math.add(start, math.fraction(1, 1024));
+  var atThreeQuarters = node.query(start, end).map(fragmentToComparable);
+  assert.deepStrictEqual(atThreeQuarters, [
+    { wholeStart: F("3/4"), wholeEnd: F("1"), partStart: F(start), partEnd: F(end), value: "sd" }
+  ]);
+})();

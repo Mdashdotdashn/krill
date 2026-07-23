@@ -33,7 +33,17 @@ function buildRenderNode(modelNode)
     {
       return buildRenderNode(child);
     });
-    return new HorizontalPatternRenderNode(children);
+
+    var weights = modelNode.source_.map(function(child)
+    {
+      if (!child || !(child instanceof Object) || !child.options_ || child.options_.weight === undefined)
+      {
+        return 1;
+      }
+      return child.options_.weight;
+    });
+
+    return HorizontalPatternRenderNode.withWeights(children, weights);
   }
 
   if (modelNode.type_ === "pattern"

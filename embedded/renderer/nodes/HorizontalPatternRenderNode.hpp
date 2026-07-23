@@ -9,14 +9,32 @@ namespace krill
   class HorizontalPatternRenderNode final : public RenderTree
   {
   public:
-    explicit HorizontalPatternRenderNode(std::vector<RenderTreePtr> children)
-    : mChildren(std::move(children))
+    HorizontalPatternRenderNode(std::vector<RenderTreePtr> children, std::vector<Fraction> weights)
+    : mChildren(std::move(children)), mWeights(std::move(weights))
     {
+      if (mWeights.size() != mChildren.size())
+      {
+        mWeights.assign(mChildren.size(), Fraction(1));
+      }
+      for (auto& weight : mWeights)
+      {
+        if (weight <= Fraction(0))
+        {
+          weight = Fraction(1);
+        }
+      }
+    }
+
+    explicit HorizontalPatternRenderNode(std::vector<RenderTreePtr> children)
+    : HorizontalPatternRenderNode(std::move(children), std::vector<Fraction>{})
+    {
+      mWeights.assign(mChildren.size(), Fraction(1));
     }
 
     explicit HorizontalPatternRenderNode(std::vector<std::string> values)
     : mValues(std::move(values))
     {
+      mWeights.assign(mValues.size(), Fraction(1));
     }
 
     std::vector<QueryFragment> query(const QueryRequest& request) const override
@@ -35,6 +53,11 @@ namespace krill
 
       std::vector<QueryFragment> fragments;
       const auto countLong = static_cast<long>(count);
+      Fraction totalWeight(0);
+      for (size_t i = 0; i < count; i++)
+      {
+        totalWeight += mWeights[i];
+      }
       const auto startNumerator = request.start.getNumerator();
       const auto startDenominator = request.start.getDenominator();
       auto startCycle = startNumerator / startDenominator;
@@ -51,12 +74,18 @@ namespace krill
         endCycle -= 1;
       }
 
+      Fraction slotOffset(0);
       for (long i = 0; i < countLong; i++)
       {
+        const auto slotWeight = mWeights[static_cast<size_t>(i)];
+        const auto slotStartNormalized = slotOffset / totalWeight;
+        slotOffset += slotWeight;
+        const auto slotEndNormalized = slotOffset / totalWeight;
+
         for (long cycle = startCycle; cycle <= endCycle; cycle++)
         {
-          const auto wholeStart = Fraction(cycle) + Fraction(i, countLong);
-          const auto wholeEnd = Fraction(cycle) + Fraction(i + 1, countLong);
+          const auto wholeStart = Fraction(cycle) + slotStartNormalized;
+          const auto wholeEnd = Fraction(cycle) + slotEndNormalized;
           if (request.end <= wholeStart || request.start >= wholeEnd)
           {
             continue;
@@ -108,5 +137,6 @@ namespace krill
   private:
     std::vector<RenderTreePtr> mChildren;
     std::vector<std::string> mValues;
+    std::vector<Fraction> mWeights;
   };
 }

@@ -116,7 +116,7 @@ namespace krill
       return v.HasMember("source_") && v["source_"].IsArray();
     }
 
-    std::optional<std::vector<RenderTreePtr>> horizontalPatternChildren(const rapidjson::Value& v)
+    std::optional<std::pair<std::vector<RenderTreePtr>, std::vector<Fraction>>> horizontalPatternChildrenAndWeights(const rapidjson::Value& v)
     {
       if (!isHorizontalPatternNode(v))
       {
@@ -126,17 +126,34 @@ namespace krill
       const auto& source = v["source_"].GetArray();
       if (source.Empty())
       {
-        return std::vector<RenderTreePtr>{};
+        return std::make_pair(std::vector<RenderTreePtr>{}, std::vector<Fraction>{});
       }
 
       std::vector<RenderTreePtr> children;
+      std::vector<Fraction> weights;
       children.reserve(source.Size());
+      weights.reserve(source.Size());
       for (const auto& child : source)
       {
         children.push_back(buildRenderTree(child));
+
+        Fraction weight(1);
+        if (child.IsObject() && child.HasMember("options_") && child["options_"].IsObject())
+        {
+          const auto& options = child["options_"];
+          if (options.HasMember("weight"))
+          {
+            const auto maybeWeight = valueAsFraction(options["weight"]);
+            if (maybeWeight.has_value() && maybeWeight.value() > Fraction(0))
+            {
+              weight = maybeWeight.value();
+            }
+          }
+        }
+        weights.push_back(weight);
       }
 
-      return children;
+      return std::make_pair(children, weights);
     }
 
     bool isVerticalPatternNode(const rapidjson::Value& v)
@@ -273,10 +290,10 @@ namespace krill
         return std::make_shared<ElementRenderNode>(sourceAsString(source));
       }
 
-      const auto horizontalChildren = horizontalPatternChildren(v);
-      if (horizontalChildren.has_value())
+      const auto horizontalChildrenAndWeights = horizontalPatternChildrenAndWeights(v);
+      if (horizontalChildrenAndWeights.has_value())
       {
-        return std::make_shared<HorizontalPatternRenderNode>(horizontalChildren.value());
+        return std::make_shared<HorizontalPatternRenderNode>(horizontalChildrenAndWeights->first, horizontalChildrenAndWeights->second);
       }
 
       const auto verticalChildren = verticalPatternChildren(v);
