@@ -56,84 +56,85 @@ namespace krill
   private:
     std::optional<Fraction> parseAmountText(const std::string& text) const
     {
-      if (text.find('.') != std::string::npos)
+      if (text.empty())
       {
-        if (text.empty())
+        return std::nullopt;
+      }
+
+      if (text.find('/') != std::string::npos)
+      {
+        try
+        {
+          return Fraction(text);
+        }
+        catch (...)
         {
           return std::nullopt;
         }
+      }
 
-        size_t pos = 0;
-        bool negative = false;
-        if (text[pos] == '+' || text[pos] == '-')
-        {
-          negative = text[pos] == '-';
-          pos++;
-        }
-        if (pos >= text.size())
+      size_t pos = 0;
+      bool negative = false;
+      if (text[pos] == '+' || text[pos] == '-')
+      {
+        negative = text[pos] == '-';
+        pos++;
+      }
+      if (pos >= text.size())
+      {
+        return std::nullopt;
+      }
+
+      const auto dot = text.find('.', pos);
+      const auto hasDot = dot != std::string::npos;
+      const auto intPart = hasDot ? text.substr(pos, dot - pos) : text.substr(pos);
+      const auto fracPart = hasDot ? text.substr(dot + 1) : std::string{};
+
+      if (intPart.empty() && fracPart.empty())
+      {
+        return std::nullopt;
+      }
+
+      for (const char c : intPart)
+      {
+        if (!std::isdigit(static_cast<unsigned char>(c)))
         {
           return std::nullopt;
         }
-
-        const auto dot = text.find('.', pos);
-        const auto intPart = text.substr(pos, dot - pos);
-        const auto fracPart = text.substr(dot + 1);
-
-        if (intPart.empty() && fracPart.empty())
+      }
+      for (const char c : fracPart)
+      {
+        if (!std::isdigit(static_cast<unsigned char>(c)))
         {
           return std::nullopt;
         }
-
-        for (const char c : intPart)
-        {
-          if (!std::isdigit(static_cast<unsigned char>(c)))
-          {
-            return std::nullopt;
-          }
-        }
-        for (const char c : fracPart)
-        {
-          if (!std::isdigit(static_cast<unsigned char>(c)))
-          {
-            return std::nullopt;
-          }
-        }
-
-        long whole = 0;
-        if (!intPart.empty())
-        {
-          whole = std::stol(intPart);
-        }
-
-        long denom = 1;
-        for (size_t i = 0; i < fracPart.size(); i++)
-        {
-          denom *= 10;
-        }
-
-        long frac = 0;
-        if (!fracPart.empty())
-        {
-          frac = std::stol(fracPart);
-        }
-
-        long numer = whole * denom + frac;
-        if (negative)
-        {
-          numer = -numer;
-        }
-
-        return Fraction(numer, denom);
       }
 
-      try
+      long whole = 0;
+      if (!intPart.empty())
       {
-        return Fraction(text);
+        whole = std::stol(intPart);
       }
-      catch (...)
+
+      long denom = 1;
+      for (size_t i = 0; i < fracPart.size(); i++)
       {
+        denom *= 10;
       }
-      return std::nullopt;
+
+      long frac = 0;
+      if (!fracPart.empty())
+      {
+        frac = std::stol(fracPart);
+      }
+
+      long numer = whole * denom + frac;
+      if (negative)
+      {
+        numer = -numer;
+      }
+
+      return Fraction(numer, denom);
     }
 
     Fraction resolveAmount(const Fraction& start) const
@@ -152,19 +153,13 @@ namespace krill
         return Fraction(0);
       }
 
-      try
+      const auto parsed = parseAmountText(fragments[0].value);
+      if (parsed.has_value())
       {
-        return Fraction(fragments[0].value);
+        return parsed.value();
       }
-      catch (...)
-      {
-        const auto parsed = parseAmountText(fragments[0].value);
-        if (parsed.has_value())
-        {
-          return parsed.value();
-        }
-        return Fraction(0);
-      }
+
+      return Fraction(0);
     }
 
     RenderTreePtr mpSource;

@@ -142,6 +142,7 @@ TEST_CASE("Parser")
 	SECTION("rotation operator canonicalization")
 	{
 		checkParsing("rotR 0.125 $ 'bd ~ sd ~'", "{'type_':'shift','arguments_':['0.125',1],'source_':{'type_':'pattern','arguments_':{'alignment':'h'},'source_':[{'type_':'element','source_':'bd'},{'type_':'element','source_':'~'},{'type_':'element','source_':'sd'},{'type_':'element','source_':'~'}]}}");
+		checkParsing("rotL '<0 0.125>' $ 'bd ~ sd ~'", "{'type_':'shift','arguments_':[{'type_':'element','source_':{'type_':'pattern','arguments_':{'alignment':'t'},'source_':[{'type_':'element','source_':'0'},{'type_':'element','source_':'0.125'}]}},-1],'source_':{'type_':'pattern','arguments_':{'alignment':'h'},'source_':[{'type_':'element','source_':'bd'},{'type_':'element','source_':'~'},{'type_':'element','source_':'sd'},{'type_':'element','source_':'~'}]}}");
 	}
 
 	SECTION("timing transform canonicalization")
