@@ -1640,6 +1640,58 @@
           }
         ]
       }
+    },
+    "rotR (fast 2 $ '0 0.125') $ 'bd ~ sd ~'": {
+      "type_": "shift",
+      "arguments_": [
+        {
+          "type_": "stretch",
+          "arguments_": [
+            "1/2"
+          ],
+          "source_": {
+            "type_": "pattern",
+            "arguments_": {
+              "alignment": "h"
+            },
+            "source_": [
+              {
+                "type_": "element",
+                "source_": "0"
+              },
+              {
+                "type_": "element",
+                "source_": "0.125"
+              }
+            ]
+          }
+        },
+        1
+      ],
+      "source_": {
+        "type_": "pattern",
+        "arguments_": {
+          "alignment": "h"
+        },
+        "source_": [
+          {
+            "type_": "element",
+            "source_": "bd"
+          },
+          {
+            "type_": "element",
+            "source_": "~"
+          },
+          {
+            "type_": "element",
+            "source_": "sd"
+          },
+          {
+            "type_": "element",
+            "source_": "~"
+          }
+        ]
+      }
     }
   }
 }
