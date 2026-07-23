@@ -4,6 +4,7 @@
 require("./nodes/empty-render-node.js");
 require("./nodes/element-render-node.js");
 require("./nodes/horizontal-pattern-render-node.js");
+require("./nodes/stretch-render-node.js");
 require("./nodes/vertical-pattern-render-node.js");
 require("./nodes/timeline-pattern-render-node.js");
 
@@ -57,6 +58,13 @@ function buildRenderNode(modelNode)
       return buildRenderNode(child);
     });
     return new TimelinePatternRenderNode(timelineChildren);
+  }
+
+  if (modelNode.type_ === "stretch"
+      && Array.isArray(modelNode.arguments_)
+      && modelNode.arguments_.length > 0)
+  {
+    return new StretchRenderNode(buildRenderNode(modelNode.source_), modelNode.arguments_[0]);
   }
 
   return new EmptyRenderNode();

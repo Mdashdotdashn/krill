@@ -5,6 +5,7 @@
 #include "nodes/ElementRenderNode.hpp"
 #include "nodes/EmptyRenderNode.hpp"
 #include "nodes/HorizontalPatternRenderNode.hpp"
+#include "nodes/StretchRenderNode.hpp"
 #include "nodes/TimelinePatternRenderNode.hpp"
 #include "nodes/VerticalPatternRenderNode.hpp"
 
@@ -58,6 +59,35 @@ namespace krill
         return std::to_string(source.GetDouble());
       }
       return "";
+    }
+
+    std::optional<Fraction> valueAsFraction(const rapidjson::Value& v)
+    {
+      if (v.IsInt())
+      {
+        return Fraction(static_cast<long>(v.GetInt()), 1);
+      }
+      if (v.IsInt64())
+      {
+        return Fraction(static_cast<long>(v.GetInt64()), 1);
+      }
+      if (v.IsUint())
+      {
+        return Fraction(static_cast<long>(v.GetUint()), 1);
+      }
+      if (v.IsUint64())
+      {
+        return Fraction(static_cast<long>(v.GetUint64()), 1);
+      }
+      if (v.IsDouble())
+      {
+        return Fraction(v.GetDouble());
+      }
+      if (v.IsString())
+      {
+        return Fraction(std::string(v.GetString()));
+      }
+      return std::nullopt;
     }
 
     bool isHorizontalPatternNode(const rapidjson::Value& v)
@@ -197,6 +227,40 @@ namespace krill
       return children;
     }
 
+    bool isStretchNode(const rapidjson::Value& v)
+    {
+      if (!v.IsObject() || !v.HasMember("type_") || !v["type_"].IsString())
+      {
+        return false;
+      }
+      if (std::string(v["type_"].GetString()) != "stretch")
+      {
+        return false;
+      }
+      if (!v.HasMember("source_") || !v.HasMember("arguments_") || !v["arguments_"].IsArray())
+      {
+        return false;
+      }
+      return v["arguments_"].GetArray().Size() > 0;
+    }
+
+    std::optional<std::pair<RenderTreePtr, Fraction>> stretchSourceAndFactor(const rapidjson::Value& v)
+    {
+      if (!isStretchNode(v))
+      {
+        return std::nullopt;
+      }
+
+      const auto& args = v["arguments_"].GetArray();
+      const auto maybeFactor = valueAsFraction(args[0]);
+      if (!maybeFactor.has_value())
+      {
+        return std::nullopt;
+      }
+
+      return std::make_pair(buildRenderTree(v["source_"]), maybeFactor.value());
+    }
+
     RenderTreePtr buildRenderTree(const rapidjson::Value& v)
     {
       if (isElementNode(v))
@@ -225,6 +289,12 @@ namespace krill
       if (timelineChildren.has_value())
       {
         return std::make_shared<TimelinePatternRenderNode>(timelineChildren.value());
+      }
+
+      const auto stretch = stretchSourceAndFactor(v);
+      if (stretch.has_value())
+      {
+        return std::make_shared<StretchRenderNode>(stretch->first, stretch->second);
       }
 
       return std::make_shared<EmptyRenderNode>();
