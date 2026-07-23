@@ -785,6 +785,90 @@
           }
         ]
       }
+    },
+    "'[bd sd [~ bd] sd bd [sd bd@3] bd sd]%4'": {
+      "type_": "element",
+      "source_": {
+        "type_": "pattern",
+        "arguments_": {
+          "alignment": "h"
+        },
+        "source_": [
+          {
+            "type_": "element",
+            "source_": "bd"
+          },
+          {
+            "type_": "element",
+            "source_": "sd"
+          },
+          {
+            "type_": "element",
+            "source_": {
+              "type_": "pattern",
+              "arguments_": {
+                "alignment": "h"
+              },
+              "source_": [
+                {
+                  "type_": "element",
+                  "source_": "~"
+                },
+                {
+                  "type_": "element",
+                  "source_": "bd"
+                }
+              ]
+            }
+          },
+          {
+            "type_": "element",
+            "source_": "sd"
+          },
+          {
+            "type_": "element",
+            "source_": "bd"
+          },
+          {
+            "type_": "element",
+            "source_": {
+              "type_": "pattern",
+              "arguments_": {
+                "alignment": "h"
+              },
+              "source_": [
+                {
+                  "type_": "element",
+                  "source_": "sd"
+                },
+                {
+                  "type_": "element",
+                  "source_": "bd",
+                  "options_": {
+                    "weight": 3
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type_": "element",
+            "source_": "bd"
+          },
+          {
+            "type_": "element",
+            "source_": "sd"
+          }
+        ]
+      },
+      "options_": {
+        "operator": {
+          "type_": "fixed-step",
+          "arguments_": [
+            4
+          ]
+        }
+      }
     }
   }
 }
