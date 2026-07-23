@@ -20,8 +20,7 @@ slice is implemented and locked by tests on both JS and C++.
 
 ## Query Runtime Contract
 
-Each rebuilt slice must satisfy the query contract defined in
-[docs/tidal-query-rebuild-plan.md](tidal-query-rebuild-plan.md):
+Each rebuilt slice must satisfy this query contract:
 
 - absolute request arc `[start, end)`
 - ordered fragment response (`whole`, `part`, `value`)
