@@ -117,6 +117,26 @@ function fragmentToComparable(fragment)
   ]);
 })();
 
+(function testHorizontalPatternRenderNodeNestedChildRegression()
+{
+  var nestedVertical = new VerticalPatternRenderNode([
+    new ElementRenderNode("6"),
+    new ElementRenderNode("C4")
+  ]);
+
+  var node = new HorizontalPatternRenderNode([
+    new ElementRenderNode("1"),
+    new ElementRenderNode("2"),
+    nestedVertical
+  ]);
+
+  var result = node.query("2/3", "1").map(fragmentToComparable);
+  assert.deepStrictEqual(result, [
+    { wholeStart: F("2/3"), wholeEnd: F("1"), partStart: F("2/3"), partEnd: F("1"), value: "6" },
+    { wholeStart: F("2/3"), wholeEnd: F("1"), partStart: F("2/3"), partEnd: F("1"), value: "C4" }
+  ]);
+})();
+
 (function testVerticalPatternRenderNode()
 {
   var node = new VerticalPatternRenderNode([

@@ -112,6 +112,32 @@ TEST_CASE("Render nodes query behavior")
     CHECK(middleOnly[0].partEnd == Fraction(2, 3));
   }
 
+  SECTION("HorizontalPatternRenderNode delegates nested child query")
+  {
+    std::vector<RenderTreePtr> nested;
+    nested.push_back(std::make_shared<ElementRenderNode>("6"));
+    nested.push_back(std::make_shared<ElementRenderNode>("C4"));
+
+    std::vector<RenderTreePtr> children;
+    children.push_back(std::make_shared<ElementRenderNode>("1"));
+    children.push_back(std::make_shared<ElementRenderNode>("2"));
+    children.push_back(std::make_shared<VerticalPatternRenderNode>(std::move(nested)));
+
+    HorizontalPatternRenderNode node(std::move(children));
+    const auto result = node.query({Fraction(2, 3), Fraction(1)});
+
+    REQUIRE(result.size() == 2);
+    CHECK(values(result) == std::vector<std::string>{"6", "C4"});
+    CHECK(result[0].wholeStart == Fraction(2, 3));
+    CHECK(result[0].wholeEnd == Fraction(1));
+    CHECK(result[0].partStart == Fraction(2, 3));
+    CHECK(result[0].partEnd == Fraction(1));
+    CHECK(result[1].wholeStart == Fraction(2, 3));
+    CHECK(result[1].wholeEnd == Fraction(1));
+    CHECK(result[1].partStart == Fraction(2, 3));
+    CHECK(result[1].partEnd == Fraction(1));
+  }
+
   SECTION("VerticalPatternRenderNode")
   {
     std::vector<RenderTreePtr> children;

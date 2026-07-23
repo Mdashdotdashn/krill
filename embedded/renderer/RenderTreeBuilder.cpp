@@ -59,30 +59,6 @@ namespace krill
       return "";
     }
 
-    std::optional<std::string> collapseElementValue(const rapidjson::Value& node)
-    {
-      if (!node.IsObject())
-      {
-        return std::nullopt;
-      }
-      if (!node.HasMember("type_") || !node["type_"].IsString())
-      {
-        return std::nullopt;
-      }
-      if (std::string(node["type_"].GetString()) != "element" || !node.HasMember("source_"))
-      {
-        return std::nullopt;
-      }
-
-      const auto& source = node["source_"];
-      if (source.IsObject())
-      {
-        return collapseElementValue(source);
-      }
-
-      return sourceAsString(source);
-    }
-
     bool isHorizontalPatternNode(const rapidjson::Value& v)
     {
       if (!v.IsObject() || !v.HasMember("type_") || !v["type_"].IsString())
@@ -109,7 +85,7 @@ namespace krill
       return v.HasMember("source_") && v["source_"].IsArray();
     }
 
-    std::optional<std::vector<std::string>> horizontalPatternValues(const rapidjson::Value& v)
+    std::optional<std::vector<RenderTreePtr>> horizontalPatternChildren(const rapidjson::Value& v)
     {
       if (!isHorizontalPatternNode(v))
       {
@@ -119,22 +95,17 @@ namespace krill
       const auto& source = v["source_"].GetArray();
       if (source.Empty())
       {
-        return std::vector<std::string>{};
+        return std::vector<RenderTreePtr>{};
       }
 
-      std::vector<std::string> values;
-      values.reserve(source.Size());
+      std::vector<RenderTreePtr> children;
+      children.reserve(source.Size());
       for (const auto& child : source)
       {
-        const auto collapsed = collapseElementValue(child);
-        if (!collapsed.has_value())
-        {
-          return std::nullopt;
-        }
-        values.push_back(collapsed.value());
+        children.push_back(buildRenderTree(child));
       }
 
-      return values;
+      return children;
     }
 
     bool isVerticalPatternNode(const rapidjson::Value& v)
@@ -193,10 +164,10 @@ namespace krill
         return std::make_shared<ElementRenderNode>(sourceAsString(source));
       }
 
-      const auto patternValues = horizontalPatternValues(v);
-      if (patternValues.has_value())
+      const auto horizontalChildren = horizontalPatternChildren(v);
+      if (horizontalChildren.has_value())
       {
-        return std::make_shared<HorizontalPatternRenderNode>(patternValues.value());
+        return std::make_shared<HorizontalPatternRenderNode>(horizontalChildren.value());
       }
 
       const auto verticalChildren = verticalPatternChildren(v);
