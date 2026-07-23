@@ -179,6 +179,17 @@ function buildRenderNode(modelNode)
     return new StretchRenderNode(buildRenderNode(modelNode.source_), modelNode.arguments_[0]);
   }
 
+  if (modelNode.type_ === "bjorklund"
+      && Array.isArray(modelNode.arguments_)
+      && modelNode.arguments_.length >= 2)
+  {
+    return new BjorklundRenderNode(
+      buildRenderNode(modelNode.source_),
+      modelNode.arguments_[0],
+      modelNode.arguments_[1]
+    );
+  }
+
   return new EmptyRenderNode();
 }
 

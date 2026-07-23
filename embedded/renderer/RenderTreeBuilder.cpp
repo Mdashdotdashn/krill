@@ -394,6 +394,23 @@ namespace krill
       return v["arguments_"].GetArray().Size() > 0;
     }
 
+    bool isBjorklundNode(const rapidjson::Value& v)
+    {
+      if (!v.IsObject() || !v.HasMember("type_") || !v["type_"].IsString())
+      {
+        return false;
+      }
+      if (std::string(v["type_"].GetString()) != "bjorklund")
+      {
+        return false;
+      }
+      if (!v.HasMember("source_") || !v.HasMember("arguments_") || !v["arguments_"].IsArray())
+      {
+        return false;
+      }
+      return v["arguments_"].GetArray().Size() >= 2;
+    }
+
     std::optional<std::pair<RenderTreePtr, Fraction>> stretchSourceAndFactor(const rapidjson::Value& v)
     {
       if (!isStretchNode(v))
@@ -409,6 +426,24 @@ namespace krill
       }
 
       return std::make_pair(buildRenderTree(v["source_"]), maybeFactor.value());
+    }
+
+    std::optional<std::tuple<RenderTreePtr, long, long>> bjorklundSourceAndParams(const rapidjson::Value& v)
+    {
+      if (!isBjorklundNode(v))
+      {
+        return std::nullopt;
+      }
+
+      const auto& args = v["arguments_"].GetArray();
+      const auto pulses = valueAsLong(args[0]);
+      const auto steps = valueAsLong(args[1]);
+      if (!pulses.has_value() || !steps.has_value())
+      {
+        return std::nullopt;
+      }
+
+      return std::make_tuple(buildRenderTree(v["source_"]), pulses.value(), steps.value());
     }
 
     RenderTreePtr buildRenderTree(const rapidjson::Value& v)
@@ -447,6 +482,15 @@ namespace krill
       if (stretch.has_value())
       {
         return std::make_shared<StretchRenderNode>(stretch->first, stretch->second);
+      }
+
+      const auto bjorklund = bjorklundSourceAndParams(v);
+      if (bjorklund.has_value())
+      {
+        return std::make_shared<BjorklundRenderNode>(
+          std::get<0>(bjorklund.value()),
+          std::get<1>(bjorklund.value()),
+          std::get<2>(bjorklund.value()));
       }
 
       return std::make_shared<EmptyRenderNode>();

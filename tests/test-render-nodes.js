@@ -331,3 +331,37 @@ function fragmentToComparable(fragment)
     { wholeStart: F("2"), wholeEnd: F("3"), partStart: F("2"), partEnd: F("2049/1024"), value: "c" }
   ]);
 })();
+
+(function testTopLevelBjorklundViaRenderTree()
+{
+  var builder = new RenderTreeBuilder();
+  var tree = builder.rebuild({
+    type_: "bjorklund",
+    arguments_: [2, 8],
+    source_: {
+      type_: "element",
+      source_: {
+        type_: "pattern",
+        arguments_: { alignment: "h" },
+        source_: [
+          { type_: "element", source_: "bd" },
+          { type_: "element", source_: "sd" }
+        ]
+      }
+    }
+  });
+
+  function queryAt(time)
+  {
+    var start = math.fraction(time);
+    var end = math.add(start, math.fraction(1, 1024));
+    return tree.query(start, end).map(fragmentToComparable);
+  }
+
+  assert.deepStrictEqual(queryAt("0"), [
+    { wholeStart: F("0"), wholeEnd: F("1/4"), partStart: F("0"), partEnd: F("1/1024"), value: "bd" }
+  ]);
+  assert.deepStrictEqual(queryAt("1/4"), [
+    { wholeStart: F("1/4"), wholeEnd: F("1/2"), partStart: F("1/4"), partEnd: F("257/1024"), value: "sd" }
+  ]);
+})();

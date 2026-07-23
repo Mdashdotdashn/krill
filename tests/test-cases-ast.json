@@ -869,6 +869,32 @@
           ]
         }
       }
+    },
+    "euclid 2 8 $ '[bd sd]'": {
+      "type_": "bjorklund",
+      "arguments_": [
+        2,
+        8
+      ],
+      "source_": {
+        "type_": "element",
+        "source_": {
+          "type_": "pattern",
+          "arguments_": {
+            "alignment": "h"
+          },
+          "source_": [
+            {
+              "type_": "element",
+              "source_": "bd"
+            },
+            {
+              "type_": "element",
+              "source_": "sd"
+            }
+          ]
+        }
+      }
     }
   }
 }
