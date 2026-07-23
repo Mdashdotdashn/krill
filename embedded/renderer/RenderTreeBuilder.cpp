@@ -2,99 +2,16 @@
 
 #include <optional>
 
+#include "nodes/ElementRenderNode.hpp"
+#include "nodes/EmptyRenderNode.hpp"
+#include "nodes/HorizontalPatternRenderNode.hpp"
+#include "nodes/VerticalPatternRenderNode.hpp"
+
 namespace krill
 {
   namespace
   {
-    class EmptyRenderTree final : public RenderTree
-    {
-    public:
-      std::vector<QueryFragment> query(const QueryRequest& request) const override
-      {
-        (void)request;
-        return {};
-      }
-    };
-
-    class SingleEventRenderTree final : public RenderTree
-    {
-    public:
-      explicit SingleEventRenderTree(std::string value)
-      : mValue(std::move(value))
-      {
-      }
-
-      std::vector<QueryFragment> query(const QueryRequest& request) const override
-      {
-        const auto requestStart = request.start;
-        const auto requestEnd = request.end;
-        if (requestStart == requestEnd)
-        {
-          return {};
-        }
-
-        const Fraction wholeStart(0);
-        const Fraction wholeEnd(1);
-        if (requestEnd <= wholeStart || requestStart >= wholeEnd)
-        {
-          return {};
-        }
-
-        QueryFragment fragment;
-        fragment.wholeStart = wholeStart;
-        fragment.wholeEnd = wholeEnd;
-        fragment.partStart = requestStart > wholeStart ? requestStart : wholeStart;
-        fragment.partEnd = requestEnd < wholeEnd ? requestEnd : wholeEnd;
-        fragment.value = mValue;
-        return {fragment};
-      }
-
-    private:
-      std::string mValue;
-    };
-
-    class HorizontalPatternRenderTree final : public RenderTree
-    {
-    public:
-      explicit HorizontalPatternRenderTree(std::vector<std::string> values)
-      : mValues(std::move(values))
-      {
-      }
-
-      std::vector<QueryFragment> query(const QueryRequest& request) const override
-      {
-        if (request.start == request.end || mValues.empty())
-        {
-          return {};
-        }
-
-        std::vector<QueryFragment> fragments;
-        const auto count = static_cast<long>(mValues.size());
-
-        for (long i = 0; i < count; i++)
-        {
-          const auto wholeStart = Fraction(i, count);
-          const auto wholeEnd = Fraction(i + 1, count);
-          if (request.end <= wholeStart || request.start >= wholeEnd)
-          {
-            continue;
-          }
-
-          QueryFragment fragment;
-          fragment.wholeStart = wholeStart;
-          fragment.wholeEnd = wholeEnd;
-          fragment.partStart = request.start > wholeStart ? request.start : wholeStart;
-          fragment.partEnd = request.end < wholeEnd ? request.end : wholeEnd;
-          fragment.value = mValues[static_cast<size_t>(i)];
-          fragments.push_back(fragment);
-        }
-
-        return fragments;
-      }
-
-    private:
-      std::vector<std::string> mValues;
-    };
+    RenderTreePtr buildRenderTree(const rapidjson::Value& v);
 
     bool isElementNode(const rapidjson::Value& v)
     {
@@ -219,21 +136,81 @@ namespace krill
 
       return values;
     }
+
+    bool isVerticalPatternNode(const rapidjson::Value& v)
+    {
+      if (!v.IsObject() || !v.HasMember("type_") || !v["type_"].IsString())
+      {
+        return false;
+      }
+      if (std::string(v["type_"].GetString()) != "pattern")
+      {
+        return false;
+      }
+      if (!v.HasMember("arguments_") || !v["arguments_"].IsObject())
+      {
+        return false;
+      }
+      const auto& args = v["arguments_"];
+      if (!args.HasMember("alignment") || !args["alignment"].IsString())
+      {
+        return false;
+      }
+      if (std::string(args["alignment"].GetString()) != "v")
+      {
+        return false;
+      }
+      return v.HasMember("source_") && v["source_"].IsArray();
+    }
+
+    std::optional<std::vector<RenderTreePtr>> verticalPatternChildren(const rapidjson::Value& v)
+    {
+      if (!isVerticalPatternNode(v))
+      {
+        return std::nullopt;
+      }
+
+      std::vector<RenderTreePtr> children;
+      const auto& source = v["source_"].GetArray();
+      children.reserve(source.Size());
+      for (const auto& child : source)
+      {
+        children.push_back(buildRenderTree(child));
+      }
+
+      return children;
+    }
+
+    RenderTreePtr buildRenderTree(const rapidjson::Value& v)
+    {
+      if (isElementNode(v))
+      {
+        const auto& source = v["source_"];
+        if (source.IsObject())
+        {
+          return std::make_shared<ElementRenderNode>(buildRenderTree(source));
+        }
+        return std::make_shared<ElementRenderNode>(sourceAsString(source));
+      }
+
+      const auto patternValues = horizontalPatternValues(v);
+      if (patternValues.has_value())
+      {
+        return std::make_shared<HorizontalPatternRenderNode>(patternValues.value());
+      }
+
+      const auto verticalChildren = verticalPatternChildren(v);
+      if (verticalChildren.has_value())
+      {
+        return std::make_shared<VerticalPatternRenderNode>(verticalChildren.value());
+      }
+
+      return std::make_shared<EmptyRenderNode>();
+    }
   }
 
   RenderTreePtr RenderTreeBuilder::fromJson(const rapidjson::Value& v)
   {
-    if (isElementNode(v))
-    {
-      return std::make_shared<SingleEventRenderTree>(sourceAsString(v["source_"]));
-    }
-
-    const auto patternValues = horizontalPatternValues(v);
-    if (patternValues.has_value())
-    {
-      return std::make_shared<HorizontalPatternRenderTree>(patternValues.value());
-    }
-
-    return std::make_shared<EmptyRenderTree>();
+    return buildRenderTree(v);
   }
 }

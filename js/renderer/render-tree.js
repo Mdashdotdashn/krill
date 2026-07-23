@@ -4,6 +4,7 @@
 require("./nodes/empty-render-node.js");
 require("./nodes/element-render-node.js");
 require("./nodes/horizontal-pattern-render-node.js");
+require("./nodes/vertical-pattern-render-node.js");
 
 function buildRenderNode(modelNode)
 {
@@ -31,6 +32,18 @@ function buildRenderNode(modelNode)
       return buildRenderNode(child);
     });
     return new HorizontalPatternRenderNode(children);
+  }
+
+  if (modelNode.type_ === "pattern"
+      && modelNode.arguments_
+      && modelNode.arguments_.alignment === "v"
+      && Array.isArray(modelNode.source_))
+  {
+    var verticalChildren = modelNode.source_.map(function(child)
+    {
+      return buildRenderNode(child);
+    });
+    return new VerticalPatternRenderNode(verticalChildren);
   }
 
   return new EmptyRenderNode();
