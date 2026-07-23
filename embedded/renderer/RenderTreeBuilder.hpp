@@ -30,6 +30,10 @@ namespace krill
   public:
     virtual ~RenderTree() = default;
     virtual std::vector<QueryFragment> query(const QueryRequest& request) const = 0;
+    virtual Fraction spanLength() const
+    {
+      return Fraction(1);
+    }
   };
 
   using RenderTreePtr = std::shared_ptr<RenderTree>;

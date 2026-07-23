@@ -22,30 +22,67 @@ TimelinePatternRenderNode.prototype.query = function(start, end)
     return [];
   }
 
-  var cycleIndex = math.floor(requestStart);
-  var count = this.children_.length;
-  var childIndex = ((cycleIndex % count) + count) % count;
-  var child = this.children_[childIndex];
-  if (!child || !(child.query instanceof Function))
+  var spans = [];
+  var totalSpan = math.fraction(0);
+  for (var s = 0; s < this.children_.length; s++)
+  {
+    var childSpan = math.fraction(1);
+    var spanSource = this.children_[s];
+    if (spanSource && spanSource.spanLength instanceof Function)
+    {
+      childSpan = QueryNodeUtils.toFraction(spanSource.spanLength());
+    }
+    if (math.smallerEq(childSpan, 0))
+    {
+      childSpan = math.fraction(1);
+    }
+    spans.push(childSpan);
+    totalSpan = math.add(totalSpan, childSpan);
+  }
+
+  if (math.smallerEq(totalSpan, 0))
   {
     return [];
   }
 
-  var localStart = math.subtract(requestStart, cycleIndex);
-  var localEnd = math.subtract(requestEnd, cycleIndex);
-  var childFragments = child.query(localStart, localEnd) || [];
-
   var fragments = [];
-  for (var i = 0; i < childFragments.length; i++)
+  var startCycle = math.floor(math.divide(requestStart, totalSpan));
+  var endCycle = math.floor(math.divide(requestEnd, totalSpan));
+
+  for (var cycle = startCycle; cycle <= endCycle; cycle++)
   {
-    var fragment = childFragments[i];
-    fragments.push({
-      wholeStart: math.add(fragment.wholeStart, cycleIndex),
-      wholeEnd: math.add(fragment.wholeEnd, cycleIndex),
-      partStart: math.add(fragment.partStart, cycleIndex),
-      partEnd: math.add(fragment.partEnd, cycleIndex),
-      value: fragment.value
-    });
+    var cycleBase = math.multiply(cycle, totalSpan);
+    var offset = math.fraction(0);
+
+    for (var i = 0; i < this.children_.length; i++)
+    {
+      var child = this.children_[i];
+      var slotStart = math.add(cycleBase, offset);
+      var slotEnd = math.add(slotStart, spans[i]);
+      offset = math.add(offset, spans[i]);
+
+      var bounds = QueryNodeUtils.overlapBounds(requestStart, requestEnd, slotStart, slotEnd);
+      if (!bounds || !child || !(child.query instanceof Function))
+      {
+        continue;
+      }
+
+      var localStart = math.subtract(bounds.partStart, slotStart);
+      var localEnd = math.subtract(bounds.partEnd, slotStart);
+      var childFragments = child.query(localStart, localEnd) || [];
+
+      for (var j = 0; j < childFragments.length; j++)
+      {
+        var fragment = childFragments[j];
+        fragments.push({
+          wholeStart: math.add(fragment.wholeStart, slotStart),
+          wholeEnd: math.add(fragment.wholeEnd, slotStart),
+          partStart: math.add(fragment.partStart, slotStart),
+          partEnd: math.add(fragment.partEnd, slotStart),
+          value: fragment.value
+        });
+      }
+    }
   }
 
   return fragments;

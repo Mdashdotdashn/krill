@@ -42,6 +42,15 @@ namespace krill
       return fragments;
     }
 
+    Fraction spanLength() const override
+    {
+      if (!mpSource)
+      {
+        return mFactor;
+      }
+      return mpSource->spanLength() * mFactor;
+    }
+
   private:
     RenderTreePtr mpSource{};
     Fraction mFactor{1};

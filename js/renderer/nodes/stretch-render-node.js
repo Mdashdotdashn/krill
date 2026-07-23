@@ -47,3 +47,12 @@ StretchRenderNode.prototype.query = function(start, end)
 
   return fragments;
 }
+
+StretchRenderNode.prototype.spanLength = function()
+{
+  if (!this.source_ || !(this.source_.spanLength instanceof Function))
+  {
+    return this.factor_;
+  }
+  return math.multiply(this.source_.spanLength(), this.factor_);
+}

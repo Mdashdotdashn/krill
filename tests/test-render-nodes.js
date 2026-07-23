@@ -230,3 +230,33 @@ function fragmentToComparable(fragment)
     { wholeStart: F("3/4"), wholeEnd: F("1"), partStart: F(start), partEnd: F(end), value: "sd" }
   ]);
 })();
+
+(function testTimelinePatternRenderNodeConcatenatesChildSpans()
+{
+  var left = new StretchRenderNode(new HorizontalPatternRenderNode([
+    new ElementRenderNode("1"),
+    new ElementRenderNode("12")
+  ]), 2);
+
+  var right = new StretchRenderNode(new HorizontalPatternRenderNode([
+    new ElementRenderNode("5"),
+    new ElementRenderNode("17")
+  ]), 4);
+
+  var node = new TimelinePatternRenderNode([left, right]);
+
+  var at1 = node.query(math.fraction(1), math.add(math.fraction(1), math.fraction(1, 1024))).map(fragmentToComparable);
+  assert.deepStrictEqual(at1, [
+    { wholeStart: F("1"), wholeEnd: F("2"), partStart: F("1"), partEnd: F("1025/1024"), value: "12" }
+  ]);
+
+  var at2 = node.query(math.fraction(2), math.add(math.fraction(2), math.fraction(1, 1024))).map(fragmentToComparable);
+  assert.deepStrictEqual(at2, [
+    { wholeStart: F("2"), wholeEnd: F("4"), partStart: F("2"), partEnd: F("2049/1024"), value: "5" }
+  ]);
+
+  var at4 = node.query(math.fraction(4), math.add(math.fraction(4), math.fraction(1, 1024))).map(fragmentToComparable);
+  assert.deepStrictEqual(at4, [
+    { wholeStart: F("4"), wholeEnd: F("6"), partStart: F("4"), partEnd: F("4097/1024"), value: "17" }
+  ]);
+})();
