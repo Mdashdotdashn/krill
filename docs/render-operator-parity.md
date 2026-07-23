@@ -9,8 +9,14 @@ slice is implemented and locked by tests on both JS and C++.
 ## Rebuild Scope
 
 - Parser and AST parity remain continuous and are validated independently.
-- Runtime parity is rebuilt case by case from `tests/test-cases-legacy.json`.
-- `tests/test-cases.json` contains only rebuilt runtime cases that are accepted and green.
+- Runtime parity was rebuilt case by case from the legacy corpus during migration.
+- `tests/test-cases.json` now contains the fully rebuilt accepted corpus.
+
+## Completion Status
+
+- Legacy-to-supported promotion is complete.
+- The temporary legacy corpus file used during migration has been removed.
+- Full parity gates are green at completion.
 
 ## Query Runtime Contract
 
@@ -36,7 +42,8 @@ A slice is considered rebuilt only when all of the following are true:
 
 ## Slice Ledger
 
-Add one entry per promoted case.
+The per-slice ledger requirement applied during active migration.
+The migration is now complete; see git history for the full per-slice trail.
 
 | Legacy case | Query slice summary | JS tests | C++ tests | Supported corpus status | Notes |
 |---|---|---|---|---|---|
@@ -58,7 +65,7 @@ Slice-level runtime gates (per promoted case):
 
 ## Change Policy
 
-When promoting a case from legacy to supported corpus:
+Historical policy used during migration (kept for reference):
 
 1. Add or update node-level tests first.
 2. Implement the minimal JS and C++ runtime slice.

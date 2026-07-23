@@ -96,34 +96,29 @@ During the rebuild:
 ## Corpus Policy
 
 - [tests/test-cases.json](../tests/test-cases.json) is the supported corpus for the PR.
-- `tests/test-cases-legacy.json` is created during the tear-down phase by copying the pre-rebuild contents of [tests/test-cases.json](../tests/test-cases.json).
-- After that snapshot is taken, [tests/test-cases.json](../tests/test-cases.json) is intentionally reset to an empty `cases` object so the supported corpus starts from no rebuilt runtime cases while the test infrastructure remains runnable.
-- The supported corpus should contain only accepted cases that are expected to stay green during the rewrite.
-- The legacy corpus is the default rebuild backlog: cases are promoted into the supported corpus one by one as their minimal rebuilt runtime slice lands.
-- If a case is intentionally dropped from scope during development, that decision is made by removing it from the legacy corpus source rather than leaving it as an ambiguous pending item.
-- The legacy corpus is not the primary execution target for the PR; it is the source from which supported behavior is reintroduced.
+- The supported corpus contains accepted cases that are expected to stay green.
+- Legacy backlog promotion is complete and no legacy corpus file remains in the repository.
+
+## Completion Snapshot
+
+- All legacy cases were promoted into the supported corpus.
+- The temporary legacy corpus file was removed after backlog completion.
+- Full parity gates are green at completion.
 
 ## Migration Steps
 
 1. Keep the parser and AST pipeline in place as the stable front end.
 2. Remove the current render-node runtime and its node-specific execution model as the target implementation.
-3. Snapshot the pre-rebuild supported corpus by copying [tests/test-cases.json](../tests/test-cases.json) to `tests/test-cases-legacy.json`.
-4. Optionally snapshot `tests/test-cases-ast.json` in the same way if preserving the pre-rebuild AST fixture set is useful during teardown, even though parser and AST behavior are expected to stay in parity throughout the rewrite.
-5. Clean [docs/render-operator-parity.md](render-operator-parity.md) to a query-rebuild baseline so legacy render-node mapping does not remain the active contract, and create the baseline template that rebuilt slices will fill in as they land.
-6. Reset [tests/test-cases.json](../tests/test-cases.json) to an empty `cases` object so the supported corpus reflects that no rebuilt runtime cases remain immediately after tear-down while the test harness still runs.
-7. Take one legacy case from `tests/test-cases-legacy.json`.
-8. Identify the minimal missing JS and C++ query-native node behavior required to satisfy it.
-9. Implement that runtime slice and add node-level unit tests that lock behavior on both sides.
-10. Document the rebuilt slice contract in [docs/render-operator-parity.md](render-operator-parity.md).
-11. Promote the case into the supported corpus once the rebuilt slice is green.
-12. Verify arc boundary handling, deterministic query behavior, and operator parity for that slice before moving to the next legacy case.
-13. If a legacy case is intentionally dropped from scope, remove it from `tests/test-cases-legacy.json` as part of that decision.
-14. Continue until the supported corpus covers every remaining legacy case.
+3. (Completed) Snapshot the pre-rebuild corpus into a temporary legacy backlog.
+4. (Completed) Promote cases one by one, implementing minimal JS/C++ query-native slices and slice tests as needed.
+5. (Completed) Keep [docs/render-operator-parity.md](render-operator-parity.md) as the parity contract baseline during promotion.
+6. (Completed) Continue until the supported corpus covers all legacy cases.
+7. (Completed) Remove temporary legacy backlog artifacts after final promotion and green parity.
 
 ## Verification
 
 - Always-on checks: keep parser AST parity and parser canonicalization green while runtime behavior is being rebuilt; parser behavior is expected to remain unchanged through teardown and rebuild.
-- AST fixture continuity: if `tests/test-cases-ast.json` is snapshotted during tear-down, use it the same way as the legacy runtime corpus when diagnosing unexpected parser drift.
+- AST fixture continuity: if `tests/test-cases-ast.json` is snapshotted during tear-down, use it to diagnose unexpected parser drift.
 - Slice-level checks: run node-level unit tests in JS and C++ that lock the rebuilt query-node behavior for the selected case before promoting it.
 - Contract checks: assert request shape, response shape, ordering, clipping, and non-mutation semantics.
 - Boundary checks: exercise full-cycle, partial-cycle, zero-width, and multi-cycle requests.
