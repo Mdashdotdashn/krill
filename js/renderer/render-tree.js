@@ -9,6 +9,7 @@ require("./nodes/add-render-node.js");
 require("./nodes/bjorklund-render-node.js");
 require("./nodes/horizontal-pattern-render-node.js");
 require("./nodes/scale-render-node.js");
+require("./nodes/shift-render-node.js");
 require("./nodes/stretch-render-node.js");
 require("./nodes/struct-render-node.js");
 require("./nodes/vertical-pattern-render-node.js");
@@ -219,6 +220,16 @@ function buildRenderNode(modelNode)
       && modelNode.arguments_.length > 0)
   {
     return new ScaleRenderNode(String(modelNode.arguments_[0]), buildRenderNode(modelNode.source_));
+  }
+
+  if (modelNode.type_ === "shift"
+      && Array.isArray(modelNode.arguments_)
+      && modelNode.arguments_.length >= 2)
+  {
+    var amountArg = modelNode.arguments_[0];
+    var direction = modelNode.arguments_[1];
+    var amountNode = (amountArg && amountArg instanceof Object) ? buildRenderNode(amountArg) : amountArg;
+    return new ShiftRenderNode(buildRenderNode(modelNode.source_), amountNode, direction);
   }
 
   return new EmptyRenderNode();

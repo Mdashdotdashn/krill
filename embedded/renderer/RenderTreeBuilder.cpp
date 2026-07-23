@@ -1,5 +1,6 @@
 #include "RenderTreeBuilder.hpp"
 
+#include <cctype>
 #include <optional>
 
 #include "nodes/AddRenderNode.hpp"
@@ -8,6 +9,7 @@
 #include "nodes/EmptyRenderNode.hpp"
 #include "nodes/HorizontalPatternRenderNode.hpp"
 #include "nodes/ScaleRenderNode.hpp"
+#include "nodes/ShiftRenderNode.hpp"
 #include "nodes/StretchRenderNode.hpp"
 #include "nodes/StructRenderNode.hpp"
 #include "nodes/TimelinePatternRenderNode.hpp"
@@ -89,7 +91,77 @@ namespace krill
       }
       if (v.IsString())
       {
-        return Fraction(std::string(v.GetString()));
+        const auto text = std::string(v.GetString());
+
+        if (text.find('.') != std::string::npos)
+        {
+          size_t pos = 0;
+          bool negative = false;
+          if (!text.empty() && (text[pos] == '+' || text[pos] == '-'))
+          {
+            negative = text[pos] == '-';
+            pos++;
+          }
+
+          const auto dot = text.find('.', pos);
+          const auto intPart = text.substr(pos, dot - pos);
+          const auto fracPart = text.substr(dot + 1);
+
+          if (intPart.empty() && fracPart.empty())
+          {
+            return std::nullopt;
+          }
+
+          for (const char c : intPart)
+          {
+            if (!std::isdigit(static_cast<unsigned char>(c)))
+            {
+              return std::nullopt;
+            }
+          }
+          for (const char c : fracPart)
+          {
+            if (!std::isdigit(static_cast<unsigned char>(c)))
+            {
+              return std::nullopt;
+            }
+          }
+
+          long whole = 0;
+          if (!intPart.empty())
+          {
+            whole = std::stol(intPart);
+          }
+
+          long denom = 1;
+          for (size_t i = 0; i < fracPart.size(); i++)
+          {
+            denom *= 10;
+          }
+
+          long frac = 0;
+          if (!fracPart.empty())
+          {
+            frac = std::stol(fracPart);
+          }
+
+          long numer = whole * denom + frac;
+          if (negative)
+          {
+            numer = -numer;
+          }
+
+          return Fraction(numer, denom);
+        }
+
+        try
+        {
+          return Fraction(text);
+        }
+        catch (...)
+        {
+          return std::nullopt;
+        }
       }
       return std::nullopt;
     }
@@ -465,6 +537,23 @@ namespace krill
       return v["arguments_"].GetArray().Size() > 0;
     }
 
+    bool isShiftNode(const rapidjson::Value& v)
+    {
+      if (!v.IsObject() || !v.HasMember("type_") || !v["type_"].IsString())
+      {
+        return false;
+      }
+      if (std::string(v["type_"].GetString()) != "shift")
+      {
+        return false;
+      }
+      if (!v.HasMember("source_") || !v.HasMember("arguments_") || !v["arguments_"].IsArray())
+      {
+        return false;
+      }
+      return v["arguments_"].GetArray().Size() >= 2;
+    }
+
     std::optional<std::pair<RenderTreePtr, Fraction>> stretchSourceAndFactor(const rapidjson::Value& v)
     {
       if (!isStretchNode(v))
@@ -545,6 +634,44 @@ namespace krill
       return std::make_pair(scaleName, buildRenderTree(v["source_"]));
     }
 
+    struct ShiftData
+    {
+      RenderTreePtr source;
+      std::optional<Fraction> amount;
+      RenderTreePtr amountSource;
+      long direction{1};
+    };
+
+    std::optional<ShiftData> shiftData(const rapidjson::Value& v)
+    {
+      if (!isShiftNode(v))
+      {
+        return std::nullopt;
+      }
+
+      const auto& args = v["arguments_"].GetArray();
+      const auto maybeDirection = valueAsLong(args[1]);
+      if (!maybeDirection.has_value())
+      {
+        return std::nullopt;
+      }
+
+      ShiftData data;
+      data.source = buildRenderTree(v["source_"]);
+      data.direction = maybeDirection.value();
+
+      if (args[0].IsObject())
+      {
+        data.amountSource = buildRenderTree(args[0]);
+      }
+      else
+      {
+        data.amount = valueAsFraction(args[0]);
+      }
+
+      return data;
+    }
+
     RenderTreePtr buildRenderTree(const rapidjson::Value& v)
     {
       if (isElementNode(v))
@@ -608,6 +735,19 @@ namespace krill
       if (scaleData.has_value())
       {
         return std::make_shared<ScaleRenderNode>(scaleData->first, scaleData->second);
+      }
+
+      const auto shift = shiftData(v);
+      if (shift.has_value())
+      {
+        if (shift->amountSource)
+        {
+          return std::make_shared<ShiftRenderNode>(shift->source, shift->amountSource, shift->direction);
+        }
+        if (shift->amount.has_value())
+        {
+          return std::make_shared<ShiftRenderNode>(shift->source, shift->amount.value(), shift->direction);
+        }
       }
 
       return std::make_shared<EmptyRenderNode>();

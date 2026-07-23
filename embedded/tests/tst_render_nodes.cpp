@@ -4,6 +4,7 @@
 #include "renderer/nodes/EmptyRenderNode.hpp"
 #include "renderer/nodes/HorizontalPatternRenderNode.hpp"
 #include "renderer/nodes/ScaleRenderNode.hpp"
+#include "renderer/nodes/ShiftRenderNode.hpp"
 #include "renderer/nodes/StretchRenderNode.hpp"
 #include "renderer/nodes/StructRenderNode.hpp"
 #include "renderer/nodes/TimelinePatternRenderNode.hpp"
@@ -397,6 +398,28 @@ TEST_CASE("Render nodes query behavior")
     CHECK(full[1].value == "2");
     CHECK(full[2].value == "3");
     CHECK(full[3].value == "5");
+  }
+
+  SECTION("ShiftRenderNode")
+  {
+    std::vector<RenderTreePtr> children;
+    children.push_back(std::make_shared<ElementRenderNode>("bd"));
+    children.push_back(std::make_shared<ElementRenderNode>("~"));
+    children.push_back(std::make_shared<ElementRenderNode>("sd"));
+    children.push_back(std::make_shared<ElementRenderNode>("~"));
+    auto source = std::make_shared<HorizontalPatternRenderNode>(std::move(children));
+
+    ShiftRenderNode right(source, Fraction("1/8"), 1);
+    const auto rightAt = right.query({Fraction(1, 8), Fraction(1, 8) + Fraction(1, 1024)});
+    REQUIRE(rightAt.size() == 1);
+    CHECK(rightAt[0].value == "bd");
+    CHECK(rightAt[0].wholeStart == Fraction(1, 8));
+    CHECK(rightAt[0].wholeEnd == Fraction(3, 8));
+
+    ShiftRenderNode left(source, Fraction("1/8"), -1);
+    const auto leftAt = left.query({Fraction(1, 8), Fraction(1, 8) + Fraction(1, 1024)});
+    REQUIRE(leftAt.size() == 1);
+    CHECK(leftAt[0].value == "~");
   }
 
   SECTION("HorizontalPatternRenderNode weights")
