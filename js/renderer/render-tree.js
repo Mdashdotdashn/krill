@@ -8,6 +8,7 @@ require("./nodes/element-render-node.js");
 require("./nodes/bjorklund-render-node.js");
 require("./nodes/horizontal-pattern-render-node.js");
 require("./nodes/stretch-render-node.js");
+require("./nodes/struct-render-node.js");
 require("./nodes/vertical-pattern-render-node.js");
 require("./nodes/timeline-pattern-render-node.js");
 
@@ -187,6 +188,16 @@ function buildRenderNode(modelNode)
       buildRenderNode(modelNode.source_),
       modelNode.arguments_[0],
       modelNode.arguments_[1]
+    );
+  }
+
+  if (modelNode.type_ === "struct"
+      && Array.isArray(modelNode.arguments_)
+      && modelNode.arguments_.length > 0)
+  {
+    return new StructRenderNode(
+      buildRenderNode(modelNode.arguments_[0]),
+      buildRenderNode(modelNode.source_)
     );
   }
 

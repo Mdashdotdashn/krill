@@ -920,6 +920,39 @@
           ]
         }
       }
+    },
+    "struct 't f f t' $ 'bd'": {
+      "type_": "struct",
+      "arguments_": [
+        {
+          "type_": "pattern",
+          "arguments_": {
+            "alignment": "h"
+          },
+          "source_": [
+            {
+              "type_": "element",
+              "source_": "t"
+            },
+            {
+              "type_": "element",
+              "source_": "f"
+            },
+            {
+              "type_": "element",
+              "source_": "f"
+            },
+            {
+              "type_": "element",
+              "source_": "t"
+            }
+          ]
+        }
+      ],
+      "source_": {
+        "type_": "element",
+        "source_": "bd"
+      }
     }
   }
 }

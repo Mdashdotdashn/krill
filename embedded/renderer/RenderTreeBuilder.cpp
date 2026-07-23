@@ -7,6 +7,7 @@
 #include "nodes/EmptyRenderNode.hpp"
 #include "nodes/HorizontalPatternRenderNode.hpp"
 #include "nodes/StretchRenderNode.hpp"
+#include "nodes/StructRenderNode.hpp"
 #include "nodes/TimelinePatternRenderNode.hpp"
 #include "nodes/VerticalPatternRenderNode.hpp"
 
@@ -411,6 +412,23 @@ namespace krill
       return v["arguments_"].GetArray().Size() >= 2;
     }
 
+    bool isStructNode(const rapidjson::Value& v)
+    {
+      if (!v.IsObject() || !v.HasMember("type_") || !v["type_"].IsString())
+      {
+        return false;
+      }
+      if (std::string(v["type_"].GetString()) != "struct")
+      {
+        return false;
+      }
+      if (!v.HasMember("source_") || !v.HasMember("arguments_") || !v["arguments_"].IsArray())
+      {
+        return false;
+      }
+      return v["arguments_"].GetArray().Size() > 0;
+    }
+
     std::optional<std::pair<RenderTreePtr, Fraction>> stretchSourceAndFactor(const rapidjson::Value& v)
     {
       if (!isStretchNode(v))
@@ -444,6 +462,17 @@ namespace krill
       }
 
       return std::make_tuple(buildRenderTree(v["source_"]), pulses.value(), steps.value());
+    }
+
+    std::optional<std::pair<RenderTreePtr, RenderTreePtr>> structMaskAndSource(const rapidjson::Value& v)
+    {
+      if (!isStructNode(v))
+      {
+        return std::nullopt;
+      }
+
+      const auto& args = v["arguments_"].GetArray();
+      return std::make_pair(buildRenderTree(args[0]), buildRenderTree(v["source_"]));
     }
 
     RenderTreePtr buildRenderTree(const rapidjson::Value& v)
@@ -491,6 +520,12 @@ namespace krill
           std::get<0>(bjorklund.value()),
           std::get<1>(bjorklund.value()),
           std::get<2>(bjorklund.value()));
+      }
+
+      const auto structData = structMaskAndSource(v);
+      if (structData.has_value())
+      {
+        return std::make_shared<StructRenderNode>(structData->first, structData->second);
       }
 
       return std::make_shared<EmptyRenderNode>();
