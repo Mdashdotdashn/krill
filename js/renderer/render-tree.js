@@ -1,6 +1,8 @@
 // RenderTree compiles the model into query nodes once.
 // Query paths delegate to the compiled node tree, not raw model inspection.
 
+var math = require("mathjs");
+
 require("./nodes/empty-render-node.js");
 require("./nodes/element-render-node.js");
 require("./nodes/bjorklund-render-node.js");
@@ -8,6 +10,57 @@ require("./nodes/horizontal-pattern-render-node.js");
 require("./nodes/stretch-render-node.js");
 require("./nodes/vertical-pattern-render-node.js");
 require("./nodes/timeline-pattern-render-node.js");
+
+function sourceUnitsForFixedStep(modelNode)
+{
+  if (!modelNode || !(modelNode instanceof Object))
+  {
+    return math.fraction(1);
+  }
+
+  if (modelNode.type_ === "element" && modelNode.source_ && modelNode.source_ instanceof Object)
+  {
+    return sourceUnitsForFixedStep(modelNode.source_);
+  }
+
+  if (modelNode.type_ === "pattern"
+      && modelNode.arguments_
+      && modelNode.arguments_.alignment === "h"
+      && Array.isArray(modelNode.source_)
+      && modelNode.source_.length > 0)
+  {
+    var total = math.fraction(0);
+    modelNode.source_.forEach(function(child)
+    {
+      var weight = math.fraction(1);
+      if (child
+          && child instanceof Object
+          && child.options_
+          && child.options_.weight !== undefined)
+      {
+        try
+        {
+          weight = math.fraction(child.options_.weight);
+        }
+        catch (err)
+        {
+          weight = math.fraction(1);
+        }
+        if (math.smallerEq(weight, 0))
+        {
+          weight = math.fraction(1);
+        }
+      }
+      total = math.add(total, weight);
+    });
+    if (math.larger(total, 0))
+    {
+      return total;
+    }
+  }
+
+  return math.fraction(1);
+}
 
 function applyElementOperator(node, modelNode)
 {
@@ -30,6 +83,25 @@ function applyElementOperator(node, modelNode)
   if (operator.type_ === "stretch" && Array.isArray(operator.arguments_) && operator.arguments_.length > 0)
   {
     return new StretchRenderNode(node, operator.arguments_[0]);
+  }
+
+  if (operator.type_ === "fixed-step" && Array.isArray(operator.arguments_) && operator.arguments_.length > 0)
+  {
+    var stepSize;
+    try
+    {
+      stepSize = math.fraction(operator.arguments_[0]);
+    }
+    catch (err)
+    {
+      return node;
+    }
+    if (math.smallerEq(stepSize, 0))
+    {
+      return node;
+    }
+    var units = sourceUnitsForFixedStep(modelNode.source_);
+    return new StretchRenderNode(node, math.divide(units, stepSize));
   }
 
   return node;

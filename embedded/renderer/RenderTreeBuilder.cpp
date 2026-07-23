@@ -91,6 +91,59 @@ namespace krill
       return std::nullopt;
     }
 
+    Fraction sourceUnitsForFixedStep(const rapidjson::Value& source)
+    {
+      if (!source.IsObject())
+      {
+        return Fraction(1);
+      }
+
+      if (source.HasMember("type_") && source["type_"].IsString())
+      {
+        const auto type = std::string(source["type_"].GetString());
+
+        if (type == "element" && source.HasMember("source_"))
+        {
+          return sourceUnitsForFixedStep(source["source_"]);
+        }
+
+        if (type == "pattern"
+            && source.HasMember("arguments_")
+            && source["arguments_"].IsObject()
+            && source["arguments_"].HasMember("alignment")
+            && source["arguments_"]["alignment"].IsString()
+            && std::string(source["arguments_"]["alignment"].GetString()) == "h"
+            && source.HasMember("source_")
+            && source["source_"].IsArray())
+        {
+          Fraction total(0);
+          for (const auto& child : source["source_"].GetArray())
+          {
+            Fraction weight(1);
+            if (child.IsObject() && child.HasMember("options_") && child["options_"].IsObject())
+            {
+              const auto& options = child["options_"];
+              if (options.HasMember("weight"))
+              {
+                const auto maybeWeight = valueAsFraction(options["weight"]);
+                if (maybeWeight.has_value() && maybeWeight.value() > Fraction(0))
+                {
+                  weight = maybeWeight.value();
+                }
+              }
+            }
+            total += weight;
+          }
+          if (total > Fraction(0))
+          {
+            return total;
+          }
+        }
+      }
+
+      return Fraction(1);
+    }
+
     std::optional<long> valueAsLong(const rapidjson::Value& v)
     {
       if (v.IsInt()) return static_cast<long>(v.GetInt());
@@ -154,6 +207,16 @@ namespace krill
         if (factor.has_value())
         {
           return std::make_shared<StretchRenderNode>(node, factor.value());
+        }
+      }
+
+      if (opType == "fixed-step" && args.Size() > 0)
+      {
+        const auto stepSize = valueAsFraction(args[0]);
+        if (stepSize.has_value() && stepSize.value() > Fraction(0))
+        {
+          const auto units = sourceUnitsForFixedStep(elementNode["source_"]);
+          return std::make_shared<StretchRenderNode>(node, units / stepSize.value());
         }
       }
 

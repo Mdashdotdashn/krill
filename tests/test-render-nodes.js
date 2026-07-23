@@ -8,6 +8,7 @@ require("../js/renderer/nodes/horizontal-pattern-render-node.js");
 require("../js/renderer/nodes/stretch-render-node.js");
 require("../js/renderer/nodes/timeline-pattern-render-node.js");
 require("../js/renderer/nodes/vertical-pattern-render-node.js");
+require("../js/renderer/render-tree.js");
 
 function fracToString(v)
 {
@@ -288,5 +289,45 @@ function fragmentToComparable(fragment)
   ]);
   assert.deepStrictEqual(queryAt("3/4"), [
     { wholeStart: F("3/4"), wholeEnd: F("1"), partStart: F("3/4"), partEnd: F("769/1024"), value: "sd" }
+  ]);
+})();
+
+(function testFixedStepOperatorViaRenderTree()
+{
+  var builder = new RenderTreeBuilder();
+  var tree = builder.rebuild({
+    type_: "element",
+    source_: {
+      type_: "pattern",
+      arguments_: { alignment: "h" },
+      source_: [
+        { type_: "element", source_: "a" },
+        { type_: "element", source_: "b" },
+        { type_: "element", source_: "c" }
+      ]
+    },
+    options_: {
+      operator: {
+        type_: "fixed-step",
+        arguments_: [1]
+      }
+    }
+  });
+
+  function queryAt(time)
+  {
+    var start = math.fraction(time);
+    var end = math.add(start, math.fraction(1, 1024));
+    return tree.query(start, end).map(fragmentToComparable);
+  }
+
+  assert.deepStrictEqual(queryAt("0"), [
+    { wholeStart: F("0"), wholeEnd: F("1"), partStart: F("0"), partEnd: F("1/1024"), value: "a" }
+  ]);
+  assert.deepStrictEqual(queryAt("1"), [
+    { wholeStart: F("1"), wholeEnd: F("2"), partStart: F("1"), partEnd: F("1025/1024"), value: "b" }
+  ]);
+  assert.deepStrictEqual(queryAt("2"), [
+    { wholeStart: F("2"), wholeEnd: F("3"), partStart: F("2"), partEnd: F("2049/1024"), value: "c" }
   ]);
 })();
