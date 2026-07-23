@@ -1448,6 +1448,28 @@
           }
         }
       ]
+    },
+    "(slow 2 $ 'bd hh')": {
+      "type_": "stretch",
+      "arguments_": [
+        2
+      ],
+      "source_": {
+        "type_": "pattern",
+        "arguments_": {
+          "alignment": "h"
+        },
+        "source_": [
+          {
+            "type_": "element",
+            "source_": "bd"
+          },
+          {
+            "type_": "element",
+            "source_": "hh"
+          }
+        ]
+      }
     }
   }
 }
