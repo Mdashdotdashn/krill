@@ -94,9 +94,16 @@ AddRenderNode.prototype.query = function(start, end)
         return;
       }
 
+      var overlapStart = lhsFragment.wholeStart > rhsFragment.wholeStart
+        ? lhsFragment.wholeStart
+        : rhsFragment.wholeStart;
+      var overlapEnd = lhsFragment.wholeEnd < rhsFragment.wholeEnd
+        ? lhsFragment.wholeEnd
+        : rhsFragment.wholeEnd;
+
       out.push({
-        wholeStart: rhsFragment.wholeStart,
-        wholeEnd: rhsFragment.wholeEnd,
+        wholeStart: overlapStart,
+        wholeEnd: overlapEnd,
         partStart: rhsFragment.partStart,
         partEnd: rhsFragment.partEnd,
         value: addValues(lhsFragment.value, rhsFragment.value)

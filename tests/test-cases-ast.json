@@ -1164,6 +1164,73 @@
         "type_": "element",
         "source_": "c1"
       }
+    },
+    "add '[0 1 2]%4' $ '[10 11 12]%2'": {
+      "type_": "add",
+      "arguments_": [
+        {
+          "type_": "element",
+          "source_": {
+            "type_": "pattern",
+            "arguments_": {
+              "alignment": "h"
+            },
+            "source_": [
+              {
+                "type_": "element",
+                "source_": "0"
+              },
+              {
+                "type_": "element",
+                "source_": "1"
+              },
+              {
+                "type_": "element",
+                "source_": "2"
+              }
+            ]
+          },
+          "options_": {
+            "operator": {
+              "type_": "fixed-step",
+              "arguments_": [
+                4
+              ]
+            }
+          }
+        }
+      ],
+      "source_": {
+        "type_": "element",
+        "source_": {
+          "type_": "pattern",
+          "arguments_": {
+            "alignment": "h"
+          },
+          "source_": [
+            {
+              "type_": "element",
+              "source_": "10"
+            },
+            {
+              "type_": "element",
+              "source_": "11"
+            },
+            {
+              "type_": "element",
+              "source_": "12"
+            }
+          ]
+        },
+        "options_": {
+          "operator": {
+            "type_": "fixed-step",
+            "arguments_": [
+              2
+            ]
+          }
+        }
+      }
     }
   }
 }

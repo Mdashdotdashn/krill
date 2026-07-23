@@ -38,9 +38,12 @@ namespace krill
             continue;
           }
 
+          const auto overlapStart = lhs.wholeStart > rhs.wholeStart ? lhs.wholeStart : rhs.wholeStart;
+          const auto overlapEnd = lhs.wholeEnd < rhs.wholeEnd ? lhs.wholeEnd : rhs.wholeEnd;
+
           QueryFragment mapped;
-          mapped.wholeStart = rhs.wholeStart;
-          mapped.wholeEnd = rhs.wholeEnd;
+          mapped.wholeStart = overlapStart;
+          mapped.wholeEnd = overlapEnd;
           mapped.partStart = rhs.partStart;
           mapped.partEnd = rhs.partEnd;
           mapped.value = addValues(lhs.value, rhs.value);
