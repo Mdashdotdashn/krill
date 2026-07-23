@@ -515,6 +515,48 @@
           ]
         }
       }
+    },
+    "'[[a b]/2 c]'": {
+      "type_": "element",
+      "source_": {
+        "type_": "pattern",
+        "arguments_": {
+          "alignment": "h"
+        },
+        "source_": [
+          {
+            "type_": "element",
+            "source_": {
+              "type_": "pattern",
+              "arguments_": {
+                "alignment": "h"
+              },
+              "source_": [
+                {
+                  "type_": "element",
+                  "source_": "a"
+                },
+                {
+                  "type_": "element",
+                  "source_": "b"
+                }
+              ]
+            },
+            "options_": {
+              "operator": {
+                "type_": "stretch",
+                "arguments_": [
+                  2
+                ]
+              }
+            }
+          },
+          {
+            "type_": "element",
+            "source_": "c"
+          }
+        ]
+      }
     }
   }
 }
