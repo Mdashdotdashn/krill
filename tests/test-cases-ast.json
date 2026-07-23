@@ -1546,6 +1546,49 @@
           }
         ]
       }
+    },
+    "add (fast 2 $ '0 1') $ '2 3'": {
+      "type_": "add",
+      "arguments_": [
+        {
+          "type_": "stretch",
+          "arguments_": [
+            "1/2"
+          ],
+          "source_": {
+            "type_": "pattern",
+            "arguments_": {
+              "alignment": "h"
+            },
+            "source_": [
+              {
+                "type_": "element",
+                "source_": "0"
+              },
+              {
+                "type_": "element",
+                "source_": "1"
+              }
+            ]
+          }
+        }
+      ],
+      "source_": {
+        "type_": "pattern",
+        "arguments_": {
+          "alignment": "h"
+        },
+        "source_": [
+          {
+            "type_": "element",
+            "source_": "2"
+          },
+          {
+            "type_": "element",
+            "source_": "3"
+          }
+        ]
+      }
     }
   }
 }
