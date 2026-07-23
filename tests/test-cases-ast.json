@@ -895,6 +895,31 @@
           ]
         }
       }
+    },
+    "fast 2 $ '[bd sd]'": {
+      "type_": "stretch",
+      "arguments_": [
+        "1/2"
+      ],
+      "source_": {
+        "type_": "element",
+        "source_": {
+          "type_": "pattern",
+          "arguments_": {
+            "alignment": "h"
+          },
+          "source_": [
+            {
+              "type_": "element",
+              "source_": "bd"
+            },
+            {
+              "type_": "element",
+              "source_": "sd"
+            }
+          ]
+        }
+      }
     }
   }
 }
