@@ -36,6 +36,7 @@ add_executable(Tests.exe
 ./tst_render_node_scale.cpp
 ./tst_render_node_shift.cpp
 ./tst_render_node_trunc.cpp
+./tst_render_tree_player_state_machine.cpp
 ./tst_ast_cases.cpp
 ./tst_peglib_smoke.cpp
 ./tst_peglib_primitives.cpp

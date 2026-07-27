@@ -7,8 +7,11 @@
 #include <third_party/rapidjson/istreamwrapper.h>
 
 #include <array>
+#include <algorithm>
 #include <fstream>
+#include <optional>
 #include <string>
+#include <vector>
 
 namespace
 {
@@ -35,17 +38,38 @@ std::ifstream openSharedRunCasesFile()
   return std::ifstream{};
 }
 
-std::vector<std::string> valuesAtTime(const std::vector<krill::QueryFragment>& fragments, const Fraction& expectedTime)
+struct ExpectedEvent
 {
+  Fraction time{0};
   std::vector<std::string> values;
-  for (const auto& fragment : fragments)
+};
+
+std::vector<ExpectedEvent> sortedExpectedEvents(const rapidjson::Value::ConstObject& expected)
+{
+  std::vector<ExpectedEvent> events;
+
+  for (const auto& expectedEntry : expected)
   {
-    if (fragment.wholeStart == expectedTime)
+    REQUIRE(expectedEntry.name.IsString());
+    REQUIRE(expectedEntry.value.IsArray());
+
+    ExpectedEvent parsed;
+    parsed.time = Fraction(std::string(expectedEntry.name.GetString()));
+
+    for (const auto& v : expectedEntry.value.GetArray())
     {
-      values.push_back(fragment.value);
+      REQUIRE(v.IsString());
+      parsed.values.push_back(v.GetString());
     }
+
+    events.push_back(std::move(parsed));
   }
-  return values;
+
+  std::sort(events.begin(), events.end(), [](const ExpectedEvent& a, const ExpectedEvent& b) {
+    return a.time < b.time;
+  });
+
+  return events;
 }
 } // namespace
 
@@ -81,24 +105,32 @@ TEST_CASE("Rendertree")
     auto pTree = krill::RenderTreeBuilder::fromJson(parseResult.value());
     krill::RenderTreePlayer player;
     player.setTree(pTree);
+    player.reset();
 
-    for (const auto& expectedEntry : expected)
+    const auto expectedEvents = sortedExpectedEvents(expected);
+    Fraction currentTime(-1, 10000);
+
+    for (const auto& expectedEvent : expectedEvents)
     {
-      REQUIRE(expectedEntry.name.IsString());
-      REQUIRE(expectedEntry.value.IsArray());
+      Fraction nextTime;
+      std::optional<krill::RenderTreePlayer::Event> event;
+      int guard = 0;
 
-      const auto expectedTime = Fraction(std::string(expectedEntry.name.GetString()));
-      const auto fragments = player.queryPointWindow(expectedTime);
-      const auto actualValues = valuesAtTime(fragments, expectedTime);
-
-      std::vector<std::string> expectedValues;
-      for (const auto& v : expectedEntry.value.GetArray())
+      while (!event)
       {
-        REQUIRE(v.IsString());
-        expectedValues.push_back(v.GetString());
+        nextTime = player.advance(currentTime);
+        event = player.eventForTime(nextTime);
+        currentTime = nextTime;
+        guard += 1;
+
+        if (guard > 4096)
+        {
+          FAIL("Stuck while advancing player for source");
+        }
       }
 
-      CHECK(actualValues == expectedValues);
+      CHECK(nextTime == expectedEvent.time);
+      CHECK(event->values == expectedEvent.values);
     }
   }
 }

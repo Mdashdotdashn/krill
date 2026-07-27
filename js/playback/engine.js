@@ -1,11 +1,17 @@
 var EventEmitter = require('events').EventEmitter;
 var util = require('util');
+var math = require('mathjs');
+
+require('./rendering-tree-player.js');
 
 Engine = function()
 {
   this.cps_ = 1;
   this.renderingTree_ = null;
+  this.renderingPlayer_ = new RenderingTreePlayer();
   this.running_ = false;
+  this.currentTime_ = math.fraction(0);
+  this.unsyncedTimer_ = null;
 }
 
 util.inherits(Engine, EventEmitter);
@@ -32,12 +38,29 @@ Engine.prototype.setCps = function(cps)
 
 Engine.prototype.hush = function()
 {
+  this.running_ = false;
+  if (this.unsyncedTimer_)
+  {
+    clearTimeout(this.unsyncedTimer_);
+    this.unsyncedTimer_ = null;
+  }
+  this.currentTime_ = math.fraction(0);
+  this.renderingPlayer_.reset();
 }
 
 Engine.prototype.start = function(syncDevice)
 {
   this.running_ = true;
   this.synced_ = syncDevice.enabled();
+
+  syncDevice.connect(this);
+
+  if (!this.synced_)
+  {
+    this.currentTime_ = math.fraction(0);
+    this.renderingPlayer_.reset();
+    this.processUnsyncedEvent();
+  }
 }
 
 Engine.prototype.onSyncStart = function()
@@ -54,6 +77,26 @@ Engine.prototype.onSyncClock = function()
 
 Engine.prototype.processUnsyncedEvent = function()
 {
+  if (!this.running_)
+  {
+    return;
+  }
+
+  var event = this.renderingPlayer_.eventForTime(this.currentTime_);
+  if (event && event.values && event.values.length > 0)
+  {
+    this.emit("tick", event);
+  }
+
+  var nextTime = this.renderingPlayer_.advance(this.currentTime_);
+  var deltaCycles = math.subtract(nextTime, this.currentTime_);
+  var delayMs = Math.max(1, Math.round((math.number(deltaCycles) * 1000) / this.cps_));
+  this.currentTime_ = nextTime;
+
+  var self = this;
+  this.unsyncedTimer_ = setTimeout(function() {
+    self.processUnsyncedEvent();
+  }, delayMs);
 }
 
 Engine.prototype.processSyncedEvent = function()
@@ -62,10 +105,16 @@ Engine.prototype.processSyncedEvent = function()
 
 Engine.prototype.processPlayerEvent = function()
 {
-  return 0;
+  var event = this.renderingPlayer_.eventForTime(this.currentTime_);
+  if (event && event.values && event.values.length > 0)
+  {
+    this.emit("tick", event);
+  }
+  return event ? event.values.length : 0;
 }
 
 Engine.prototype.setRenderingTree = function(tree)
 {
   this.renderingTree_ = tree;
+  this.renderingPlayer_.setRenderingTree(tree);
 }

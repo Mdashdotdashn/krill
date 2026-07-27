@@ -11,40 +11,30 @@ function fracToString(v)
   return math.format(math.fraction(v));
 }
 
-function fragmentWholeStart(fragment)
-{
-  if (fragment.wholeStart !== undefined) return fracToString(fragment.wholeStart);
-  if (fragment.whole && fragment.whole.start !== undefined) return fracToString(fragment.whole.start);
-  if (fragment.start !== undefined) return fracToString(fragment.start);
-  return null;
-}
-
-function fragmentValue(fragment)
-{
-  if (fragment.value !== undefined) return fragment.value;
-  if (fragment.values !== undefined) return fragment.values;
-  return undefined;
-}
-
 function valuesAtTime(player, expectedTime)
 {
-  var fragments = player.queryPointWindow(expectedTime);
-  var result = [];
-  fragments.forEach(function(fragment) {
-    if (fragmentWholeStart(fragment) === expectedTime)
-    {
-      var value = fragmentValue(fragment);
-      if (Array.isArray(value))
-      {
-        value.forEach(function(v) { result.push(String(v)); });
-      }
-      else if (value !== undefined)
-      {
-        result.push(String(value));
-      }
-    }
+  var event = player.eventForTime(expectedTime);
+  if (!event || !event.values)
+  {
+    return [];
+  }
+  return event.values.map(function(v) { return String(v); });
+}
+
+function eventValues(event)
+{
+  if (!event || !event.values)
+  {
+    return [];
+  }
+  return event.values.map(function(v) { return String(v); });
+}
+
+function sortExpectedTimes(expected)
+{
+  return Object.keys(expected).sort(function(a, b) {
+    return math.compare(math.fraction(a), math.fraction(b));
   });
-  return result;
 }
 
 function runAllTestCases()
@@ -62,13 +52,83 @@ function runAllTestCases()
 
     var player = new RenderingTreePlayer();
     player.setRenderingTree(renderingTree);
+    player.reset();
 
-    for (var expectedTime in expected)
+    var expectedTimes = sortExpectedTimes(expected);
+    var currentTime = math.fraction(-1, 10000);
+
+    for (var i = 0; i < expectedTimes.length; i++)
     {
-      var actual = valuesAtTime(player, expectedTime);
-      assert.deepStrictEqual(actual, expected[expectedTime], "Case failed: " + source + " @ " + expectedTime);
+      var expectedTime = expectedTimes[i];
+      var nextTime = null;
+      var event = null;
+      var guard = 0;
+
+      while (!event)
+      {
+        nextTime = player.advance(currentTime);
+        event = player.eventForTime(nextTime);
+        currentTime = nextTime;
+        guard += 1;
+
+        if (guard > 4096)
+        {
+          throw new Error("Stuck while advancing player for case: " + source);
+        }
+      }
+
+      assert.strictEqual(
+        fracToString(nextTime),
+        fracToString(expectedTime),
+        "Unexpected event time for case: " + source
+      );
+
+      var actualValues = eventValues(event);
+      assert.deepStrictEqual(actualValues, expected[expectedTime], "Case failed: " + source + " @ " + expectedTime);
     }
+
   }
 }
 
+function runNoUnexpectedBetweenChecks()
+{
+  var evaluator = new Evaluator();
+  var builder = new RenderingTreeBuilder();
+
+  var exhaustiveCases = [
+    {
+      source: "'a b c d'",
+      onsets: ["0", "1/4", "1/2", "3/4", "1"]
+    },
+    {
+      source: "'[bd sd](2,8)'",
+      onsets: ["0", "1/4", "1/2", "3/4", "1"]
+    },
+    {
+      source: "struct 't f f t' $ 'bd'",
+      onsets: ["0", "1/4", "1/2", "3/4", "1"]
+    }
+  ];
+
+  exhaustiveCases.forEach(function(testCase) {
+    var tree = builder.rebuild(evaluator.evaluate(testCase.source));
+    var player = new RenderingTreePlayer();
+    player.setRenderingTree(tree);
+    player.reset();
+
+    for (var i = 0; i + 1 < testCase.onsets.length; i++)
+    {
+      var from = testCase.onsets[i];
+      var expectedNext = testCase.onsets[i + 1];
+      var actualNext = player.advance(from);
+      assert.strictEqual(
+        fracToString(actualNext),
+        fracToString(expectedNext),
+        "Unexpected onset between " + from + " and " + expectedNext + " for case: " + testCase.source
+      );
+    }
+  });
+}
+
 runAllTestCases();
+runNoUnexpectedBetweenChecks();
