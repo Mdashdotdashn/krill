@@ -3,18 +3,16 @@
 #include <cctype>
 #include <optional>
 
-#include "nodes/AddRenderNode.hpp"
-#include "nodes/BjorklundRenderNode.hpp"
-#include "nodes/ElementRenderNode.hpp"
+#include "factories/AddNodeFactory.hpp"
+#include "factories/BjorklundNodeFactory.hpp"
+#include "factories/ElementNodeFactory.hpp"
+#include "factories/PatternNodeFactory.hpp"
+#include "factories/ScaleNodeFactory.hpp"
+#include "factories/ShiftNodeFactory.hpp"
+#include "factories/StretchNodeFactory.hpp"
+#include "factories/StructNodeFactory.hpp"
+#include "factories/TruncNodeFactory.hpp"
 #include "nodes/EmptyRenderNode.hpp"
-#include "nodes/HorizontalPatternRenderNode.hpp"
-#include "nodes/ScaleRenderNode.hpp"
-#include "nodes/ShiftRenderNode.hpp"
-#include "nodes/StretchRenderNode.hpp"
-#include "nodes/StructRenderNode.hpp"
-#include "nodes/TimelinePatternRenderNode.hpp"
-#include "nodes/TruncRenderNode.hpp"
-#include "nodes/VerticalPatternRenderNode.hpp"
 
 namespace krill
 {
@@ -167,59 +165,6 @@ namespace krill
       return std::nullopt;
     }
 
-    Fraction sourceUnitsForFixedStep(const rapidjson::Value& source)
-    {
-      if (!source.IsObject())
-      {
-        return Fraction(1);
-      }
-
-      if (source.HasMember("type_") && source["type_"].IsString())
-      {
-        const auto type = std::string(source["type_"].GetString());
-
-        if (type == "element" && source.HasMember("source_"))
-        {
-          return sourceUnitsForFixedStep(source["source_"]);
-        }
-
-        if (type == "pattern"
-            && source.HasMember("arguments_")
-            && source["arguments_"].IsObject()
-            && source["arguments_"].HasMember("alignment")
-            && source["arguments_"]["alignment"].IsString()
-            && std::string(source["arguments_"]["alignment"].GetString()) == "h"
-            && source.HasMember("source_")
-            && source["source_"].IsArray())
-        {
-          Fraction total(0);
-          for (const auto& child : source["source_"].GetArray())
-          {
-            Fraction weight(1);
-            if (child.IsObject() && child.HasMember("options_") && child["options_"].IsObject())
-            {
-              const auto& options = child["options_"];
-              if (options.HasMember("weight"))
-              {
-                const auto maybeWeight = valueAsFraction(options["weight"]);
-                if (maybeWeight.has_value() && maybeWeight.value() > Fraction(0))
-                {
-                  weight = maybeWeight.value();
-                }
-              }
-            }
-            total += weight;
-          }
-          if (total > Fraction(0))
-          {
-            return total;
-          }
-        }
-      }
-
-      return Fraction(1);
-    }
-
     std::optional<long> valueAsLong(const rapidjson::Value& v)
     {
       if (v.IsInt()) return static_cast<long>(v.GetInt());
@@ -239,64 +184,6 @@ namespace krill
         }
       }
       return std::nullopt;
-    }
-
-    RenderNodePtr applyElementOperator(RenderNodePtr node, const rapidjson::Value& elementNode)
-    {
-      if (!elementNode.IsObject() || !elementNode.HasMember("options_") || !elementNode["options_"].IsObject())
-      {
-        return node;
-      }
-
-      const auto& options = elementNode["options_"];
-      if (!options.HasMember("operator") || !options["operator"].IsObject())
-      {
-        return node;
-      }
-
-      const auto& op = options["operator"];
-      if (!op.HasMember("type_") || !op["type_"].IsString())
-      {
-        return node;
-      }
-      if (!op.HasMember("arguments_") || !op["arguments_"].IsArray())
-      {
-        return node;
-      }
-
-      const auto opType = std::string(op["type_"].GetString());
-      const auto& args = op["arguments_"].GetArray();
-
-      if (opType == "bjorklund" && args.Size() >= 2)
-      {
-        const auto pulses = valueAsLong(args[0]);
-        const auto steps = valueAsLong(args[1]);
-        if (pulses.has_value() && steps.has_value())
-        {
-          return std::make_shared<BjorklundRenderNode>(node, pulses.value(), steps.value());
-        }
-      }
-
-      if (opType == "stretch" && args.Size() > 0)
-      {
-        const auto factor = valueAsFraction(args[0]);
-        if (factor.has_value())
-        {
-          return std::make_shared<StretchRenderNode>(node, factor.value());
-        }
-      }
-
-      if (opType == "fixed-step" && args.Size() > 0)
-      {
-        const auto stepSize = valueAsFraction(args[0]);
-        if (stepSize.has_value() && stepSize.value() > Fraction(0))
-        {
-          const auto units = sourceUnitsForFixedStep(elementNode["source_"]);
-          return std::make_shared<StretchRenderNode>(node, units / stepSize.value());
-        }
-      }
-
-      return node;
     }
 
     bool isHorizontalPatternNode(const rapidjson::Value& v)
@@ -323,46 +210,6 @@ namespace krill
         return false;
       }
       return v.HasMember("source_") && v["source_"].IsArray();
-    }
-
-    std::optional<std::pair<std::vector<RenderNodePtr>, std::vector<Fraction>>> horizontalPatternChildrenAndWeights(const rapidjson::Value& v)
-    {
-      if (!isHorizontalPatternNode(v))
-      {
-        return std::nullopt;
-      }
-
-      const auto& source = v["source_"].GetArray();
-      if (source.Empty())
-      {
-        return std::make_pair(std::vector<RenderNodePtr>{}, std::vector<Fraction>{});
-      }
-
-      std::vector<RenderNodePtr> children;
-      std::vector<Fraction> weights;
-      children.reserve(source.Size());
-      weights.reserve(source.Size());
-      for (const auto& child : source)
-      {
-        children.push_back(buildRenderTree(child));
-
-        Fraction weight(1);
-        if (child.IsObject() && child.HasMember("options_") && child["options_"].IsObject())
-        {
-          const auto& options = child["options_"];
-          if (options.HasMember("weight"))
-          {
-            const auto maybeWeight = valueAsFraction(options["weight"]);
-            if (maybeWeight.has_value() && maybeWeight.value() > Fraction(0))
-            {
-              weight = maybeWeight.value();
-            }
-          }
-        }
-        weights.push_back(weight);
-      }
-
-      return std::make_pair(children, weights);
     }
 
     bool isVerticalPatternNode(const rapidjson::Value& v)
@@ -415,42 +262,6 @@ namespace krill
         return false;
       }
       return v.HasMember("source_") && v["source_"].IsArray();
-    }
-
-    std::optional<std::vector<RenderNodePtr>> verticalPatternChildren(const rapidjson::Value& v)
-    {
-      if (!isVerticalPatternNode(v))
-      {
-        return std::nullopt;
-      }
-
-      std::vector<RenderNodePtr> children;
-      const auto& source = v["source_"].GetArray();
-      children.reserve(source.Size());
-      for (const auto& child : source)
-      {
-        children.push_back(buildRenderTree(child));
-      }
-
-      return children;
-    }
-
-    std::optional<std::vector<RenderNodePtr>> timelinePatternChildren(const rapidjson::Value& v)
-    {
-      if (!isTimelinePatternNode(v))
-      {
-        return std::nullopt;
-      }
-
-      std::vector<RenderNodePtr> children;
-      const auto& source = v["source_"].GetArray();
-      children.reserve(source.Size());
-      for (const auto& child : source)
-      {
-        children.push_back(buildRenderTree(child));
-      }
-
-      return children;
     }
 
     bool isStretchNode(const rapidjson::Value& v)
@@ -572,223 +383,155 @@ namespace krill
       return v["arguments_"].GetArray().Size() > 0;
     }
 
-    std::optional<std::pair<RenderNodePtr, Fraction>> stretchSourceAndFactor(const rapidjson::Value& v)
+    std::optional<RenderNodePtr> makeElementNode(const rapidjson::Value& v)
     {
-      if (!isStretchNode(v))
-      {
-        return std::nullopt;
-      }
-
-      const auto& args = v["arguments_"].GetArray();
-      const auto maybeFactor = valueAsFraction(args[0]);
-      if (!maybeFactor.has_value())
-      {
-        return std::nullopt;
-      }
-
-      return std::make_pair(buildRenderTree(v["source_"]), maybeFactor.value());
+      return factory::makeElementNode(v, buildRenderTree, sourceAsString, valueAsFraction, valueAsLong);
     }
 
-    std::optional<std::tuple<RenderNodePtr, long, long>> bjorklundSourceAndParams(const rapidjson::Value& v)
+    std::optional<RenderNodePtr> makeHorizontalPatternNode(const rapidjson::Value& v)
     {
-      if (!isBjorklundNode(v))
-      {
-        return std::nullopt;
-      }
-
-      const auto& args = v["arguments_"].GetArray();
-      const auto pulses = valueAsLong(args[0]);
-      const auto steps = valueAsLong(args[1]);
-      if (!pulses.has_value() || !steps.has_value())
-      {
-        return std::nullopt;
-      }
-
-      return std::make_tuple(buildRenderTree(v["source_"]), pulses.value(), steps.value());
+      return factory::makeHorizontalPatternNode(v, buildRenderTree, valueAsFraction);
     }
 
-    std::optional<std::pair<RenderNodePtr, RenderNodePtr>> structMaskAndSource(const rapidjson::Value& v)
+    std::optional<RenderNodePtr> makeVerticalPatternNode(const rapidjson::Value& v)
     {
-      if (!isStructNode(v))
-      {
-        return std::nullopt;
-      }
-
-      const auto& args = v["arguments_"].GetArray();
-      return std::make_pair(buildRenderTree(args[0]), buildRenderTree(v["source_"]));
+      return factory::makeVerticalPatternNode(v, buildRenderTree);
     }
 
-    std::optional<std::pair<RenderNodePtr, RenderNodePtr>> addOperands(const rapidjson::Value& v)
+    std::optional<RenderNodePtr> makeTimelinePatternNode(const rapidjson::Value& v)
     {
-      if (!isAddNode(v))
-      {
-        return std::nullopt;
-      }
-
-      const auto& args = v["arguments_"].GetArray();
-      RenderNodePtr lhs;
-      if (args[0].IsObject())
-      {
-        lhs = buildRenderTree(args[0]);
-      }
-      else
-      {
-        lhs = std::make_shared<ElementRenderNode>(sourceAsString(args[0]));
-      }
-
-      auto rhs = buildRenderTree(v["source_"]);
-      return std::make_pair(lhs, rhs);
+      return factory::makeTimelinePatternNode(v, buildRenderTree);
     }
 
-    std::optional<std::pair<std::string, RenderNodePtr>> scaleNameAndSource(const rapidjson::Value& v)
+    std::optional<RenderNodePtr> makeStretchNode(const rapidjson::Value& v)
     {
-      if (!isScaleNode(v))
-      {
-        return std::nullopt;
-      }
-
-      const auto& args = v["arguments_"].GetArray();
-      const auto scaleName = sourceAsString(args[0]);
-      return std::make_pair(scaleName, buildRenderTree(v["source_"]));
+      return factory::makeStretchNode(v, buildRenderTree, valueAsFraction);
     }
 
-    struct ShiftData
+    std::optional<RenderNodePtr> makeStructNode(const rapidjson::Value& v)
     {
-      RenderNodePtr source;
-      std::optional<Fraction> amount;
-      RenderNodePtr amountSource;
-      long direction{1};
-    };
-
-    std::optional<ShiftData> shiftData(const rapidjson::Value& v)
-    {
-      if (!isShiftNode(v))
-      {
-        return std::nullopt;
-      }
-
-      const auto& args = v["arguments_"].GetArray();
-      const auto maybeDirection = valueAsLong(args[1]);
-      if (!maybeDirection.has_value())
-      {
-        return std::nullopt;
-      }
-
-      ShiftData data;
-      data.source = buildRenderTree(v["source_"]);
-      data.direction = maybeDirection.value();
-
-      if (args[0].IsObject())
-      {
-        data.amountSource = buildRenderTree(args[0]);
-      }
-      else
-      {
-        data.amount = valueAsFraction(args[0]);
-      }
-
-      return data;
+      return factory::makeStructNode(v, buildRenderTree);
     }
 
-    std::optional<std::pair<RenderNodePtr, Fraction>> truncSourceAndLength(const rapidjson::Value& v)
+    std::optional<RenderNodePtr> makeAddNode(const rapidjson::Value& v)
     {
-      if (!isTruncNode(v))
-      {
-        return std::nullopt;
-      }
+      return factory::makeAddNode(v, buildRenderTree, sourceAsString);
+    }
 
-      const auto& args = v["arguments_"].GetArray();
-      const auto maybeLength = valueAsFraction(args[0]);
-      if (!maybeLength.has_value())
-      {
-        return std::nullopt;
-      }
+    std::optional<RenderNodePtr> makeScaleNode(const rapidjson::Value& v)
+    {
+      return factory::makeScaleNode(v, buildRenderTree, sourceAsString);
+    }
 
-      return std::make_pair(buildRenderTree(v["source_"]), maybeLength.value());
+    std::optional<RenderNodePtr> makeShiftNode(const rapidjson::Value& v)
+    {
+      return factory::makeShiftNode(v, buildRenderTree, valueAsFraction, valueAsLong);
+    }
+
+    std::optional<RenderNodePtr> makeTruncNode(const rapidjson::Value& v)
+    {
+      return factory::makeTruncNode(v, buildRenderTree, valueAsFraction);
     }
 
     RenderNodePtr buildRenderTree(const rapidjson::Value& v)
     {
       if (isElementNode(v))
       {
-        const auto& source = v["source_"];
-        if (source.IsObject())
+        const auto node = makeElementNode(v);
+        if (node.has_value())
         {
-          auto element = std::make_shared<ElementRenderNode>(buildRenderTree(source));
-          return applyElementOperator(element, v);
-        }
-        auto element = std::make_shared<ElementRenderNode>(sourceAsString(source));
-        return applyElementOperator(element, v);
-      }
-
-      const auto horizontalChildrenAndWeights = horizontalPatternChildrenAndWeights(v);
-      if (horizontalChildrenAndWeights.has_value())
-      {
-        return std::make_shared<HorizontalPatternRenderNode>(horizontalChildrenAndWeights->first, horizontalChildrenAndWeights->second);
-      }
-
-      const auto verticalChildren = verticalPatternChildren(v);
-      if (verticalChildren.has_value())
-      {
-        return std::make_shared<VerticalPatternRenderNode>(verticalChildren.value());
-      }
-
-      const auto timelineChildren = timelinePatternChildren(v);
-      if (timelineChildren.has_value())
-      {
-        return std::make_shared<TimelinePatternRenderNode>(timelineChildren.value());
-      }
-
-      const auto stretch = stretchSourceAndFactor(v);
-      if (stretch.has_value())
-      {
-        return std::make_shared<StretchRenderNode>(stretch->first, stretch->second);
-      }
-
-      const auto bjorklund = bjorklundSourceAndParams(v);
-      if (bjorklund.has_value())
-      {
-        return std::make_shared<BjorklundRenderNode>(
-          std::get<0>(bjorklund.value()),
-          std::get<1>(bjorklund.value()),
-          std::get<2>(bjorklund.value()));
-      }
-
-      const auto structData = structMaskAndSource(v);
-      if (structData.has_value())
-      {
-        return std::make_shared<StructRenderNode>(structData->first, structData->second);
-      }
-
-      const auto addData = addOperands(v);
-      if (addData.has_value())
-      {
-        return std::make_shared<AddRenderNode>(addData->first, addData->second);
-      }
-
-      const auto scaleData = scaleNameAndSource(v);
-      if (scaleData.has_value())
-      {
-        return std::make_shared<ScaleRenderNode>(scaleData->first, scaleData->second);
-      }
-
-      const auto shift = shiftData(v);
-      if (shift.has_value())
-      {
-        if (shift->amountSource)
-        {
-          return std::make_shared<ShiftRenderNode>(shift->source, shift->amountSource, shift->direction);
-        }
-        if (shift->amount.has_value())
-        {
-          return std::make_shared<ShiftRenderNode>(shift->source, shift->amount.value(), shift->direction);
+          return node.value();
         }
       }
 
-      const auto trunc = truncSourceAndLength(v);
-      if (trunc.has_value())
+      if (isHorizontalPatternNode(v))
       {
-        return std::make_shared<TruncRenderNode>(trunc->first, trunc->second);
+        const auto node = makeHorizontalPatternNode(v);
+        if (node.has_value())
+        {
+          return node.value();
+        }
+      }
+
+      if (isVerticalPatternNode(v))
+      {
+        const auto node = makeVerticalPatternNode(v);
+        if (node.has_value())
+        {
+          return node.value();
+        }
+      }
+
+      if (isTimelinePatternNode(v))
+      {
+        const auto node = makeTimelinePatternNode(v);
+        if (node.has_value())
+        {
+          return node.value();
+        }
+      }
+
+      if (isStretchNode(v))
+      {
+        const auto node = makeStretchNode(v);
+        if (node.has_value())
+        {
+          return node.value();
+        }
+      }
+
+      if (isBjorklundNode(v))
+      {
+        const auto node = factory::makeBjorklundNode(v, buildRenderTree, valueAsLong);
+        if (node.has_value())
+        {
+          return node.value();
+        }
+      }
+
+      if (isStructNode(v))
+      {
+        const auto node = makeStructNode(v);
+        if (node.has_value())
+        {
+          return node.value();
+        }
+      }
+
+      if (isAddNode(v))
+      {
+        const auto node = makeAddNode(v);
+        if (node.has_value())
+        {
+          return node.value();
+        }
+      }
+
+      if (isScaleNode(v))
+      {
+        const auto node = makeScaleNode(v);
+        if (node.has_value())
+        {
+          return node.value();
+        }
+      }
+
+      if (isShiftNode(v))
+      {
+        const auto node = makeShiftNode(v);
+        if (node.has_value())
+        {
+          return node.value();
+        }
+      }
+
+      if (isTruncNode(v))
+      {
+        const auto node = makeTruncNode(v);
+        if (node.has_value())
+        {
+          return node.value();
+        }
       }
 
       return std::make_shared<EmptyRenderNode>();

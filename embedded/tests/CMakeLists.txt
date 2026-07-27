@@ -12,6 +12,15 @@ add_executable(Tests.exe
 ../parser/StringStream.cpp
 ../parser/XmlBuilder.cpp
 ../renderer/RenderTreeBuilder.cpp
+../renderer/factories/AddNodeFactory.cpp
+../renderer/factories/BjorklundNodeFactory.cpp
+../renderer/factories/ElementNodeFactory.cpp
+../renderer/factories/PatternNodeFactory.cpp
+../renderer/factories/ScaleNodeFactory.cpp
+../renderer/factories/ShiftNodeFactory.cpp
+../renderer/factories/StretchNodeFactory.cpp
+../renderer/factories/StructNodeFactory.cpp
+../renderer/factories/TruncNodeFactory.cpp
 ../harmony/core/NoteMidi.cpp
 ../harmony/core/Interval.cpp
 ../harmony/theory/Scale.cpp

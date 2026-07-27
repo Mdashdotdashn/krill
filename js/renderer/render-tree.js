@@ -7,116 +7,136 @@
 //   - wholeStart/wholeEnd: full interval where a value is active.
 //   - partStart/partEnd: clipped intersection with the current query window.
 
-var math = require("mathjs");
 require("./query-contract.js");
 
 require("./nodes/empty-render-node.js");
 require("./nodes/element-render-node.js");
-require("./nodes/add-render-node.js");
-require("./nodes/bjorklund-render-node.js");
-require("./nodes/horizontal-pattern-render-node.js");
-require("./nodes/scale-render-node.js");
-require("./nodes/shift-render-node.js");
-require("./nodes/stretch-render-node.js");
-require("./nodes/struct-render-node.js");
-require("./nodes/vertical-pattern-render-node.js");
-require("./nodes/timeline-pattern-render-node.js");
-require("./nodes/trunc-render-node.js");
+var addNodeFactory = require("./factories/add-node-factory.js");
+var bjorklundNodeFactory = require("./factories/bjorklund-node-factory.js");
+var elementNodeFactory = require("./factories/element-node-factory.js");
+var factoryUtils = require("./factories/factory-utils.js");
+var patternNodeFactory = require("./factories/pattern-node-factory.js");
+var scaleNodeFactory = require("./factories/scale-node-factory.js");
+var shiftNodeFactory = require("./factories/shift-node-factory.js");
+var stretchNodeFactory = require("./factories/stretch-node-factory.js");
+var structNodeFactory = require("./factories/struct-node-factory.js");
+var truncNodeFactory = require("./factories/trunc-node-factory.js");
 
-function sourceUnitsForFixedStep(modelNode)
+function isElementNode(modelNode)
 {
-  if (!modelNode || !(modelNode instanceof Object))
-  {
-    return math.fraction(1);
-  }
-
-  if (modelNode.type_ === "element" && modelNode.source_ && modelNode.source_ instanceof Object)
-  {
-    return sourceUnitsForFixedStep(modelNode.source_);
-  }
-
-  if (modelNode.type_ === "pattern"
-      && modelNode.arguments_
-      && modelNode.arguments_.alignment === "h"
-      && Array.isArray(modelNode.source_)
-      && modelNode.source_.length > 0)
-  {
-    var total = math.fraction(0);
-    modelNode.source_.forEach(function(child)
-    {
-      var weight = math.fraction(1);
-      if (child
-          && child instanceof Object
-          && child.options_
-          && child.options_.weight !== undefined)
-      {
-        try
-        {
-          weight = math.fraction(child.options_.weight);
-        }
-        catch (err)
-        {
-          weight = math.fraction(1);
-        }
-        if (math.smallerEq(weight, 0))
-        {
-          weight = math.fraction(1);
-        }
-      }
-      total = math.add(total, weight);
-    });
-    if (math.larger(total, 0))
-    {
-      return total;
-    }
-  }
-
-  return math.fraction(1);
+  return factoryUtils.hasType(modelNode, "element");
 }
 
-function applyElementOperator(node, modelNode)
+function isHorizontalPatternNode(modelNode)
 {
-  if (!modelNode || !modelNode.options_ || !modelNode.options_.operator)
-  {
-    return node;
-  }
+  return factoryUtils.hasPatternAlignment(modelNode, "h");
+}
 
-  var operator = modelNode.options_.operator;
-  if (!operator || !(operator instanceof Object) || !operator.type_)
-  {
-    return node;
-  }
+function isVerticalPatternNode(modelNode)
+{
+  return factoryUtils.hasPatternAlignment(modelNode, "v");
+}
 
-  if (operator.type_ === "bjorklund" && Array.isArray(operator.arguments_) && operator.arguments_.length >= 2)
-  {
-    return new BjorklundRenderNode(node, operator.arguments_[0], operator.arguments_[1]);
-  }
+function isTimelinePatternNode(modelNode)
+{
+  return factoryUtils.hasPatternAlignment(modelNode, "t");
+}
 
-  if (operator.type_ === "stretch" && Array.isArray(operator.arguments_) && operator.arguments_.length > 0)
-  {
-    return new StretchRenderNode(node, operator.arguments_[0]);
-  }
+function isStretchNode(modelNode)
+{
+  return factoryUtils.hasType(modelNode, "stretch")
+    && factoryUtils.hasArrayArguments(modelNode, 1);
+}
 
-  if (operator.type_ === "fixed-step" && Array.isArray(operator.arguments_) && operator.arguments_.length > 0)
-  {
-    var stepSize;
-    try
-    {
-      stepSize = math.fraction(operator.arguments_[0]);
-    }
-    catch (err)
-    {
-      return node;
-    }
-    if (math.smallerEq(stepSize, 0))
-    {
-      return node;
-    }
-    var units = sourceUnitsForFixedStep(modelNode.source_);
-    return new StretchRenderNode(node, math.divide(units, stepSize));
-  }
+function isBjorklundNode(modelNode)
+{
+  return factoryUtils.hasType(modelNode, "bjorklund")
+    && factoryUtils.hasArrayArguments(modelNode, 2);
+}
 
-  return node;
+function isStructNode(modelNode)
+{
+  return factoryUtils.hasType(modelNode, "struct")
+    && factoryUtils.hasArrayArguments(modelNode, 1);
+}
+
+function isAddNode(modelNode)
+{
+  return factoryUtils.hasType(modelNode, "add")
+    && factoryUtils.hasArrayArguments(modelNode, 1);
+}
+
+function isScaleNode(modelNode)
+{
+  return factoryUtils.hasType(modelNode, "scale")
+    && factoryUtils.hasArrayArguments(modelNode, 1);
+}
+
+function isShiftNode(modelNode)
+{
+  return factoryUtils.hasType(modelNode, "shift")
+    && factoryUtils.hasArrayArguments(modelNode, 2);
+}
+
+function isTruncNode(modelNode)
+{
+  return factoryUtils.hasType(modelNode, "trunc")
+    && factoryUtils.hasArrayArguments(modelNode, 1);
+}
+
+function makeElementNode(modelNode)
+{
+  return elementNodeFactory.makeElementNode(modelNode, buildRenderNode);
+}
+
+function makeHorizontalPatternNode(modelNode)
+{
+  return patternNodeFactory.makeHorizontalPatternNode(modelNode, buildRenderNode);
+}
+
+function makeVerticalPatternNode(modelNode)
+{
+  return patternNodeFactory.makeVerticalPatternNode(modelNode, buildRenderNode);
+}
+
+function makeTimelinePatternNode(modelNode)
+{
+  return patternNodeFactory.makeTimelinePatternNode(modelNode, buildRenderNode);
+}
+
+function makeStretchNode(modelNode)
+{
+  return stretchNodeFactory.makeStretchNode(modelNode, buildRenderNode);
+}
+
+function makeBjorklundNode(modelNode)
+{
+  return bjorklundNodeFactory.makeBjorklundNode(modelNode, buildRenderNode);
+}
+
+function makeStructNode(modelNode)
+{
+  return structNodeFactory.makeStructNode(modelNode, buildRenderNode);
+}
+
+function makeAddNode(modelNode)
+{
+  return addNodeFactory.makeAddNode(modelNode, buildRenderNode);
+}
+
+function makeScaleNode(modelNode)
+{
+  return scaleNodeFactory.makeScaleNode(modelNode, buildRenderNode);
+}
+
+function makeShiftNode(modelNode)
+{
+  return shiftNodeFactory.makeShiftNode(modelNode, buildRenderNode);
+}
+
+function makeTruncNode(modelNode)
+{
+  return truncNodeFactory.makeTruncNode(modelNode, buildRenderNode);
 }
 
 function buildRenderNode(modelNode)
@@ -126,125 +146,103 @@ function buildRenderNode(modelNode)
     return new EmptyRenderNode();
   }
 
-  if (modelNode.type_ === "element")
+  if (isElementNode(modelNode))
   {
-    var elementNode;
-    if (modelNode.source_ && modelNode.source_ instanceof Object)
+    var elementNode = makeElementNode(modelNode);
+    if (elementNode)
     {
-      elementNode = new ElementRenderNode(buildRenderNode(modelNode.source_));
-      return applyElementOperator(elementNode, modelNode);
+      return elementNode;
     }
-    elementNode = new ElementRenderNode(modelNode.source_);
-    return applyElementOperator(elementNode, modelNode);
   }
 
-  if (modelNode.type_ === "pattern"
-      && modelNode.arguments_
-      && modelNode.arguments_.alignment === "h"
-      && Array.isArray(modelNode.source_))
+  if (isHorizontalPatternNode(modelNode))
   {
-    var children = modelNode.source_.map(function(child)
+    var horizontalNode = makeHorizontalPatternNode(modelNode);
+    if (horizontalNode)
     {
-      return buildRenderNode(child);
-    });
+      return horizontalNode;
+    }
+  }
 
-    var weights = modelNode.source_.map(function(child)
+  if (isVerticalPatternNode(modelNode))
+  {
+    var verticalNode = makeVerticalPatternNode(modelNode);
+    if (verticalNode)
     {
-      if (!child || !(child instanceof Object) || !child.options_ || child.options_.weight === undefined)
-      {
-        return 1;
-      }
-      return child.options_.weight;
-    });
-
-    return HorizontalPatternRenderNode.withWeights(children, weights);
+      return verticalNode;
+    }
   }
 
-  if (modelNode.type_ === "pattern"
-      && modelNode.arguments_
-      && modelNode.arguments_.alignment === "v"
-      && Array.isArray(modelNode.source_))
+  if (isTimelinePatternNode(modelNode))
   {
-    var verticalChildren = modelNode.source_.map(function(child)
+    var timelineNode = makeTimelinePatternNode(modelNode);
+    if (timelineNode)
     {
-      return buildRenderNode(child);
-    });
-    return new VerticalPatternRenderNode(verticalChildren);
+      return timelineNode;
+    }
   }
 
-  if (modelNode.type_ === "pattern"
-      && modelNode.arguments_
-      && modelNode.arguments_.alignment === "t"
-      && Array.isArray(modelNode.source_))
+  if (isStretchNode(modelNode))
   {
-    var timelineChildren = modelNode.source_.map(function(child)
+    var stretchNode = makeStretchNode(modelNode);
+    if (stretchNode)
     {
-      return buildRenderNode(child);
-    });
-    return new TimelinePatternRenderNode(timelineChildren);
+      return stretchNode;
+    }
   }
 
-  if (modelNode.type_ === "stretch"
-      && Array.isArray(modelNode.arguments_)
-      && modelNode.arguments_.length > 0)
+  if (isBjorklundNode(modelNode))
   {
-    return new StretchRenderNode(buildRenderNode(modelNode.source_), modelNode.arguments_[0]);
+    var bjorklundNode = makeBjorklundNode(modelNode);
+    if (bjorklundNode)
+    {
+      return bjorklundNode;
+    }
   }
 
-  if (modelNode.type_ === "bjorklund"
-      && Array.isArray(modelNode.arguments_)
-      && modelNode.arguments_.length >= 2)
+  if (isStructNode(modelNode))
   {
-    return new BjorklundRenderNode(
-      buildRenderNode(modelNode.source_),
-      modelNode.arguments_[0],
-      modelNode.arguments_[1]
-    );
+    var structNode = makeStructNode(modelNode);
+    if (structNode)
+    {
+      return structNode;
+    }
   }
 
-  if (modelNode.type_ === "struct"
-      && Array.isArray(modelNode.arguments_)
-      && modelNode.arguments_.length > 0)
+  if (isAddNode(modelNode))
   {
-    return new StructRenderNode(
-      buildRenderNode(modelNode.arguments_[0]),
-      buildRenderNode(modelNode.source_)
-    );
+    var addNode = makeAddNode(modelNode);
+    if (addNode)
+    {
+      return addNode;
+    }
   }
 
-  if (modelNode.type_ === "add"
-      && Array.isArray(modelNode.arguments_)
-      && modelNode.arguments_.length > 0)
+  if (isScaleNode(modelNode))
   {
-    var arg = modelNode.arguments_[0];
-    var lhs = (arg && arg instanceof Object)
-      ? buildRenderNode(arg)
-      : new ElementRenderNode(String(arg));
-    return new AddRenderNode(lhs, buildRenderNode(modelNode.source_));
+    var scaleNode = makeScaleNode(modelNode);
+    if (scaleNode)
+    {
+      return scaleNode;
+    }
   }
 
-  if (modelNode.type_ === "scale"
-      && Array.isArray(modelNode.arguments_)
-      && modelNode.arguments_.length > 0)
+  if (isShiftNode(modelNode))
   {
-    return new ScaleRenderNode(String(modelNode.arguments_[0]), buildRenderNode(modelNode.source_));
+    var shiftNode = makeShiftNode(modelNode);
+    if (shiftNode)
+    {
+      return shiftNode;
+    }
   }
 
-  if (modelNode.type_ === "shift"
-      && Array.isArray(modelNode.arguments_)
-      && modelNode.arguments_.length >= 2)
+  if (isTruncNode(modelNode))
   {
-    var amountArg = modelNode.arguments_[0];
-    var direction = modelNode.arguments_[1];
-    var amountNode = (amountArg && amountArg instanceof Object) ? buildRenderNode(amountArg) : amountArg;
-    return new ShiftRenderNode(buildRenderNode(modelNode.source_), amountNode, direction);
-  }
-
-  if (modelNode.type_ === "trunc"
-      && Array.isArray(modelNode.arguments_)
-      && modelNode.arguments_.length > 0)
-  {
-    return new TruncRenderNode(buildRenderNode(modelNode.source_), modelNode.arguments_[0]);
+    var truncNode = makeTruncNode(modelNode);
+    if (truncNode)
+    {
+      return truncNode;
+    }
   }
 
   return new EmptyRenderNode();
