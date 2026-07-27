@@ -20,7 +20,7 @@ namespace krill
 {
   namespace
   {
-    RenderTreePtr buildRenderTree(const rapidjson::Value& v);
+    RenderNodePtr buildRenderTree(const rapidjson::Value& v);
 
     bool isElementNode(const rapidjson::Value& v)
     {
@@ -241,7 +241,7 @@ namespace krill
       return std::nullopt;
     }
 
-    RenderTreePtr applyElementOperator(RenderTreePtr node, const rapidjson::Value& elementNode)
+    RenderNodePtr applyElementOperator(RenderNodePtr node, const rapidjson::Value& elementNode)
     {
       if (!elementNode.IsObject() || !elementNode.HasMember("options_") || !elementNode["options_"].IsObject())
       {
@@ -325,7 +325,7 @@ namespace krill
       return v.HasMember("source_") && v["source_"].IsArray();
     }
 
-    std::optional<std::pair<std::vector<RenderTreePtr>, std::vector<Fraction>>> horizontalPatternChildrenAndWeights(const rapidjson::Value& v)
+    std::optional<std::pair<std::vector<RenderNodePtr>, std::vector<Fraction>>> horizontalPatternChildrenAndWeights(const rapidjson::Value& v)
     {
       if (!isHorizontalPatternNode(v))
       {
@@ -335,10 +335,10 @@ namespace krill
       const auto& source = v["source_"].GetArray();
       if (source.Empty())
       {
-        return std::make_pair(std::vector<RenderTreePtr>{}, std::vector<Fraction>{});
+        return std::make_pair(std::vector<RenderNodePtr>{}, std::vector<Fraction>{});
       }
 
-      std::vector<RenderTreePtr> children;
+      std::vector<RenderNodePtr> children;
       std::vector<Fraction> weights;
       children.reserve(source.Size());
       weights.reserve(source.Size());
@@ -417,14 +417,14 @@ namespace krill
       return v.HasMember("source_") && v["source_"].IsArray();
     }
 
-    std::optional<std::vector<RenderTreePtr>> verticalPatternChildren(const rapidjson::Value& v)
+    std::optional<std::vector<RenderNodePtr>> verticalPatternChildren(const rapidjson::Value& v)
     {
       if (!isVerticalPatternNode(v))
       {
         return std::nullopt;
       }
 
-      std::vector<RenderTreePtr> children;
+      std::vector<RenderNodePtr> children;
       const auto& source = v["source_"].GetArray();
       children.reserve(source.Size());
       for (const auto& child : source)
@@ -435,14 +435,14 @@ namespace krill
       return children;
     }
 
-    std::optional<std::vector<RenderTreePtr>> timelinePatternChildren(const rapidjson::Value& v)
+    std::optional<std::vector<RenderNodePtr>> timelinePatternChildren(const rapidjson::Value& v)
     {
       if (!isTimelinePatternNode(v))
       {
         return std::nullopt;
       }
 
-      std::vector<RenderTreePtr> children;
+      std::vector<RenderNodePtr> children;
       const auto& source = v["source_"].GetArray();
       children.reserve(source.Size());
       for (const auto& child : source)
@@ -572,7 +572,7 @@ namespace krill
       return v["arguments_"].GetArray().Size() > 0;
     }
 
-    std::optional<std::pair<RenderTreePtr, Fraction>> stretchSourceAndFactor(const rapidjson::Value& v)
+    std::optional<std::pair<RenderNodePtr, Fraction>> stretchSourceAndFactor(const rapidjson::Value& v)
     {
       if (!isStretchNode(v))
       {
@@ -589,7 +589,7 @@ namespace krill
       return std::make_pair(buildRenderTree(v["source_"]), maybeFactor.value());
     }
 
-    std::optional<std::tuple<RenderTreePtr, long, long>> bjorklundSourceAndParams(const rapidjson::Value& v)
+    std::optional<std::tuple<RenderNodePtr, long, long>> bjorklundSourceAndParams(const rapidjson::Value& v)
     {
       if (!isBjorklundNode(v))
       {
@@ -607,7 +607,7 @@ namespace krill
       return std::make_tuple(buildRenderTree(v["source_"]), pulses.value(), steps.value());
     }
 
-    std::optional<std::pair<RenderTreePtr, RenderTreePtr>> structMaskAndSource(const rapidjson::Value& v)
+    std::optional<std::pair<RenderNodePtr, RenderNodePtr>> structMaskAndSource(const rapidjson::Value& v)
     {
       if (!isStructNode(v))
       {
@@ -618,7 +618,7 @@ namespace krill
       return std::make_pair(buildRenderTree(args[0]), buildRenderTree(v["source_"]));
     }
 
-    std::optional<std::pair<RenderTreePtr, RenderTreePtr>> addOperands(const rapidjson::Value& v)
+    std::optional<std::pair<RenderNodePtr, RenderNodePtr>> addOperands(const rapidjson::Value& v)
     {
       if (!isAddNode(v))
       {
@@ -626,7 +626,7 @@ namespace krill
       }
 
       const auto& args = v["arguments_"].GetArray();
-      RenderTreePtr lhs;
+      RenderNodePtr lhs;
       if (args[0].IsObject())
       {
         lhs = buildRenderTree(args[0]);
@@ -640,7 +640,7 @@ namespace krill
       return std::make_pair(lhs, rhs);
     }
 
-    std::optional<std::pair<std::string, RenderTreePtr>> scaleNameAndSource(const rapidjson::Value& v)
+    std::optional<std::pair<std::string, RenderNodePtr>> scaleNameAndSource(const rapidjson::Value& v)
     {
       if (!isScaleNode(v))
       {
@@ -654,9 +654,9 @@ namespace krill
 
     struct ShiftData
     {
-      RenderTreePtr source;
+      RenderNodePtr source;
       std::optional<Fraction> amount;
-      RenderTreePtr amountSource;
+      RenderNodePtr amountSource;
       long direction{1};
     };
 
@@ -690,7 +690,7 @@ namespace krill
       return data;
     }
 
-    std::optional<std::pair<RenderTreePtr, Fraction>> truncSourceAndLength(const rapidjson::Value& v)
+    std::optional<std::pair<RenderNodePtr, Fraction>> truncSourceAndLength(const rapidjson::Value& v)
     {
       if (!isTruncNode(v))
       {
@@ -707,7 +707,7 @@ namespace krill
       return std::make_pair(buildRenderTree(v["source_"]), maybeLength.value());
     }
 
-    RenderTreePtr buildRenderTree(const rapidjson::Value& v)
+    RenderNodePtr buildRenderTree(const rapidjson::Value& v)
     {
       if (isElementNode(v))
       {
@@ -795,7 +795,7 @@ namespace krill
     }
   }
 
-  RenderTreePtr RenderTreeBuilder::fromJson(const rapidjson::Value& v)
+  RenderNodePtr RenderTreeBuilder::fromJson(const rapidjson::Value& v)
   {
     return buildRenderTree(v);
   }

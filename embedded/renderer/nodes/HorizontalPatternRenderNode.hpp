@@ -2,14 +2,14 @@
 
 #include <utility>
 
-#include "renderer/RenderTreeBuilder.hpp"
+#include "renderer/RenderNode.hpp"
 
 namespace krill
 {
-  class HorizontalPatternRenderNode final : public RenderTree
+  class HorizontalPatternRenderNode final : public RenderNode
   {
   public:
-    HorizontalPatternRenderNode(std::vector<RenderTreePtr> children, std::vector<Fraction> weights)
+    HorizontalPatternRenderNode(std::vector<RenderNodePtr> children, std::vector<Fraction> weights)
     : mChildren(std::move(children)), mWeights(std::move(weights))
     {
       if (mWeights.size() != mChildren.size())
@@ -25,7 +25,7 @@ namespace krill
       }
     }
 
-    explicit HorizontalPatternRenderNode(std::vector<RenderTreePtr> children)
+    explicit HorizontalPatternRenderNode(std::vector<RenderNodePtr> children)
     : HorizontalPatternRenderNode(std::move(children), std::vector<Fraction>{})
     {
       mWeights.assign(mChildren.size(), Fraction(1));
@@ -135,7 +135,7 @@ namespace krill
     }
 
   private:
-    std::vector<RenderTreePtr> mChildren;
+    std::vector<RenderNodePtr> mChildren;
     std::vector<std::string> mValues;
     std::vector<Fraction> mWeights;
   };

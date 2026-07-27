@@ -25,6 +25,7 @@ add_executable(Tests.exe
 ./tst_parser.cpp
 ./tst_stringStream.cpp
 ./tst_run_cases.cpp
+./tst_render_query_contract.cpp
 ./tst_render_nodes.cpp
 ./tst_ast_cases.cpp
 ./tst_peglib_smoke.cpp

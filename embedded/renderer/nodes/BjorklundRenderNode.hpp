@@ -2,14 +2,14 @@
 
 #include <utility>
 
-#include "renderer/RenderTreeBuilder.hpp"
+#include "renderer/RenderNode.hpp"
 
 namespace krill
 {
-  class BjorklundRenderNode final : public RenderTree
+  class BjorklundRenderNode final : public RenderNode
   {
   public:
-    BjorklundRenderNode(RenderTreePtr source, long pulses, long steps)
+    BjorklundRenderNode(RenderNodePtr source, long pulses, long steps)
     : mpSource(std::move(source)), mPulses(pulses < 0 ? 0 : pulses), mSteps(steps <= 0 ? 1 : steps)
     {
       if (mPulses >= mSteps)
@@ -98,7 +98,7 @@ namespace krill
     }
 
   private:
-    RenderTreePtr mpSource{};
+    RenderNodePtr mpSource{};
     long mPulses{0};
     long mSteps{1};
     std::vector<long> mActiveSlots;

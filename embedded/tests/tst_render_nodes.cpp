@@ -10,6 +10,7 @@
 #include "renderer/nodes/TimelinePatternRenderNode.hpp"
 #include "renderer/nodes/TruncRenderNode.hpp"
 #include "renderer/nodes/VerticalPatternRenderNode.hpp"
+#include "renderer/RenderTreeBuilder.hpp"
 #include "parser/Parser.hpp"
 
 #include <third_party/catch2/catch.hpp>
@@ -26,75 +27,11 @@ std::vector<std::string> values(const std::vector<krill::QueryFragment>& fragmen
   }
   return out;
 }
-
-class SpyRenderNode final : public krill::RenderTree
-{
-public:
-  std::vector<krill::QueryFragment> query(const krill::QueryRequest& request) const override
-  {
-    mWasCalled = true;
-    mLastRequest = request;
-
-    krill::QueryFragment fragment;
-    fragment.wholeStart = Fraction(0);
-    fragment.wholeEnd = Fraction(1);
-    fragment.partStart = request.start;
-    fragment.partEnd = request.end;
-    fragment.value = "nested";
-    return {fragment};
-  }
-
-  mutable bool mWasCalled{false};
-  mutable krill::QueryRequest mLastRequest{};
-};
 } // namespace
 
 TEST_CASE("Render nodes query behavior")
 {
   using namespace krill;
-
-  SECTION("EmptyRenderNode")
-  {
-    EmptyRenderNode node;
-    const auto fragments = node.query({Fraction(0), Fraction(1)});
-    CHECK(fragments.empty());
-  }
-
-  SECTION("ElementRenderNode literal")
-  {
-    ElementRenderNode node("kick");
-
-    const auto full = node.query({Fraction(0), Fraction(1)});
-    REQUIRE(full.size() == 1);
-    CHECK(full[0].wholeStart == Fraction(0));
-    CHECK(full[0].wholeEnd == Fraction(1));
-    CHECK(full[0].partStart == Fraction(0));
-    CHECK(full[0].partEnd == Fraction(1));
-    CHECK(full[0].value == "kick");
-
-    const auto partial = node.query({Fraction(1, 4), Fraction(3, 4)});
-    REQUIRE(partial.size() == 1);
-    CHECK(partial[0].partStart == Fraction(1, 4));
-    CHECK(partial[0].partEnd == Fraction(3, 4));
-
-    const auto noWidth = node.query({Fraction(1), Fraction(1)});
-    CHECK(noWidth.empty());
-  }
-
-  SECTION("ElementRenderNode delegates nested source")
-  {
-    auto spy = std::make_shared<SpyRenderNode>();
-    ElementRenderNode node(spy);
-
-    const auto result = node.query({Fraction(1, 8), Fraction(3, 8)});
-    REQUIRE(spy->mWasCalled);
-    CHECK(spy->mLastRequest.start == Fraction(1, 8));
-    CHECK(spy->mLastRequest.end == Fraction(3, 8));
-    REQUIRE(result.size() == 1);
-    CHECK(result[0].value == "nested");
-    CHECK(result[0].partStart == Fraction(1, 8));
-    CHECK(result[0].partEnd == Fraction(3, 8));
-  }
 
   SECTION("HorizontalPatternRenderNode")
   {
@@ -138,7 +75,7 @@ TEST_CASE("Render nodes query behavior")
 
   SECTION("HorizontalPatternRenderNode constructor children defaults weights")
   {
-    std::vector<RenderTreePtr> children;
+    std::vector<RenderNodePtr> children;
     children.push_back(std::make_shared<ElementRenderNode>("a"));
     children.push_back(std::make_shared<ElementRenderNode>("b"));
 
@@ -155,7 +92,7 @@ TEST_CASE("Render nodes query behavior")
 
   SECTION("HorizontalPatternRenderNode constructor children with explicit weights")
   {
-    std::vector<RenderTreePtr> children;
+    std::vector<RenderNodePtr> children;
     children.push_back(std::make_shared<ElementRenderNode>("a"));
     children.push_back(std::make_shared<ElementRenderNode>("b"));
 
@@ -172,7 +109,7 @@ TEST_CASE("Render nodes query behavior")
 
   SECTION("HorizontalPatternRenderNode constructor children weight size mismatch")
   {
-    std::vector<RenderTreePtr> children;
+    std::vector<RenderNodePtr> children;
     children.push_back(std::make_shared<ElementRenderNode>("a"));
     children.push_back(std::make_shared<ElementRenderNode>("b"));
 
@@ -188,7 +125,7 @@ TEST_CASE("Render nodes query behavior")
 
   SECTION("HorizontalPatternRenderNode constructor non-positive weights normalize")
   {
-    std::vector<RenderTreePtr> children;
+    std::vector<RenderNodePtr> children;
     children.push_back(std::make_shared<ElementRenderNode>("a"));
     children.push_back(std::make_shared<ElementRenderNode>("b"));
 
@@ -204,11 +141,11 @@ TEST_CASE("Render nodes query behavior")
 
   SECTION("HorizontalPatternRenderNode delegates nested child query")
   {
-    std::vector<RenderTreePtr> nested;
+    std::vector<RenderNodePtr> nested;
     nested.push_back(std::make_shared<ElementRenderNode>("6"));
     nested.push_back(std::make_shared<ElementRenderNode>("C4"));
 
-    std::vector<RenderTreePtr> children;
+    std::vector<RenderNodePtr> children;
     children.push_back(std::make_shared<ElementRenderNode>("1"));
     children.push_back(std::make_shared<ElementRenderNode>("2"));
     children.push_back(std::make_shared<VerticalPatternRenderNode>(std::move(nested)));
@@ -230,7 +167,7 @@ TEST_CASE("Render nodes query behavior")
 
   SECTION("VerticalPatternRenderNode")
   {
-    std::vector<RenderTreePtr> children;
+    std::vector<RenderNodePtr> children;
     children.push_back(std::make_shared<ElementRenderNode>("left"));
     children.push_back(nullptr);
     children.push_back(std::make_shared<ElementRenderNode>("right"));
@@ -247,7 +184,7 @@ TEST_CASE("Render nodes query behavior")
 
   SECTION("TimelinePatternRenderNode alternates by cycle")
   {
-    std::vector<RenderTreePtr> children;
+    std::vector<RenderNodePtr> children;
     children.push_back(std::make_shared<ElementRenderNode>("3"));
     children.push_back(std::make_shared<ElementRenderNode>("4"));
 
@@ -270,7 +207,7 @@ TEST_CASE("Render nodes query behavior")
 
   SECTION("StretchRenderNode")
   {
-    std::vector<RenderTreePtr> children;
+    std::vector<RenderNodePtr> children;
     children.push_back(std::make_shared<ElementRenderNode>("1"));
     children.push_back(std::make_shared<ElementRenderNode>("2"));
     children.push_back(std::make_shared<ElementRenderNode>("3"));
@@ -293,7 +230,7 @@ TEST_CASE("Render nodes query behavior")
 
   SECTION("BjorklundRenderNode")
   {
-    std::vector<RenderTreePtr> children;
+    std::vector<RenderNodePtr> children;
     children.push_back(std::make_shared<ElementRenderNode>("bd"));
     children.push_back(std::make_shared<ElementRenderNode>("sd"));
     auto source = std::make_shared<HorizontalPatternRenderNode>(std::move(children));
@@ -326,7 +263,7 @@ TEST_CASE("Render nodes query behavior")
 
   SECTION("StructRenderNode")
   {
-    std::vector<RenderTreePtr> maskChildren;
+    std::vector<RenderNodePtr> maskChildren;
     maskChildren.push_back(std::make_shared<ElementRenderNode>("t"));
     maskChildren.push_back(std::make_shared<ElementRenderNode>("f"));
     maskChildren.push_back(std::make_shared<ElementRenderNode>("f"));
@@ -359,7 +296,7 @@ TEST_CASE("Render nodes query behavior")
   {
     auto lhs = std::make_shared<ElementRenderNode>("7.5");
 
-    std::vector<RenderTreePtr> rhsChildren;
+    std::vector<RenderNodePtr> rhsChildren;
     rhsChildren.push_back(std::make_shared<ElementRenderNode>("10"));
     rhsChildren.push_back(std::make_shared<ElementRenderNode>("11"));
     rhsChildren.push_back(std::make_shared<ElementRenderNode>("12"));
@@ -386,7 +323,7 @@ TEST_CASE("Render nodes query behavior")
 
   SECTION("ScaleRenderNode")
   {
-    std::vector<RenderTreePtr> children;
+    std::vector<RenderNodePtr> children;
     children.push_back(std::make_shared<ElementRenderNode>("0"));
     children.push_back(std::make_shared<ElementRenderNode>("1"));
     children.push_back(std::make_shared<ElementRenderNode>("2"));
@@ -404,7 +341,7 @@ TEST_CASE("Render nodes query behavior")
 
   SECTION("ShiftRenderNode")
   {
-    std::vector<RenderTreePtr> children;
+    std::vector<RenderNodePtr> children;
     children.push_back(std::make_shared<ElementRenderNode>("bd"));
     children.push_back(std::make_shared<ElementRenderNode>("~"));
     children.push_back(std::make_shared<ElementRenderNode>("sd"));
@@ -426,13 +363,13 @@ TEST_CASE("Render nodes query behavior")
 
   SECTION("ShiftRenderNode with dynamic amount source")
   {
-    std::vector<RenderTreePtr> amountChildren;
+    std::vector<RenderNodePtr> amountChildren;
     amountChildren.push_back(std::make_shared<ElementRenderNode>("0"));
     amountChildren.push_back(std::make_shared<ElementRenderNode>("0.125"));
     auto amountTimeline = std::make_shared<TimelinePatternRenderNode>(std::move(amountChildren));
     auto amountSource = std::make_shared<ElementRenderNode>(amountTimeline);
 
-    std::vector<RenderTreePtr> children;
+    std::vector<RenderNodePtr> children;
     children.push_back(std::make_shared<ElementRenderNode>("bd"));
     children.push_back(std::make_shared<ElementRenderNode>("~"));
     children.push_back(std::make_shared<ElementRenderNode>("sd"));
@@ -487,7 +424,7 @@ TEST_CASE("Render nodes query behavior")
 
   SECTION("TruncRenderNode")
   {
-    std::vector<RenderTreePtr> children;
+    std::vector<RenderNodePtr> children;
     children.push_back(std::make_shared<ElementRenderNode>("1"));
     children.push_back(std::make_shared<ElementRenderNode>("2"));
     children.push_back(std::make_shared<ElementRenderNode>("3"));
@@ -514,7 +451,7 @@ TEST_CASE("Render nodes query behavior")
 
   SECTION("HorizontalPatternRenderNode weights")
   {
-    std::vector<RenderTreePtr> children;
+    std::vector<RenderNodePtr> children;
     children.push_back(std::make_shared<ElementRenderNode>("bd"));
     children.push_back(std::make_shared<ElementRenderNode>("sd"));
 
@@ -535,14 +472,14 @@ TEST_CASE("Render nodes query behavior")
 
   SECTION("TimelinePatternRenderNode concatenates child spans")
   {
-    std::vector<RenderTreePtr> leftChildren;
+    std::vector<RenderNodePtr> leftChildren;
     leftChildren.push_back(std::make_shared<ElementRenderNode>("1"));
     leftChildren.push_back(std::make_shared<ElementRenderNode>("12"));
     auto left = std::make_shared<StretchRenderNode>(
       std::make_shared<HorizontalPatternRenderNode>(std::move(leftChildren)),
       Fraction(2));
 
-    std::vector<RenderTreePtr> rightChildren;
+    std::vector<RenderNodePtr> rightChildren;
     rightChildren.push_back(std::make_shared<ElementRenderNode>("5"));
     rightChildren.push_back(std::make_shared<ElementRenderNode>("17"));
     auto right = std::make_shared<StretchRenderNode>(

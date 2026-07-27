@@ -7,14 +7,14 @@
 #include <vector>
 
 #include "harmony/core/NoteMidi.hpp"
-#include "renderer/RenderTreeBuilder.hpp"
+#include "renderer/RenderNode.hpp"
 
 namespace krill
 {
-  class AddRenderNode : public RenderTree
+  class AddRenderNode : public RenderNode
   {
   public:
-    AddRenderNode(RenderTreePtr lhs, RenderTreePtr rhs)
+    AddRenderNode(RenderNodePtr lhs, RenderNodePtr rhs)
       : mpLhs(std::move(lhs)), mpRhs(std::move(rhs))
     {
     }
@@ -140,7 +140,7 @@ namespace krill
       return rhs;
     }
 
-    RenderTreePtr mpLhs;
-    RenderTreePtr mpRhs;
+    RenderNodePtr mpLhs;
+    RenderNodePtr mpRhs;
   };
 }

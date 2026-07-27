@@ -1,7 +1,14 @@
 // RenderTree compiles the model into query nodes once.
 // Query paths delegate to the compiled node tree, not raw model inspection.
+//
+// Query contract:
+// - query(start, end) uses a half-open window [start, end).
+// - each returned fragment carries:
+//   - wholeStart/wholeEnd: full interval where a value is active.
+//   - partStart/partEnd: clipped intersection with the current query window.
 
 var math = require("mathjs");
+require("./query-contract.js");
 
 require("./nodes/empty-render-node.js");
 require("./nodes/element-render-node.js");

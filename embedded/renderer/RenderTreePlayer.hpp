@@ -1,13 +1,13 @@
 #pragma once
 
-#include "RenderTreeBuilder.hpp"
+#include "RenderNode.hpp"
 
 namespace krill
 {
   class RenderTreePlayer
   {
   public:
-    void setTree(RenderTreePtr tree)
+    void setTree(RenderNodePtr tree)
     {
       mpTree = tree;
     }
@@ -27,6 +27,6 @@ namespace krill
     }
 
   private:
-    RenderTreePtr mpTree{};
+    RenderNodePtr mpTree{};
   };
 }

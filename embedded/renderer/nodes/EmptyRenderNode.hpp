@@ -1,10 +1,10 @@
 #pragma once
 
-#include "renderer/RenderTreeBuilder.hpp"
+#include "renderer/RenderNode.hpp"
 
 namespace krill
 {
-  class EmptyRenderNode final : public RenderTree
+  class EmptyRenderNode final : public RenderNode
   {
   public:
     std::vector<QueryFragment> query(const QueryRequest& request) const override

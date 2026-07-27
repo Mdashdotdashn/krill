@@ -4,14 +4,14 @@
 #include <string>
 #include <vector>
 
-#include "renderer/RenderTreeBuilder.hpp"
+#include "renderer/RenderNode.hpp"
 
 namespace krill
 {
-  class StructRenderNode : public RenderTree
+  class StructRenderNode : public RenderNode
   {
   public:
-    StructRenderNode(RenderTreePtr mask, RenderTreePtr source)
+    StructRenderNode(RenderNodePtr mask, RenderNodePtr source)
       : mpMask(std::move(mask)), mpSource(std::move(source))
     {
     }
@@ -76,7 +76,7 @@ namespace krill
       return value == "1";
     }
 
-    RenderTreePtr mpMask;
-    RenderTreePtr mpSource;
+    RenderNodePtr mpMask;
+    RenderNodePtr mpSource;
   };
 }

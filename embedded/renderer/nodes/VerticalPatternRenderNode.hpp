@@ -2,14 +2,14 @@
 
 #include <utility>
 
-#include "renderer/RenderTreeBuilder.hpp"
+#include "renderer/RenderNode.hpp"
 
 namespace krill
 {
-  class VerticalPatternRenderNode final : public RenderTree
+  class VerticalPatternRenderNode final : public RenderNode
   {
   public:
-    explicit VerticalPatternRenderNode(std::vector<RenderTreePtr> children)
+    explicit VerticalPatternRenderNode(std::vector<RenderNodePtr> children)
     : mChildren(std::move(children))
     {
     }
@@ -37,6 +37,6 @@ namespace krill
     }
 
   private:
-    std::vector<RenderTreePtr> mChildren;
+    std::vector<RenderNodePtr> mChildren;
   };
 }

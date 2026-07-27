@@ -2,11 +2,11 @@
 
 #include <utility>
 
-#include "renderer/RenderTreeBuilder.hpp"
+#include "renderer/RenderNode.hpp"
 
 namespace krill
 {
-  class ElementRenderNode final : public RenderTree
+  class ElementRenderNode final : public RenderNode
   {
   public:
     explicit ElementRenderNode(std::string value)
@@ -14,7 +14,7 @@ namespace krill
     {
     }
 
-    explicit ElementRenderNode(RenderTreePtr sourceNode)
+    explicit ElementRenderNode(RenderNodePtr sourceNode)
     : mpSourceNode(std::move(sourceNode))
     {
     }
@@ -60,6 +60,6 @@ namespace krill
 
   private:
     std::string mValue;
-    RenderTreePtr mpSourceNode{};
+    RenderNodePtr mpSourceNode{};
   };
 }

@@ -72,13 +72,25 @@ In practice, that means a new operator or notation should usually require three 
 
 The renderer starts from the JSON model and builds runtime objects through [RenderTreeBuilder](renderer/RenderTreeBuilder.hpp).
 
-The core abstraction is [RenderNode](renderer/nodes/RenderNode.hpp): each node can be ticked and can render a [Cycle](cycle/Cycle.hpp). Composite patterns, operators, and leaf elements are all expressed as node types.
+The core abstraction is [RenderNode](renderer/RenderNode.hpp): each node can be ticked and can render a [Cycle](cycle/Cycle.hpp). Composite patterns, operators, and leaf elements are all expressed as node types.
 
 The main responsibilities are:
 
 - [renderer/RenderTreeBuilder.cpp](renderer/RenderTreeBuilder.cpp) maps JSON node types to render nodes.
 - [renderer/nodes/](renderer/nodes/) contains the actual runtime behavior for patterns and operators.
 - [renderer/RenderTreePlayer.hpp](renderer/RenderTreePlayer.hpp) advances the tree over time and emits events from rendered cycles.
+
+### Query fragment semantics
+
+`RenderNode::query` uses a half-open window `[start, end)` and returns one or more `QueryFragment` values.
+
+- `wholeStart` / `wholeEnd`: full interval where a value is active in the node timeline.
+- `partStart` / `partEnd`: clipped intersection of that interval with the current query request.
+
+This split lets downstream code keep both pieces of information:
+
+- event identity and source duration from `whole*`
+- exact window-local slice from `part*`
 
 When adding renderer features, prefer these rules:
 
@@ -107,7 +119,7 @@ These files are the best entry points when changing the embedded code:
 - [parser/KrillGrammar.hpp](parser/KrillGrammar.hpp) for syntax.
 - [parser/KrillParser.cpp](parser/KrillParser.cpp) for semantic mapping.
 - [renderer/RenderTreeBuilder.cpp](renderer/RenderTreeBuilder.cpp) for JSON-to-runtime dispatch.
-- [renderer/nodes/RenderNode.hpp](renderer/nodes/RenderNode.hpp) for the renderer contract.
+- [renderer/RenderNode.hpp](renderer/RenderNode.hpp) for the renderer contract.
 - [renderer/RenderTreePlayer.hpp](renderer/RenderTreePlayer.hpp) for cycle playback.
 - [tests/tst_parser.cpp](tests/tst_parser.cpp) for parser behavior.
 - [tests/tst_run_cases.cpp](tests/tst_run_cases.cpp) for end-to-end behavior using the shared JS cases.

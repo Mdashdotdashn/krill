@@ -5,14 +5,14 @@
 #include <vector>
 
 #include "harmony/theory/Scale.hpp"
-#include "renderer/RenderTreeBuilder.hpp"
+#include "renderer/RenderNode.hpp"
 
 namespace krill
 {
-  class ScaleRenderNode : public RenderTree
+  class ScaleRenderNode : public RenderNode
   {
   public:
-    ScaleRenderNode(std::string scaleName, RenderTreePtr source)
+    ScaleRenderNode(std::string scaleName, RenderNodePtr source)
       : mScaleName(std::move(scaleName)), mpSource(std::move(source))
     {
       const auto maybeIntervals = harmony::scaleIntervals(mScaleName);
@@ -92,6 +92,6 @@ namespace krill
 
     std::string mScaleName;
     std::vector<int> mIntervals;
-    RenderTreePtr mpSource;
+    RenderNodePtr mpSource;
   };
 }

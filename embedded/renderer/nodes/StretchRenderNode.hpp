@@ -2,14 +2,14 @@
 
 #include <utility>
 
-#include "renderer/RenderTreeBuilder.hpp"
+#include "renderer/RenderNode.hpp"
 
 namespace krill
 {
-  class StretchRenderNode final : public RenderTree
+  class StretchRenderNode final : public RenderNode
   {
   public:
-    StretchRenderNode(RenderTreePtr source, Fraction factor)
+    StretchRenderNode(RenderNodePtr source, Fraction factor)
     : mpSource(std::move(source)), mFactor(std::move(factor))
     {
     }
@@ -52,7 +52,7 @@ namespace krill
     }
 
   private:
-    RenderTreePtr mpSource{};
+    RenderNodePtr mpSource{};
     Fraction mFactor{1};
   };
 }

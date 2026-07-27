@@ -13,6 +13,8 @@ QueryNodeUtils = {
 
   overlapBounds: function(requestStart, requestEnd, wholeStart, wholeEnd)
   {
+    // Intersect query window [requestStart, requestEnd) with
+    // value window [wholeStart, wholeEnd). Returns clipped part bounds.
     if (math.smallerEq(requestEnd, wholeStart) || math.largerEq(requestStart, wholeEnd))
     {
       return null;

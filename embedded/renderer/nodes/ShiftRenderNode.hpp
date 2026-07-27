@@ -6,19 +6,19 @@
 #include <string>
 #include <vector>
 
-#include "renderer/RenderTreeBuilder.hpp"
+#include "renderer/RenderNode.hpp"
 
 namespace krill
 {
-  class ShiftRenderNode : public RenderTree
+  class ShiftRenderNode : public RenderNode
   {
   public:
-    ShiftRenderNode(RenderTreePtr source, Fraction amount, long direction)
+    ShiftRenderNode(RenderNodePtr source, Fraction amount, long direction)
       : mpSource(std::move(source)), mAmount(amount), mDirection(direction)
     {
     }
 
-    ShiftRenderNode(RenderTreePtr source, RenderTreePtr amountSource, long direction)
+    ShiftRenderNode(RenderNodePtr source, RenderNodePtr amountSource, long direction)
       : mpSource(std::move(source)), mpAmountSource(std::move(amountSource)), mAmount(Fraction(0)), mDirection(direction)
     {
     }
@@ -162,8 +162,8 @@ namespace krill
       return Fraction(0);
     }
 
-    RenderTreePtr mpSource;
-    RenderTreePtr mpAmountSource;
+    RenderNodePtr mpSource;
+    RenderNodePtr mpAmountSource;
     Fraction mAmount;
     long mDirection;
   };

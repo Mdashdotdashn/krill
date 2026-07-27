@@ -3,14 +3,14 @@
 #include <utility>
 #include <vector>
 
-#include "renderer/RenderTreeBuilder.hpp"
+#include "renderer/RenderNode.hpp"
 
 namespace krill
 {
-  class TruncRenderNode : public RenderTree
+  class TruncRenderNode : public RenderNode
   {
   public:
-    TruncRenderNode(RenderTreePtr source, Fraction length)
+    TruncRenderNode(RenderNodePtr source, Fraction length)
       : mpSource(std::move(source)), mLength(length)
     {
     }
@@ -75,7 +75,7 @@ namespace krill
     }
 
   private:
-    RenderTreePtr mpSource;
+    RenderNodePtr mpSource;
     Fraction mLength;
   };
 }
