@@ -27,7 +27,7 @@ var findMidiInputDevice = function(name)
 
 SyncDevice = function(midiDeviceName)
 {
-  device = findMidiInputDevice(midiDeviceName);
+  var device = findMidiInputDevice(midiDeviceName);
   if (device)
   {
     this.midiDevice_ = device;
@@ -43,13 +43,13 @@ SyncDevice.prototype.connect = function(target)
 {
   if (this.midiDevice_)
   {
-    device.on('clock', function(msg) {
+    this.midiDevice_.on('clock', function(msg) {
       target.onSyncClock();
     });
-    device.on('start', function(msg) {
+    this.midiDevice_.on('start', function(msg) {
       target.onSyncStart();
     });
-    device.on('stop', function(msg) {
+    this.midiDevice_.on('stop', function(msg) {
       target.onSyncStop();
     });
   }

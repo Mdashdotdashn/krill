@@ -17,7 +17,7 @@ var JSONReplacer = function(key,value)
   }
   if (typeof value === "object")
   {
-    if (value instanceof PatternEvent)
+    if (typeof PatternEvent !== "undefined" && value instanceof PatternEvent)
     {
       return  JSONFraction(value.time_) + ' : [' + value.values_ + ']';
     }

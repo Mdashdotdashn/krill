@@ -24,3 +24,15 @@ Evaluator.prototype.evaluate = function(s)
   const raw = this.parser.parse(s);
   return removeEmpty(raw);
 }
+
+Evaluator.prototype.evaluateRenderingTree = function(s)
+{
+  if (typeof RenderingTreeBuilder === "undefined")
+  {
+    require("./renderer/render-tree.js");
+  }
+
+  var model = this.evaluate(s);
+  var renderingTreeBuilder = new RenderingTreeBuilder();
+  return renderingTreeBuilder.rebuild(model);
+}

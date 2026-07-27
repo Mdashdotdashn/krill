@@ -66,6 +66,15 @@ async function start(options)
           return(response);
       }
   });
+
+        server.route({
+          method: 'GET',
+          path: '/reporter',
+          handler: function (request, h) {
+            return { reply: request.server.application_.drainReportedEvents() };
+          }
+        });
+
 	await server.start();
 	console.log('Server running at:', server.info.uri);
 }

@@ -10,6 +10,9 @@ Engine = function()
   this.renderingTree_ = null;
   this.renderingPlayer_ = new RenderingTreePlayer();
   this.running_ = false;
+  this.syncOn_ = false;
+  this.syncedClockCount_ = 0;
+  this.clocksPerCycle_ = 96;
   this.currentTime_ = math.fraction(0);
   this.unsyncedTimer_ = null;
 }
@@ -39,6 +42,7 @@ Engine.prototype.setCps = function(cps)
 Engine.prototype.hush = function()
 {
   this.running_ = false;
+  this.syncOn_ = false;
   if (this.unsyncedTimer_)
   {
     clearTimeout(this.unsyncedTimer_);
@@ -57,6 +61,7 @@ Engine.prototype.start = function(syncDevice)
 
   if (!this.synced_)
   {
+    this.syncOn_ = false;
     this.currentTime_ = math.fraction(0);
     this.renderingPlayer_.reset();
     this.processUnsyncedEvent();
@@ -65,14 +70,31 @@ Engine.prototype.start = function(syncDevice)
 
 Engine.prototype.onSyncStart = function()
 {
+  this.running_ = true;
+  this.syncOn_ = true;
+  this.syncedClockCount_ = 0;
+  this.currentTime_ = math.fraction(0);
+  this.renderingPlayer_.reset();
+  this.processSyncedEvent();
 }
 
 Engine.prototype.onSyncStop = function()
 {
+  this.syncOn_ = false;
+  this.running_ = false;
+  this.syncedClockCount_ = 0;
 }
 
 Engine.prototype.onSyncClock = function()
 {
+  if (!this.running_ || !this.syncOn_)
+  {
+    return;
+  }
+
+  this.syncedClockCount_ += 1;
+  this.currentTime_ = math.fraction(this.syncedClockCount_, this.clocksPerCycle_);
+  this.processSyncedEvent();
 }
 
 Engine.prototype.processUnsyncedEvent = function()
@@ -101,6 +123,12 @@ Engine.prototype.processUnsyncedEvent = function()
 
 Engine.prototype.processSyncedEvent = function()
 {
+  if (!this.running_ || !this.syncOn_)
+  {
+    return;
+  }
+
+  this.processPlayerEvent();
 }
 
 Engine.prototype.processPlayerEvent = function()
