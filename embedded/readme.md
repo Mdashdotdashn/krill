@@ -72,13 +72,13 @@ In practice, that means a new operator or notation should usually require three 
 
 The renderer starts from the JSON model and builds runtime objects through [RenderTreeBuilder](renderer/RenderTreeBuilder.hpp).
 
-The core abstraction is [RenderNode](renderer/RenderNode.hpp): each node can be ticked and can render a [Cycle](cycle/Cycle.hpp). Composite patterns, operators, and leaf elements are all expressed as node types.
+The core abstraction is [RenderNode](renderer/RenderNode.hpp): each node answers query windows and emits `QueryFragment` slices over time. Composite patterns, operators, and leaf elements are all expressed as node types.
 
 The main responsibilities are:
 
 - [renderer/RenderTreeBuilder.cpp](renderer/RenderTreeBuilder.cpp) maps JSON node types to render nodes.
 - [renderer/nodes/](renderer/nodes/) contains the actual runtime behavior for patterns and operators.
-- [renderer/RenderTreePlayer.hpp](renderer/RenderTreePlayer.hpp) advances the tree over time and emits events from rendered cycles.
+- [renderer/RenderTreePlayer.hpp](renderer/RenderTreePlayer.hpp) advances the tree over time and emits events from query windows.
 
 ### Query fragment semantics
 
@@ -96,7 +96,7 @@ When adding renderer features, prefer these rules:
 
 - Put musical behavior in a render node or in builder dispatch, not in the player.
 - Keep playback generic; [RenderTreePlayer](renderer/RenderTreePlayer.hpp) should not need feature-specific branches.
-- Treat `tick()` and `render()` as the stable runtime contract.
+- Treat `query()` as the stable runtime contract.
 - Reuse existing composition patterns when possible: unary operators wrap a child, binary operators combine children, and pattern nodes manage alignment and timing.
 
 If a feature changes how an already-parsed structure behaves over time, it probably belongs in a new node type or a new case in the render tree builder.

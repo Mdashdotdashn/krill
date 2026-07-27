@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "cycle/Cycle.hpp"
+#include "third_party/FractionClass/Fraction.hpp"
 
 namespace krill
 {

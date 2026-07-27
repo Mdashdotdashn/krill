@@ -6,7 +6,6 @@ include_directories(
 add_executable(Tests.exe
 ../third_party/FractionClass/Fraction.cpp
 
-../cycle/Cycle.cpp
 ../parser/Context.cpp
 ../parser/KrillParser.cpp
 ../parser/Parser.cpp
@@ -19,9 +18,7 @@ add_executable(Tests.exe
 ../harmony/theory/Roman.cpp
 
 ./test.cpp
-./testUtils.cpp
 
-./tst_cycle.cpp
 ./tst_parser.cpp
 ./tst_stringStream.cpp
 ./tst_run_cases.cpp
