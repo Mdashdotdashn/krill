@@ -26,7 +26,16 @@ add_executable(Tests.exe
 ./tst_stringStream.cpp
 ./tst_run_cases.cpp
 ./tst_render_query_contract.cpp
-./tst_render_nodes.cpp
+./tst_render_node_horizontal.cpp
+./tst_render_node_vertical.cpp
+./tst_render_node_timeline.cpp
+./tst_render_node_stretch.cpp
+./tst_render_node_bjorklund.cpp
+./tst_render_node_struct.cpp
+./tst_render_node_add.cpp
+./tst_render_node_scale.cpp
+./tst_render_node_shift.cpp
+./tst_render_node_trunc.cpp
 ./tst_ast_cases.cpp
 ./tst_peglib_smoke.cpp
 ./tst_peglib_primitives.cpp
