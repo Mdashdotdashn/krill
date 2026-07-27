@@ -1,0 +1,14 @@
+branch comments: Make them for c++ but needs to be checked on the JS side too
+
+1. Document Query request & QueryFragments ; extract them to their own file so we avoid to include RenderTreeBuilder.hpp in all Render nodes. Also extract the related tests
+
+2. Extract the render node tests each their own files
+3. The tst_run_case tests that the value at the specified time is correct but it doesn't check neither that the onset of the event is at the correct time nor that there is no even in between two specified times. I think the best way to go forward from here is the original api of the RenderTreePlayer (advance/eventsForTime) so that we connect all of the previous version of the test_case runner, engine and so on. It seems to me that then only change would be that since we don't have a RenderTree::render, we could update mCurrentCycle using a query. The only difficulty is that we only want the onset that correspond to a change in the current cycle, not values that correspond to a state that comes from any prior cycle. Not sure if we need a special query for that or not.
+4. (when everything is refactored): do we still need Cycle.hpp/cpp ? And TestUtils.hpp ?
+
+5. BuildRenderTree: some semantic a bit odd since the node parameter getter (e.g. bjorklundSourceAndParams) both check if the node is of the right type and grabs the parameters. Is would prefer something like
+      if (isBjorklundNode(v))
+      {
+        return makeBjorklundNode(v);
+      }
+
