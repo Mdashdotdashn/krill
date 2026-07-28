@@ -24,5 +24,19 @@ QueryNodeUtils = {
       partStart: math.larger(requestStart, wholeStart) ? requestStart : wholeStart,
       partEnd: math.smaller(requestEnd, wholeEnd) ? requestEnd : wholeEnd
     };
+  },
+
+  // Fragment validation: check if a fragment is valid (has wholeStart defined).
+  isValidFragment: function(fragment)
+  {
+    return fragment && fragment.wholeStart !== undefined;
+  },
+
+  // Filter fragments, returning only valid ones.
+  filterValidFragments: function(fragments)
+  {
+    return (fragments || []).filter(function(f) {
+      return QueryNodeUtils.isValidFragment(f);
+    });
   }
 };

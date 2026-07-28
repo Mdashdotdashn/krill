@@ -1,6 +1,5 @@
 var peg = require("pegjs");
 var fs = require('fs');
-const _ = require('lodash');
 
 ///////////////////////////////////////////////////////////////////////////////
 // from https://stackoverflow.com/questions/286141/remove-blank-attributes-from-an-object-in-javascript/

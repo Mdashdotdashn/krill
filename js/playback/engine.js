@@ -104,12 +104,22 @@ Engine.prototype.processUnsyncedEvent = function()
     return;
   }
 
+  this.emitTickIfNeeded_();
+  this.scheduleNextUnsyncedEvent_();
+}
+
+Engine.prototype.emitTickIfNeeded_ = function()
+{
   var values = this.renderingPlayer_.eventsAtTime(this.currentTime_);
   if (values && values.length > 0)
   {
     this.emit("tick", {time: this.currentTime_, values: values});
   }
+  return values ? values.length : 0;
+}
 
+Engine.prototype.scheduleNextUnsyncedEvent_ = function()
+{
   var nextTime = this.renderingPlayer_.nextOnsetTimeFrom(this.currentTime_);
   var deltaCycles = math.subtract(nextTime, this.currentTime_);
   var delayMs = Math.max(1, Math.round((math.number(deltaCycles) * 1000) / this.cps_));
@@ -128,17 +138,12 @@ Engine.prototype.processSyncedEvent = function()
     return;
   }
 
-  this.processPlayerEvent();
+  this.emitTickIfNeeded_();
 }
 
 Engine.prototype.processPlayerEvent = function()
 {
-  var event = this.renderingPlayer_.eventForTime(this.currentTime_);
-  if (event && event.values && event.values.length > 0)
-  {
-    this.emit("tick", event);
-  }
-  return event ? event.values.length : 0;
+  return this.emitTickIfNeeded_();
 }
 
 Engine.prototype.setRenderingTree = function(tree)

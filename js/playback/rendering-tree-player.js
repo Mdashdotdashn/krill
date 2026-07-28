@@ -1,8 +1,23 @@
 var math = require("mathjs");
 require("../renderer/query-contract.js");
+var TimeUtils = require("../utils/time-utils.js");
 
 // Minimal query-only player used during teardown/rebuild.
 // It preserves the player seam while delegating behavior to RenderTree.query().
+//
+// API CONTRACT:
+// ==============
+// PREFERRED (new, recommended):
+//   - nextOnsetTimeFrom(time) → Fraction: Next onset strictly after time
+//   - eventsAtTime(time) → string[]: Values at the given time, or [] if none
+//
+// COMPATIBILITY (deprecated, for migration period):
+//   - advance(time) → Fraction: Alias for nextOnsetTimeFrom()
+//   - eventForTime(time) → {time, values} | null: Alias for eventsAtTime() (wraps in object)
+//   - eventsForTime(time) → string[]: Alias for eventsAtTime()
+//
+// See: docs/standalone-app-restore-plan.md Phase 4
+//
 RenderingTreePlayer = function()
 {
   this.renderingTree_ = null;
@@ -36,25 +51,10 @@ RenderingTreePlayer.prototype.reset = function()
   }
 }
 
-RenderingTreePlayer.prototype.toFraction_ = function(value)
-{
-  return math.fraction(value);
-}
-
-RenderingTreePlayer.prototype.cycleStart_ = function(time)
-{
-  return math.fraction(math.floor(this.toFraction_(time)));
-}
-
-RenderingTreePlayer.prototype.nextCycleBoundary_ = function(time)
-{
-  return math.add(this.cycleStart_(time), math.fraction(1));
-}
-
-RenderingTreePlayer.prototype.epsilon_ = function()
-{
-  return math.fraction(1, 1024);
-}
+RenderingTreePlayer.prototype.toFraction_ = TimeUtils.toFraction;
+RenderingTreePlayer.prototype.cycleStart_ = TimeUtils.cycleStart;
+RenderingTreePlayer.prototype.nextCycleBoundary_ = TimeUtils.nextCycleBoundary;
+RenderingTreePlayer.prototype.epsilon_ = TimeUtils.epsilon;
 
 RenderingTreePlayer.prototype.queryArc = function(start, end)
 {
@@ -86,7 +86,7 @@ RenderingTreePlayer.prototype.eventsAtTime = function(time)
       return;
     }
 
-    if (math.equal(math.fraction(fragment.wholeStart), eventTime))
+    if (TimeUtils.equal(fragment.wholeStart, eventTime))
     {
       values.push(String(fragment.value));
     }
@@ -113,7 +113,7 @@ RenderingTreePlayer.prototype.nextOnsetTimeFrom = function(time)
 
   var t = current;
 
-  while (math.smaller(t, searchEnd))
+  while (TimeUtils.smaller(t, searchEnd))
   {
     var fragments = this.queryPointWindow(t);
 
@@ -134,12 +134,12 @@ RenderingTreePlayer.prototype.nextOnsetTimeFrom = function(time)
         continue;
       }
 
-      var onset = math.fraction(f.wholeStart);
+      var onset = TimeUtils.toFraction(f.wholeStart);
 
       // Onset strictly after current and within the search range.
-      if (math.larger(onset, current) && math.smallerEq(onset, searchEnd))
+      if (TimeUtils.larger(onset, current) && TimeUtils.smallerEq(onset, searchEnd))
       {
-        if (nextOnset === null || math.smaller(onset, nextOnset))
+        if (nextOnset === null || TimeUtils.smaller(onset, nextOnset))
         {
           nextOnset = onset;
         }
@@ -148,8 +148,8 @@ RenderingTreePlayer.prototype.nextOnsetTimeFrom = function(time)
       // wholeEnd gives the exact start of the next slot — use it to advance t.
       if (f.wholeEnd !== undefined)
       {
-        var end = math.fraction(f.wholeEnd);
-        if (math.larger(end, t) && (nextT === null || math.smaller(end, nextT)))
+        var end = TimeUtils.toFraction(f.wholeEnd);
+        if (TimeUtils.larger(end, t) && (nextT === null || TimeUtils.smaller(end, nextT)))
         {
           nextT = end;
         }
@@ -171,6 +171,27 @@ RenderingTreePlayer.prototype.nextOnsetTimeFrom = function(time)
   }
 
   return nextBoundary;
+}
+
+// Compatibility aliases for migration period (deprecated, use preferred API above).
+RenderingTreePlayer.prototype.advance = function(time)
+{
+  return this.nextOnsetTimeFrom(time);
+}
+
+RenderingTreePlayer.prototype.eventForTime = function(time)
+{
+  var values = this.eventsAtTime(time);
+  if (values && values.length > 0)
+  {
+    return {time: this.toFraction_(time), values: values};
+  }
+  return null;
+}
+
+RenderingTreePlayer.prototype.eventsForTime = function(time)
+{
+  return this.eventsAtTime(time);
 }
 
 
