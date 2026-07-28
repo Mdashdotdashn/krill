@@ -104,13 +104,13 @@ Engine.prototype.processUnsyncedEvent = function()
     return;
   }
 
-  var event = this.renderingPlayer_.eventForTime(this.currentTime_);
-  if (event && event.values && event.values.length > 0)
+  var values = this.renderingPlayer_.eventsAtTime(this.currentTime_);
+  if (values && values.length > 0)
   {
-    this.emit("tick", event);
+    this.emit("tick", {time: this.currentTime_, values: values});
   }
 
-  var nextTime = this.renderingPlayer_.advance(this.currentTime_);
+  var nextTime = this.renderingPlayer_.nextOnsetTimeFrom(this.currentTime_);
   var deltaCycles = math.subtract(nextTime, this.currentTime_);
   var delayMs = Math.max(1, Math.round((math.number(deltaCycles) * 1000) / this.cps_));
   this.currentTime_ = nextTime;

@@ -9,12 +9,6 @@ namespace krill
   class RenderTreePlayer
   {
   public:
-    struct Event
-    {
-      Fraction time{0};
-      std::vector<std::string> values;
-    };
-
     void setTree(RenderNodePtr tree)
     {
       if (!mpTree)
@@ -23,7 +17,7 @@ namespace krill
         return;
       }
 
-      // Mid-cycle updates are applied when advance() crosses a cycle boundary.
+      // Mid-cycle updates are applied when nextOnsetTimeFrom() crosses a cycle boundary.
       mpPendingTree = std::move(tree);
     }
 
@@ -50,7 +44,8 @@ namespace krill
       return queryArc(time, time + epsilon());
     }
 
-    std::optional<Event> eventForTime(const Fraction& time) const
+    // Preferred payload API: returns the values array at the given time, or {} if none.
+    std::vector<std::string> eventsAtTime(const Fraction& time) const
     {
       const auto fragments = queryPointWindow(time);
       std::vector<std::string> values;
@@ -63,69 +58,79 @@ namespace krill
         }
       }
 
-      if (values.empty())
-      {
-        return std::nullopt;
-      }
-
-      return Event{time, std::move(values)};
+      return values;
     }
 
-    std::vector<std::string> eventsForTime(const Fraction& time) const
-    {
-      auto event = eventForTime(time);
-      if (!event)
-      {
-        return {};
-      }
-      return event->values;
-    }
-
-    Fraction advance(const Fraction& time)
+    // Preferred scheduler API: returns the next onset time strictly after the given time.
+    //
+    // Uses a point query (queryPointWindow) at each step rather than a large arc
+    // query, so time-varying render-node parameters are always resolved at the
+    // correct point in time. Within each step, wholeEnd from the returned fragment
+    // is used to jump directly to the start of the next slot, avoiding fixed-size
+    // step scanning.
+    Fraction nextOnsetTimeFrom(const Fraction& time)
     {
       const Fraction current = time;
       const Fraction nextBoundary = nextCycleBoundary(current);
+      const Fraction searchEnd = mpPendingTree ? nextBoundary : (current + lookAheadCycles());
 
-      auto firstEventInRange = [this](const Fraction& startExclusive, const Fraction& endInclusive)
-        -> std::optional<Fraction>
+      Fraction t = current;
+
+      while (t < searchEnd)
       {
-        Fraction t = startExclusive + searchStep();
-        t.reduce();
-        while (t <= endInclusive)
+        const auto fragments = queryPointWindow(t);
+
+        if (fragments.empty())
         {
-          const auto event = eventForTime(t);
-          if (event && !event->values.empty())
-          {
-            return t;
-          }
-          t += searchStep();
-          t.reduce();
+          t = nextCycleBoundary(t);
+          continue;
         }
 
-        return std::nullopt;
-      };
+        std::optional<Fraction> nextOnset;
+        std::optional<Fraction> nextT;
+
+        for (const auto& f : fragments)
+        {
+          Fraction onset = f.wholeStart;
+          onset.reduce();
+
+          // Onset strictly after current and within the search range.
+          if (onset > current && onset <= searchEnd)
+          {
+            if (!nextOnset || onset < *nextOnset)
+            {
+              nextOnset = onset;
+            }
+          }
+
+          // wholeEnd gives the exact start of the next slot — use it to advance t.
+          Fraction end = f.wholeEnd;
+          end.reduce();
+          if (end > t && (!nextT || end < *nextT))
+          {
+            nextT = end;
+          }
+        }
+
+        if (nextOnset)
+        {
+          return *nextOnset;
+        }
+
+        t = nextT ? *nextT : nextCycleBoundary(t);
+        t.reduce();
+      }
 
       if (mpPendingTree)
       {
-        const auto beforeBoundary = firstEventInRange(current, nextBoundary - epsilon());
-        if (beforeBoundary)
-        {
-          return *beforeBoundary;
-        }
-
         mpTree = mpPendingTree;
         mpPendingTree.reset();
-        return nextBoundary;
-      }
-
-      const auto nextEvent = firstEventInRange(current, current + lookAheadCycles());
-      if (nextEvent)
-      {
-        return *nextEvent;
       }
 
       return nextBoundary;
     }
+
+
 
   private:
     static Fraction cycleStart(const Fraction& time)
@@ -141,11 +146,6 @@ namespace krill
     static Fraction epsilon()
     {
       return Fraction(1, 1024);
-    }
-
-    static Fraction searchStep()
-    {
-      return Fraction(1, 3072);
     }
 
     static Fraction lookAheadCycles()

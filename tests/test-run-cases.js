@@ -13,21 +13,21 @@ function fracToString(v)
 
 function valuesAtTime(player, expectedTime)
 {
-  var event = player.eventForTime(expectedTime);
-  if (!event || !event.values)
+  var values = player.eventsAtTime(expectedTime);
+  if (!values)
   {
     return [];
   }
-  return event.values.map(function(v) { return String(v); });
+  return values.map(function(v) { return String(v); });
 }
 
-function eventValues(event)
+function eventValues(values)
 {
-  if (!event || !event.values)
+  if (!values || values.length === 0)
   {
     return [];
   }
-  return event.values.map(function(v) { return String(v); });
+  return values.map(function(v) { return String(v); });
 }
 
 function sortExpectedTimes(expected)
@@ -61,13 +61,13 @@ function runAllTestCases()
     {
       var expectedTime = expectedTimes[i];
       var nextTime = null;
-      var event = null;
+      var values = null;
       var guard = 0;
 
-      while (!event)
+      while (!values || values.length === 0)
       {
-        nextTime = player.advance(currentTime);
-        event = player.eventForTime(nextTime);
+        nextTime = player.nextOnsetTimeFrom(currentTime);
+        values = player.eventsAtTime(nextTime);
         currentTime = nextTime;
         guard += 1;
 
@@ -83,7 +83,7 @@ function runAllTestCases()
         "Unexpected event time for case: " + source
       );
 
-      var actualValues = eventValues(event);
+      var actualValues = eventValues(values);
       assert.deepStrictEqual(actualValues, expected[expectedTime], "Case failed: " + source + " @ " + expectedTime);
     }
 
@@ -120,7 +120,7 @@ function runNoUnexpectedBetweenChecks()
     {
       var from = testCase.onsets[i];
       var expectedNext = testCase.onsets[i + 1];
-      var actualNext = player.advance(from);
+      var actualNext = player.nextOnsetTimeFrom(from);
       assert.strictEqual(
         fracToString(actualNext),
         fracToString(expectedNext),

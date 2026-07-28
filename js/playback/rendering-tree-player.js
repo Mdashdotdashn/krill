@@ -17,7 +17,7 @@ RenderingTreePlayer.prototype.setRenderingTree = function(tree)
     return;
   }
 
-  // Mid-cycle updates are applied when advance() crosses a cycle boundary.
+  // Mid-cycle updates are applied when nextOnsetTimeFrom() crosses a cycle boundary.
   this.pendingRenderingTree_ = tree;
 }
 
@@ -56,79 +56,6 @@ RenderingTreePlayer.prototype.epsilon_ = function()
   return math.fraction(1, 1024);
 }
 
-RenderingTreePlayer.prototype.uniqueOnsetsInWindow_ = function(startExclusive, end, includeEnd)
-{
-  var fragments = this.queryArc(startExclusive, end);
-  var onsets = [];
-
-  fragments.forEach(function(fragment) {
-    if (fragment.wholeStart === undefined)
-    {
-      return;
-    }
-
-    var onset = math.fraction(fragment.wholeStart);
-    if (!math.larger(onset, startExclusive))
-    {
-      return;
-    }
-
-    if (includeEnd)
-    {
-      if (math.larger(onset, end))
-      {
-        return;
-      }
-    }
-    else if (!math.smaller(onset, end))
-    {
-      return;
-    }
-
-    var exists = onsets.some(function(t) {
-      return math.equal(t, onset);
-    });
-
-    if (!exists)
-    {
-      onsets.push(onset);
-    }
-  });
-
-  onsets.sort(function(a, b) {
-    return math.compare(a, b);
-  });
-
-  return onsets;
-}
-
-RenderingTreePlayer.prototype.nextWholeEndAfter_ = function(time)
-{
-  var t = this.toFraction_(time);
-  var fragments = this.queryPointWindow(t);
-  var candidate = null;
-
-  fragments.forEach(function(fragment) {
-    if (fragment.wholeEnd === undefined)
-    {
-      return;
-    }
-
-    var end = math.fraction(fragment.wholeEnd);
-    if (!math.larger(end, t))
-    {
-      return;
-    }
-
-    if (!candidate || math.smaller(end, candidate))
-    {
-      candidate = end;
-    }
-  });
-
-  return candidate;
-}
-
 RenderingTreePlayer.prototype.queryArc = function(start, end)
 {
   if (!this.renderingTree_ || !this.renderingTree_.query)
@@ -146,7 +73,8 @@ RenderingTreePlayer.prototype.queryPointWindow = function(time)
   return this.queryArc(start, end);
 }
 
-RenderingTreePlayer.prototype.eventForTime = function(time)
+// Preferred payload API: returns the values array at the given time, or [] if none.
+RenderingTreePlayer.prototype.eventsAtTime = function(time)
 {
   var eventTime = this.toFraction_(time);
   var fragments = this.queryPointWindow(eventTime);
@@ -164,63 +92,85 @@ RenderingTreePlayer.prototype.eventForTime = function(time)
     }
   });
 
-  if (values.length === 0)
-  {
-    return null;
-  }
-
-  return {
-    time: eventTime,
-    values: values
-  };
+  return values;
 }
 
-RenderingTreePlayer.prototype.eventsForTime = function(time)
-{
-  var event = this.eventForTime(time);
-  return event ? event.values : [];
-}
-
-RenderingTreePlayer.prototype.advance = function(time)
+// Preferred scheduler API: returns the next onset time strictly after the given time.
+//
+// Uses a point query (queryPointWindow) at each step rather than a large arc
+// query, so time-varying render-node parameters (e.g. ShiftRenderNode amounts)
+// are always resolved at the correct point in time. Within each step, wholeEnd
+// from the returned fragment is used to jump directly to the start of the next
+// slot, avoiding fixed-size step scanning.
+RenderingTreePlayer.prototype.nextOnsetTimeFrom = function(time)
 {
   var current = this.toFraction_(time);
   var nextBoundary = this.nextCycleBoundary_(current);
-  var epsilon = this.epsilon_();
-  var searchStep = math.fraction(1, 3072);
+  var lookAheadCycles = math.fraction(16);
+  var searchEnd = this.pendingRenderingTree_
+    ? nextBoundary
+    : math.add(current, lookAheadCycles);
 
-  var firstEventInRange = function(player, startExclusive, endInclusive) {
-    var t = math.add(startExclusive, searchStep);
-    while (math.smallerEq(t, endInclusive))
+  var t = current;
+
+  while (math.smaller(t, searchEnd))
+  {
+    var fragments = this.queryPointWindow(t);
+
+    if (fragments.length === 0)
     {
-      var event = player.eventForTime(t);
-      if (event && event.values && event.values.length > 0)
-      {
-        return t;
-      }
-      t = math.add(t, searchStep);
+      t = this.nextCycleBoundary_(t);
+      continue;
     }
-    return null;
-  };
+
+    var nextOnset = null;
+    var nextT = null;
+
+    for (var i = 0; i < fragments.length; i++)
+    {
+      var f = fragments[i];
+      if (f.wholeStart === undefined)
+      {
+        continue;
+      }
+
+      var onset = math.fraction(f.wholeStart);
+
+      // Onset strictly after current and within the search range.
+      if (math.larger(onset, current) && math.smallerEq(onset, searchEnd))
+      {
+        if (nextOnset === null || math.smaller(onset, nextOnset))
+        {
+          nextOnset = onset;
+        }
+      }
+
+      // wholeEnd gives the exact start of the next slot — use it to advance t.
+      if (f.wholeEnd !== undefined)
+      {
+        var end = math.fraction(f.wholeEnd);
+        if (math.larger(end, t) && (nextT === null || math.smaller(end, nextT)))
+        {
+          nextT = end;
+        }
+      }
+    }
+
+    if (nextOnset !== null)
+    {
+      return nextOnset;
+    }
+
+    t = nextT !== null ? nextT : this.nextCycleBoundary_(t);
+  }
 
   if (this.pendingRenderingTree_)
   {
-    var beforeBoundary = firstEventInRange(this, current, math.subtract(nextBoundary, epsilon));
-    if (beforeBoundary)
-    {
-      return beforeBoundary;
-    }
-
     this.renderingTree_ = this.pendingRenderingTree_;
     this.pendingRenderingTree_ = null;
-    return nextBoundary;
-  }
-
-  var lookAheadCycles = math.fraction(16);
-  var nextEvent = firstEventInRange(this, current, math.add(current, lookAheadCycles));
-  if (nextEvent)
-  {
-    return nextEvent;
   }
 
   return nextBoundary;
 }
+
+

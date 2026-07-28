@@ -113,13 +113,13 @@ TEST_CASE("Rendertree")
     for (const auto& expectedEvent : expectedEvents)
     {
       Fraction nextTime;
-      std::optional<krill::RenderTreePlayer::Event> event;
+      std::vector<std::string> values;
       int guard = 0;
 
-      while (!event)
+      while (values.empty())
       {
-        nextTime = player.advance(currentTime);
-        event = player.eventForTime(nextTime);
+        nextTime = player.nextOnsetTimeFrom(currentTime);
+        values = player.eventsAtTime(nextTime);
         currentTime = nextTime;
         guard += 1;
 
@@ -130,7 +130,7 @@ TEST_CASE("Rendertree")
       }
 
       CHECK(nextTime == expectedEvent.time);
-      CHECK(event->values == expectedEvent.values);
+      CHECK(values == expectedEvent.values);
     }
   }
 }

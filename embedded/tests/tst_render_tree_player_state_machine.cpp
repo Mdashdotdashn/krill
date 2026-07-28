@@ -31,28 +31,28 @@ TEST_CASE("RenderTreePlayer advance monotonicity and onset extraction")
   player.setTree(makeTree("'a b c d'"));
   player.reset();
 
-  const auto t0 = player.advance(Fraction("-1/10000"));
+  const auto t0 = player.nextOnsetTimeFrom(Fraction("-1/10000"));
   CHECK(t0 == Fraction("0/1"));
 
-  const auto e0 = player.eventForTime(t0);
-  REQUIRE(e0.has_value());
-  CHECK(e0->values == std::vector<std::string>{"a"});
-  CHECK(player.advance(Fraction("0/1")) == Fraction("1/4"));
+  const auto e0 = player.eventsAtTime(t0);
+  REQUIRE(!e0.empty());
+  CHECK(e0 == std::vector<std::string>{"a"});
+  CHECK(player.nextOnsetTimeFrom(Fraction("0/1")) == Fraction("1/4"));
 
-  const auto e1 = player.eventForTime(Fraction("1/4"));
-  REQUIRE(e1.has_value());
-  CHECK(e1->values == std::vector<std::string>{"b"});
-  CHECK(player.advance(Fraction("1/4")) == Fraction("1/2"));
+  const auto e1 = player.eventsAtTime(Fraction("1/4"));
+  REQUIRE(!e1.empty());
+  CHECK(e1 == std::vector<std::string>{"b"});
+  CHECK(player.nextOnsetTimeFrom(Fraction("1/4")) == Fraction("1/2"));
 
-  const auto e2 = player.eventForTime(Fraction("1/2"));
-  REQUIRE(e2.has_value());
-  CHECK(e2->values == std::vector<std::string>{"c"});
-  CHECK(player.advance(Fraction("1/2")) == Fraction("3/4"));
+  const auto e2 = player.eventsAtTime(Fraction("1/2"));
+  REQUIRE(!e2.empty());
+  CHECK(e2 == std::vector<std::string>{"c"});
+  CHECK(player.nextOnsetTimeFrom(Fraction("1/2")) == Fraction("3/4"));
 
-  const auto e3 = player.eventForTime(Fraction("3/4"));
-  REQUIRE(e3.has_value());
-  CHECK(e3->values == std::vector<std::string>{"d"});
-  CHECK(player.advance(Fraction("3/4")) == Fraction("1/1"));
+  const auto e3 = player.eventsAtTime(Fraction("3/4"));
+  REQUIRE(!e3.empty());
+  CHECK(e3 == std::vector<std::string>{"d"});
+  CHECK(player.nextOnsetTimeFrom(Fraction("3/4")) == Fraction("1/1"));
 }
 
 TEST_CASE("RenderTreePlayer tree replacement at cycle boundary")
@@ -61,36 +61,26 @@ TEST_CASE("RenderTreePlayer tree replacement at cycle boundary")
   player.setTree(makeTree("'a b c d'"));
   player.reset();
 
-  const auto atHalf = player.eventForTime(Fraction("1/2"));
-  REQUIRE(atHalf.has_value());
-  CHECK(atHalf->values == std::vector<std::string>{"c"});
+  const auto atHalf = player.eventsAtTime(Fraction("1/2"));
+  REQUIRE(!atHalf.empty());
+  CHECK(atHalf == std::vector<std::string>{"c"});
 
   player.setTree(makeTree("'x y'"));
 
-  const auto atThreeQuarters = player.eventForTime(Fraction("3/4"));
-  REQUIRE(atThreeQuarters.has_value());
-  CHECK(atThreeQuarters->values == std::vector<std::string>{"d"});
+  const auto atThreeQuarters = player.eventsAtTime(Fraction("3/4"));
+  REQUIRE(!atThreeQuarters.empty());
+  CHECK(atThreeQuarters == std::vector<std::string>{"d"});
 
-  const auto nextAfterThreeQuarters = player.advance(Fraction("3/4"));
+  const auto nextAfterThreeQuarters = player.nextOnsetTimeFrom(Fraction("3/4"));
   CAPTURE(fracToString(nextAfterThreeQuarters));
   REQUIRE(nextAfterThreeQuarters == Fraction("1/1"));
 
-  const auto atOne = player.eventForTime(Fraction("1/1"));
-  REQUIRE(atOne.has_value());
-  CHECK(atOne->values == std::vector<std::string>{"x"});
+  const auto atOne = player.eventsAtTime(Fraction("1/1"));
+  REQUIRE(!atOne.empty());
+  CHECK(atOne == std::vector<std::string>{"x"});
 
-  const auto atThreeHalves = player.eventForTime(Fraction("3/2"));
-  REQUIRE(atThreeHalves.has_value());
-  CHECK(atThreeHalves->values == std::vector<std::string>{"y"});
+  const auto atThreeHalves = player.eventsAtTime(Fraction("3/2"));
+  REQUIRE(!atThreeHalves.empty());
+  CHECK(atThreeHalves == std::vector<std::string>{"y"});
 }
 
-TEST_CASE("RenderTreePlayer eventsForTime alias")
-{
-  krill::RenderTreePlayer player;
-  player.setTree(makeTree("'bd sd'"));
-  player.reset();
-
-  CHECK(player.eventsForTime(Fraction("0/1")) == std::vector<std::string>{"bd"});
-  CHECK(player.eventsForTime(Fraction("1/2")) == std::vector<std::string>{"sd"});
-  CHECK(player.eventsForTime(Fraction("1/4")).empty());
-}
