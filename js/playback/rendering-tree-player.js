@@ -51,6 +51,13 @@ RenderingTreePlayer.prototype.reset = function()
   }
 }
 
+// Clear both trees completely (used by hush to reset state for next playback).
+RenderingTreePlayer.prototype.clear = function()
+{
+  this.renderingTree_ = null;
+  this.pendingRenderingTree_ = null;
+}
+
 RenderingTreePlayer.prototype.toFraction_ = TimeUtils.toFraction;
 RenderingTreePlayer.prototype.cycleStart_ = TimeUtils.cycleStart;
 RenderingTreePlayer.prototype.nextCycleBoundary_ = TimeUtils.nextCycleBoundary;

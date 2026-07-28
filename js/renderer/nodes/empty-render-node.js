@@ -1,16 +1,15 @@
-require("./query-node-utils.js");
+var TimeUtils = require("../../utils/time-utils.js");
+require("./base-query-render-node.js");
 
 EmptyRenderNode = function()
 {
+  BaseQueryRenderNode.call(this);
 }
 
-EmptyRenderNode.prototype.query = function(start, end)
+EmptyRenderNode.prototype = Object.create(BaseQueryRenderNode.prototype);
+EmptyRenderNode.prototype.constructor = EmptyRenderNode;
+
+EmptyRenderNode.prototype.executeQuery_ = function(requestStart, requestEnd)
 {
-  var requestStart = QueryNodeUtils.toFraction(start);
-  var requestEnd = QueryNodeUtils.toFraction(end);
-  if (QueryNodeUtils.hasNoWidth(requestStart, requestEnd))
-  {
-    return [];
-  }
   return [];
 }

@@ -1,11 +1,14 @@
 var math = require("mathjs");
+var TimeUtils = require("../../utils/time-utils.js");
+require("./base-query-render-node.js");
 
 ShiftRenderNode = function(source, amount, direction)
 {
+  BaseQueryRenderNode.call(this);
   this.source_ = source;
   this.direction_ = Number(direction) || 1;
   this.amountNode_ = null;
-  this.amountValue_ = math.fraction(0);
+  this.amountValue_ = TimeUtils.toFraction(0);
 
   if (amount && amount.query)
   {
@@ -15,14 +18,17 @@ ShiftRenderNode = function(source, amount, direction)
   {
     try
     {
-      this.amountValue_ = math.fraction(amount || 0);
+      this.amountValue_ = TimeUtils.toFraction(amount || 0);
     }
     catch (err)
     {
-      this.amountValue_ = math.fraction(0);
+      this.amountValue_ = TimeUtils.toFraction(0);
     }
   }
 }
+
+ShiftRenderNode.prototype = Object.create(BaseQueryRenderNode.prototype);
+ShiftRenderNode.prototype.constructor = ShiftRenderNode;
 
 ShiftRenderNode.prototype.resolveAmount_ = function(start)
 {
@@ -31,47 +37,31 @@ ShiftRenderNode.prototype.resolveAmount_ = function(start)
     return this.amountValue_;
   }
 
-  var epsilon = math.fraction(1, 1024);
-  var fragments = this.amountNode_.query(start, math.add(start, epsilon)) || [];
+  var epsilon = TimeUtils.epsilon();
+  var fragments = this.amountNode_.query(start, TimeUtils.add(start, epsilon)) || [];
   if (!fragments.length)
   {
-    return math.fraction(0);
+    return TimeUtils.toFraction(0);
   }
 
   try
   {
-    return math.fraction(fragments[0].value);
+    return TimeUtils.toFraction(fragments[0].value);
   }
   catch (err)
   {
-    return math.fraction(0);
+    return TimeUtils.toFraction(0);
   }
 }
 
-ShiftRenderNode.prototype.query = function(start, end)
+ShiftRenderNode.prototype.executeQuery_ = function(requestStart, requestEnd)
 {
-  var requestStart = math.fraction(start);
-  var requestEnd = math.fraction(end);
-  if (math.equal(requestStart, requestEnd))
-  {
-    return [];
-  }
-
   var amount = this.resolveAmount_(requestStart);
-  var delta = math.multiply(amount, this.direction_);
+  var delta = TimeUtils.multiply(amount, this.direction_);
 
-  var shiftedStart = math.subtract(requestStart, delta);
-  var shiftedEnd = math.subtract(requestEnd, delta);
+  var shiftedStart = TimeUtils.subtract(requestStart, delta);
+  var shiftedEnd = TimeUtils.subtract(requestEnd, delta);
   var sourceFragments = this.source_.query(shiftedStart, shiftedEnd) || [];
 
-  return sourceFragments.map(function(fragment)
-  {
-    return {
-      wholeStart: math.add(fragment.wholeStart, delta),
-      wholeEnd: math.add(fragment.wholeEnd, delta),
-      partStart: math.add(fragment.partStart, delta),
-      partEnd: math.add(fragment.partEnd, delta),
-      value: fragment.value
-    };
-  });
+  return this.shiftFragments_(sourceFragments, delta);
 }

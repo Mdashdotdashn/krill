@@ -1,44 +1,41 @@
 var math = require("mathjs");
-
+var TimeUtils = require("../../utils/time-utils.js");
 require("./query-node-utils.js");
+require("./base-query-render-node.js");
 
 ElementRenderNode = function(source)
 {
+  BaseQueryRenderNode.call(this);
   this.source_ = source;
 }
 
-ElementRenderNode.prototype.query = function(start, end)
+ElementRenderNode.prototype = Object.create(BaseQueryRenderNode.prototype);
+ElementRenderNode.prototype.constructor = ElementRenderNode;
+
+ElementRenderNode.prototype.executeQuery_ = function(requestStart, requestEnd)
 {
-  var requestStart = QueryNodeUtils.toFraction(start);
-  var requestEnd = QueryNodeUtils.toFraction(end);
-
-  if (QueryNodeUtils.hasNoWidth(requestStart, requestEnd))
-  {
-    return [];
-  }
-
   if (this.source_ && this.source_.query instanceof Function)
   {
     return this.source_.query(requestStart, requestEnd);
   }
 
   var cycleIndex = math.floor(requestStart);
-  var localStart = math.subtract(requestStart, cycleIndex);
-  var localEnd = math.subtract(requestEnd, cycleIndex);
+  var localStart = TimeUtils.subtract(requestStart, cycleIndex);
+  var localEnd = TimeUtils.subtract(requestEnd, cycleIndex);
 
-  var wholeStart = QueryNodeUtils.toFraction(0);
-  var wholeEnd = QueryNodeUtils.toFraction(1);
+  var wholeStart = TimeUtils.toFraction(0);
+  var wholeEnd = TimeUtils.toFraction(1);
   var bounds = QueryNodeUtils.overlapBounds(localStart, localEnd, wholeStart, wholeEnd);
   if (!bounds)
   {
     return [];
   }
 
-  return [{
-    wholeStart: math.add(wholeStart, cycleIndex),
-    wholeEnd: math.add(wholeEnd, cycleIndex),
-    partStart: math.add(bounds.partStart, cycleIndex),
-    partEnd: math.add(bounds.partEnd, cycleIndex),
-    value: String(this.source_)
-  }];
+  return [this.makeFragment_(
+    TimeUtils.add(wholeStart, cycleIndex),
+    TimeUtils.add(wholeEnd, cycleIndex),
+    TimeUtils.add(bounds.partStart, cycleIndex),
+    TimeUtils.add(bounds.partEnd, cycleIndex),
+    this.source_
+  )];
 }

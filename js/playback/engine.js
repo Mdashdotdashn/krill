@@ -41,15 +41,9 @@ Engine.prototype.setCps = function(cps)
 
 Engine.prototype.hush = function()
 {
-  this.running_ = false;
-  this.syncOn_ = false;
-  if (this.unsyncedTimer_)
-  {
-    clearTimeout(this.unsyncedTimer_);
-    this.unsyncedTimer_ = null;
-  }
-  this.currentTime_ = math.fraction(0);
-  this.renderingPlayer_.reset();
+  // Stop emitting ticks by clearing the render tree, but keep engine running
+  // so timing stays synchronized with cycle boundaries.
+  this.renderingPlayer_.clear();
 }
 
 Engine.prototype.start = function(syncDevice)

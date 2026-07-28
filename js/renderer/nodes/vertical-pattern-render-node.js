@@ -1,20 +1,17 @@
-require("./query-node-utils.js");
+var TimeUtils = require("../../utils/time-utils.js");
+require("./base-query-render-node.js");
 
 VerticalPatternRenderNode = function(children)
 {
+  BaseQueryRenderNode.call(this);
   this.children_ = children || [];
 }
 
-VerticalPatternRenderNode.prototype.query = function(start, end)
+VerticalPatternRenderNode.prototype = Object.create(BaseQueryRenderNode.prototype);
+VerticalPatternRenderNode.prototype.constructor = VerticalPatternRenderNode;
+
+VerticalPatternRenderNode.prototype.executeQuery_ = function(requestStart, requestEnd)
 {
-  var requestStart = QueryNodeUtils.toFraction(start);
-  var requestEnd = QueryNodeUtils.toFraction(end);
-
-  if (QueryNodeUtils.hasNoWidth(requestStart, requestEnd))
-  {
-    return [];
-  }
-
   var fragments = [];
   for (var i = 0; i < this.children_.length; i++)
   {
