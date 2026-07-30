@@ -1,0 +1,26 @@
+#pragma once
+
+#include <optional>
+
+#include "../../third_party/rapidjson/document.h"
+
+#include "../RenderNode.hpp"
+
+namespace krill
+{
+  namespace factory
+  {
+    std::optional<RenderNodePtr> makeHorizontalPatternNode(
+      const rapidjson::Value& v,
+      RenderNodePtr (*buildRenderTree)(const rapidjson::Value&),
+      std::optional<Fraction> (*valueAsFraction)(const rapidjson::Value&));
+
+    std::optional<RenderNodePtr> makeVerticalPatternNode(
+      const rapidjson::Value& v,
+      RenderNodePtr (*buildRenderTree)(const rapidjson::Value&));
+
+    std::optional<RenderNodePtr> makeTimelinePatternNode(
+      const rapidjson::Value& v,
+      RenderNodePtr (*buildRenderTree)(const rapidjson::Value&));
+  }
+}
