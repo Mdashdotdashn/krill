@@ -6,11 +6,10 @@ if ( global.v8debug) {
 	global.v8debug.Debug.setBreakOnException(); // enable it, global.v8debug is only defined when the --debug or --debug-brk flag is set
 }
 
-async function start(options)
+async function createServer(app, options)
 {
-	var app = require('./js/application.js');
-  app.init(options);
-	const server = new Hapi.Server({ port: 3000});
+  options = options || {};
+  const server = new Hapi.Server({ port: options.port || 3000 });
 
   server.application_ = app;
 
@@ -66,16 +65,43 @@ async function start(options)
           return(response);
       }
   });
-	await server.start();
-	console.log('Server running at:', server.info.uri);
+
+        server.route({
+          method: 'GET',
+          path: '/reporter',
+          handler: function (request, h) {
+            return { reply: request.server.application_.drainReportedEvents() };
+          }
+        });
+
+  return server;
 }
 
-// Initialisation
-program
-  .version('0.0.1')
-  .option('-m, --midi-device <midiDevice>', 'selects a midi interface')
-  .option('-s, --midi-sync <midiDevice>', 'selects a midi device to sync from')
-  .option('-c, --cycle <cycleString>', 'use the specied cycleString at startup');
+async function start(options)
+{
+	var app = require('./js/application.js');
+  app.init(options);
+	const server = await createServer(app, { port: 3000 });
 
-program.parse(process.argv);
-start(program.opts());
+	await server.start();
+	console.log('Server running at:', server.info.uri);
+  return server;
+}
+
+if (require.main === module)
+{
+  // Initialisation
+  program
+    .version('0.0.1')
+    .option('-m, --midi-device <midiDevice>', 'selects a midi interface')
+    .option('-s, --midi-sync <midiDevice>', 'selects a midi device to sync from')
+    .option('-c, --cycle <cycleString>', 'use the specied cycleString at startup');
+
+  program.parse(process.argv);
+  start(program.opts());
+}
+
+module.exports = {
+  createServer: createServer,
+  start: start
+};

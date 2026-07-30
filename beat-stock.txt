@@ -32,6 +32,7 @@ cat [
  "[bd sd [~ bd] [sd]]%4",
  "[bd sd [~ bd] [sd bd ~ ~]]%4"
 ] // 101 Bpm
+
 "[bd@2 bd@8 bd@3 bd@2 bd]%16,[~@4 sd@3 sd@2 sd@7]%16" //bpm 75
 
 cat [
@@ -39,3 +40,9 @@ cat [
    "[bd [sd bd] [hh bd@3] sd]" 
    ] // bpm 69.5
 
+stack
+  [
+    rotR "< 0 [0.75 0.5] 0.25>" $ "[bd oh bd rs [rs <rs ~>] [sd <~ rs rs>] rs <sd oh>]%8",
+    "<cp*2 ~ ~ [~ cp] ~ >",
+    rotL "<0.125 0.250>" $ struct "t ~@2 t ~@2 t ~@3 t ~@2 t ~@2" $ "clave" // son clave pattern
+  ] // bpm 90

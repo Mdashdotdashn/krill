@@ -11,7 +11,7 @@ mkdir build >/dev/null 2>&1
 cd build
 echo "kicking cmake"
 if [ "$platform" == "Windows" ]; then
-	cmake .. -G "Visual Studio 16 2019" -DCMAKE_INSTALL_PREFIX=. 
+	/mingw64/bin/cmake .. -G "MinGW Makefiles" -DCMAKE_MAKE_PROGRAM=/mingw64/bin/mingw32-make.exe -DCMAKE_INSTALL_PREFIX=.
 else
 	cmake .. -DCMAKE_INSTALL_PREFIX=.
 fi

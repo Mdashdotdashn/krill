@@ -1,46 +1,58 @@
 #pragma once
 
-#include "RenderNode.hpp"
+#include <utility>
+
+#include "renderer/RenderNode.hpp"
 
 namespace krill
 {
-class StretchRenderNode : public RenderNode
-{
-public:
-  StretchRenderNode(const RenderNodePtr& child, Fraction stretchFactor)
-    : mpChild(child)
-    , mStretchFactor(stretchFactor)
-  {}
-
-  void tick() override
+  class StretchRenderNode final : public RenderNode
   {
-    mpChild->tick();
-  }
-
-  Cycle render() override
-  {
-    Cycle result = mpChild->render();
-    result.length *= mStretchFactor;
-    for (auto& e : result.events)
+  public:
+    StretchRenderNode(RenderNodePtr source, Fraction factor)
+    : mpSource(std::move(source)), mFactor(std::move(factor))
     {
-      e.time *= mStretchFactor;
     }
-    return result;
-  }
 
-private:
-  RenderNodePtr mpChild;
-  Fraction mStretchFactor;
-};
+    std::vector<QueryFragment> query(const QueryRequest& request) const override
+    {
+      if (request.start == request.end || !mpSource || mFactor == Fraction(0))
+      {
+        return {};
+      }
 
-static RenderNodePtr makeStretchRenderNode(RenderNodePtr child, Fraction stretchFactor)
-{
-  return std::make_shared<StretchRenderNode>(child, stretchFactor);
+      QueryRequest localRequest;
+      localRequest.start = request.start / mFactor;
+      localRequest.end = request.end / mFactor;
+
+      const auto childFragments = mpSource->query(localRequest);
+      std::vector<QueryFragment> fragments;
+      fragments.reserve(childFragments.size());
+      for (const auto& childFragment : childFragments)
+      {
+        QueryFragment mapped;
+        mapped.wholeStart = childFragment.wholeStart * mFactor;
+        mapped.wholeEnd = childFragment.wholeEnd * mFactor;
+        mapped.partStart = childFragment.partStart * mFactor;
+        mapped.partEnd = childFragment.partEnd * mFactor;
+        mapped.value = childFragment.value;
+        fragments.push_back(mapped);
+      }
+
+      return fragments;
+    }
+
+    Fraction spanLength() const override
+    {
+      if (!mpSource)
+      {
+        return mFactor;
+      }
+      return mpSource->spanLength() * mFactor;
+    }
+
+  private:
+    RenderNodePtr mpSource{};
+    Fraction mFactor{1};
+  };
 }
-
-static RenderNodePtr makeFixedStepRenderNode(RenderNodePtr child, Fraction stepDivision)
-{
-  const auto stretchFactor = Fraction(double(child->stepCount())) / Fraction(1) / stepDivision;
-  return std::make_shared<StretchRenderNode>(child, stretchFactor);
-}
-} // namespace krill

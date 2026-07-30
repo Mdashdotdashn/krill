@@ -1,12 +1,11 @@
 var fs = require("fs");
 var assert = require("assert");
-
-require("./base.js");
+require("../js/input-evaluator.js");
 
 function runAstParityCases()
 {
   var expectedDoc = JSON.parse(fs.readFileSync("./tests/test-cases-ast.json", "utf8"));
-  var expectedCases = expectedDoc.cases;
+  var expectedCases = expectedDoc.cases || {};
 
   var parseEvaluator = new Evaluator();
 

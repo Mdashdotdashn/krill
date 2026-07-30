@@ -1,46 +1,82 @@
 #pragma once
 
-#include "RenderNode.hpp"
-#include "utils/Weaving.hpp"
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "renderer/RenderNode.hpp"
 
 namespace krill
 {
-class StructRenderNode : public RenderNode
-{
-public:
-  StructRenderNode(RenderNodePtr left, RenderNodePtr right)
-    : mpLeft(left)
-    , mpRight(right)
-  {}
-
-  void tick() override
+  class StructRenderNode : public RenderNode
   {
-    mpLeft->tick();
-    mpRight->tick();
-  }
+  public:
+    StructRenderNode(RenderNodePtr mask, RenderNodePtr source)
+      : mpMask(std::move(mask)), mpSource(std::move(source))
+    {
+    }
 
-  Cycle render() override
-  {
-    const auto leftCycle = mpLeft->render();
-    const auto rightCycle = mpRight->render();
+    std::vector<QueryFragment> query(const QueryRequest& request) const override
+    {
+      if (!(request.start < request.end))
+      {
+        return {};
+      }
 
-    return detail::weaveCycles(leftCycle,
-                               rightCycle,
-                               detail::WeaveSamplingMode::right,
-                               [](const std::string& leftValue, const std::string& rightValue) {
-                                 return detail::boolValue(rightValue)
-                                          ? leftValue
-                                          : std::string("~");
-                               });
-  }
+      const auto maskFragments = mpMask->query(request);
+      std::vector<QueryFragment> out;
 
-private:
-  RenderNodePtr mpLeft;
-  RenderNodePtr mpRight;
-};
+      for (const auto& maskFragment : maskFragments)
+      {
+        const auto slotStart = maskFragment.wholeStart;
+        const auto slotEnd = maskFragment.wholeEnd;
+        const auto partStart = request.start > slotStart ? request.start : slotStart;
+        const auto partEnd = request.end < slotEnd ? request.end : slotEnd;
+        if (!(partStart < partEnd))
+        {
+          continue;
+        }
 
-static RenderNodePtr makeStructRenderNode(RenderNodePtr left, RenderNodePtr right)
-{
-  return std::make_shared<StructRenderNode>(left, right);
+        if (isTruthyMask(maskFragment.value))
+        {
+          QueryRequest sourceRequest;
+          sourceRequest.start = partStart;
+          sourceRequest.end = partEnd;
+          const auto sourceFragments = mpSource->query(sourceRequest);
+          for (const auto& sourceFragment : sourceFragments)
+          {
+            QueryFragment mapped;
+            mapped.wholeStart = slotStart;
+            mapped.wholeEnd = slotEnd;
+            mapped.partStart = sourceFragment.partStart;
+            mapped.partEnd = sourceFragment.partEnd;
+            mapped.value = sourceFragment.value;
+            out.push_back(mapped);
+          }
+          continue;
+        }
+
+        QueryFragment rest;
+        rest.wholeStart = slotStart;
+        rest.wholeEnd = slotEnd;
+        rest.partStart = partStart;
+        rest.partEnd = partEnd;
+        rest.value = "~";
+        out.push_back(rest);
+      }
+
+      return out;
+    }
+
+  private:
+    bool isTruthyMask(const std::string& value) const
+    {
+      if (value == "t" || value == "T") return true;
+      if (value == "true" || value == "TRUE" || value == "True") return true;
+      return value == "1";
+    }
+
+    RenderNodePtr mpMask;
+    RenderNodePtr mpSource;
+  };
 }
-} // namespace krill

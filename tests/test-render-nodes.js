@@ -1,0 +1,10 @@
+require("./render-nodes/test-horizontal.js");
+require("./render-nodes/test-vertical.js");
+require("./render-nodes/test-timeline.js");
+require("./render-nodes/test-stretch.js");
+require("./render-nodes/test-bjorklund.js");
+require("./render-nodes/test-struct.js");
+require("./render-nodes/test-add.js");
+require("./render-nodes/test-scale.js");
+require("./render-nodes/test-shift.js");
+require("./render-nodes/test-trunc.js");

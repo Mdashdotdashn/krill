@@ -1,128 +1,204 @@
-require("../patterns/pattern.js");
 var math = require("mathjs");
-const _ = require("lodash");
+require("../renderer/query-contract.js");
+var TimeUtils = require("../utils/time-utils.js");
 
+// Minimal query-only player used during teardown/rebuild.
+// It preserves the player seam while delegating behavior to RenderTree.query().
+//
+// API CONTRACT:
+// ==============
+// PREFERRED (new, recommended):
+//   - nextOnsetTimeFrom(time) → Fraction: Next onset strictly after time
+//   - eventsAtTime(time) → string[]: Values at the given time, or [] if none
+//
+// COMPATIBILITY (deprecated, for migration period):
+//   - advance(time) → Fraction: Alias for nextOnsetTimeFrom()
+//   - eventForTime(time) → {time, values} | null: Alias for eventsAtTime() (wraps in object)
+//   - eventsForTime(time) → string[]: Alias for eventsAtTime()
+//
+// See: docs/standalone-app-restore-plan.md Phase 4
+//
 RenderingTreePlayer = function()
 {
-  // current rendering tree
-  this.renderingTree_ = undefined;
-  // Next queued sequence
-  this.queued_ = undefined;
-  // Specify we're heading toward a cycle reset (no sequence/end of sequence)
-  this.cycleReset_ = false;
-  // Current sequence
-  this.sequence_ = undefined;
-  // Local cycle offset
-  this.cycleOffset_ = math.fraction(0);
+  this.renderingTree_ = null;
+  this.pendingRenderingTree_ = null;
 }
 
 RenderingTreePlayer.prototype.setRenderingTree = function(tree)
 {
-  this.queued_ = _.cloneDeep(tree);
-}
-
-RenderingTreePlayer.prototype.cycleLength = function()
-{
-  return math.fraction(this.sequence_ ? this.sequence_.cycleLength_ : "1/1");
-}
-
-RenderingTreePlayer.prototype.cycleTimeAndStart = function(time)
-{
-  var localTime = math.subtract(math.fraction(time), this.cycleOffset_);
-  var cycleLength = this.cycleLength();
-  var cycleTime = math.mod(localTime,cycleLength);
-  var cycleStart = math.multiply(math.floor(math.divide(localTime, cycleLength)), cycleLength) + this.cycleOffset_;
-  return { cycleTime: cycleTime, start: cycleStart};
-}
-
-RenderingTreePlayer.prototype.advance = function(time)
-{
-//  console.log("-----------------------------"+ time);
-//  console.log("length = "+ cycleLength);
-//  console.log("inner cycle time = "+cycleTime);
-//  console.log("cycle offset = "+offset);
-
-  const cycleTimeAndStart = this.cycleTimeAndStart(time);
-  const cycleStart = cycleTimeAndStart.start;
-  const cycleTime = cycleTimeAndStart.cycleTime;
-  const cycleLength = this.cycleLength();
-
-  // If we don't have a sequence, we reply we should be triggered
-  // at next cycle. We also flag resetCycle so that we queue an incoming
-  // sequence if queued
-  if (!this.sequence_)
+  if (!this.renderingTree_)
   {
-    var position = math.add(cycleStart, cycleLength);
-    this.current_ = new PatternEvent(position,undefined);
-    this.resetCycle_ = true;
+    this.renderingTree_ = tree;
+    return;
   }
-  else {
-    var nextData = this.sequence_.nextTimeFrom(cycleTime);
-    if (!nextData) this.resetCycle_ = true;
-    var position = fracToString(math.add(cycleStart, nextData ? nextData.time() : cycleLength));
-    this.current_ = new PatternEvent(position, nextData ? nextData.values() : undefined);
-  }
-  return this.current_.time();
+
+  // Mid-cycle updates are applied when nextOnsetTimeFrom() crosses a cycle boundary.
+  this.pendingRenderingTree_ = tree;
 }
 
+// Alias kept for naming parity with C++ RenderTreePlayer::setTree.
+RenderingTreePlayer.prototype.setTree = function(tree)
+{
+  this.setRenderingTree(tree);
+}
+
+RenderingTreePlayer.prototype.reset = function()
+{
+  if (this.pendingRenderingTree_)
+  {
+    this.renderingTree_ = this.pendingRenderingTree_;
+    this.pendingRenderingTree_ = null;
+  }
+}
+
+// Clear both trees completely (used by hush to reset state for next playback).
 RenderingTreePlayer.prototype.clear = function()
 {
-  // probably a lot more complex than this
-  this.resetCycle_ = true;
-  this.sequence_ = undefined;
-  this.renderingTree_ = undefined;
-  this.queued_ = undefined;
-  this.cycleOffset_ = math.fraction(0);
-  this.current_ = new PatternEvent("0", null);
+  this.renderingTree_ = null;
+  this.pendingRenderingTree_ = null;
 }
 
-// Returns the event queued for the current time if it matches the time
+RenderingTreePlayer.prototype.toFraction_ = TimeUtils.toFraction;
+RenderingTreePlayer.prototype.cycleStart_ = TimeUtils.cycleStart;
+RenderingTreePlayer.prototype.nextCycleBoundary_ = TimeUtils.nextCycleBoundary;
+RenderingTreePlayer.prototype.epsilon_ = TimeUtils.epsilon;
 
-RenderingTreePlayer.prototype.eventForTime = function(currentTime)
+RenderingTreePlayer.prototype.queryArc = function(start, end)
 {
-  // If the last advance lead to a cycle end we evaluate possible
-  // queueing and set data to the start of the next cycle
-  if (this.resetCycle_)
+  if (!this.renderingTree_ || !this.renderingTree_.query)
   {
-    if (this.queued_)
-    {
-      // trigger the sequence and update the current values
-      // to be the data at the beginning of it.
-      this.renderingTree_ = this.queued_;
-    }
-    // This is a shortcut not taking into account there could be no data at
-    // for 0/1 (for example "rotL 0.01 $ [1, 2]")
-
-    if (this.renderingTree_)
-    {
-      this.sequence_ = this.renderingTree_.render();
-      this.cycleOffset_ = currentTime;
-      if (this.sequence_.size() > 0)
-      {
-        var firstSlice = this.sequence_.dataAtIndex(0);
-        this.current_.values_ = math.equal(firstSlice.time_, math.fraction(0)) ? firstSlice.values_ : null;
-      }
-      else
-      {
-        this.current_.values_ = null;
-      }
-      this.renderingTree_.tick();
-    }
-    else
-    {
-      this.current_.values_ = null;
-    }
-    this.queued_ = undefined;
-    this.resetCycle_ = false;
+    return [];
   }
-
-  // Look if an event is set for this player
-  if (this.current_ && this.current_.values_)
-  {
-    // Look if it matches the current time
-    if (math.equal(math.fraction(currentTime), this.current_.time()))
-    {
-      return { values: this.current_.values() };
-    }
-  }
+  return this.renderingTree_.query(start, end) || [];
 }
+
+RenderingTreePlayer.prototype.queryPointWindow = function(time)
+{
+  var start = math.fraction(time);
+  var epsilon = this.epsilon_();
+  var end = math.add(start, epsilon);
+  return this.queryArc(start, end);
+}
+
+// Preferred payload API: returns the values array at the given time, or [] if none.
+RenderingTreePlayer.prototype.eventsAtTime = function(time)
+{
+  var eventTime = this.toFraction_(time);
+  var fragments = this.queryPointWindow(eventTime);
+  var values = [];
+
+  fragments.forEach(function(fragment) {
+    if (fragment.wholeStart === undefined)
+    {
+      return;
+    }
+
+    if (TimeUtils.equal(fragment.wholeStart, eventTime))
+    {
+      values.push(String(fragment.value));
+    }
+  });
+
+  return values;
+}
+
+// Preferred scheduler API: returns the next onset time strictly after the given time.
+//
+// Uses a point query (queryPointWindow) at each step rather than a large arc
+// query, so time-varying render-node parameters (e.g. ShiftRenderNode amounts)
+// are always resolved at the correct point in time. Within each step, wholeEnd
+// from the returned fragment is used to jump directly to the start of the next
+// slot, avoiding fixed-size step scanning.
+RenderingTreePlayer.prototype.nextOnsetTimeFrom = function(time)
+{
+  var current = this.toFraction_(time);
+  var nextBoundary = this.nextCycleBoundary_(current);
+  var lookAheadCycles = math.fraction(16);
+  var searchEnd = this.pendingRenderingTree_
+    ? nextBoundary
+    : math.add(current, lookAheadCycles);
+
+  var t = current;
+
+  while (TimeUtils.smaller(t, searchEnd))
+  {
+    var fragments = this.queryPointWindow(t);
+
+    if (fragments.length === 0)
+    {
+      t = this.nextCycleBoundary_(t);
+      continue;
+    }
+
+    var nextOnset = null;
+    var nextT = null;
+
+    for (var i = 0; i < fragments.length; i++)
+    {
+      var f = fragments[i];
+      if (f.wholeStart === undefined)
+      {
+        continue;
+      }
+
+      var onset = TimeUtils.toFraction(f.wholeStart);
+
+      // Onset strictly after current and within the search range.
+      if (TimeUtils.larger(onset, current) && TimeUtils.smallerEq(onset, searchEnd))
+      {
+        if (nextOnset === null || TimeUtils.smaller(onset, nextOnset))
+        {
+          nextOnset = onset;
+        }
+      }
+
+      // wholeEnd gives the exact start of the next slot — use it to advance t.
+      if (f.wholeEnd !== undefined)
+      {
+        var end = TimeUtils.toFraction(f.wholeEnd);
+        if (TimeUtils.larger(end, t) && (nextT === null || TimeUtils.smaller(end, nextT)))
+        {
+          nextT = end;
+        }
+      }
+    }
+
+    if (nextOnset !== null)
+    {
+      return nextOnset;
+    }
+
+    t = nextT !== null ? nextT : this.nextCycleBoundary_(t);
+  }
+
+  if (this.pendingRenderingTree_)
+  {
+    this.renderingTree_ = this.pendingRenderingTree_;
+    this.pendingRenderingTree_ = null;
+  }
+
+  return nextBoundary;
+}
+
+// Compatibility aliases for migration period (deprecated, use preferred API above).
+RenderingTreePlayer.prototype.advance = function(time)
+{
+  return this.nextOnsetTimeFrom(time);
+}
+
+RenderingTreePlayer.prototype.eventForTime = function(time)
+{
+  var values = this.eventsAtTime(time);
+  if (values && values.length > 0)
+  {
+    return {time: this.toFraction_(time), values: values};
+  }
+  return null;
+}
+
+RenderingTreePlayer.prototype.eventsForTime = function(time)
+{
+  return this.eventsAtTime(time);
+}
+
+

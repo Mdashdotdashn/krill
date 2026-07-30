@@ -22,7 +22,7 @@ The main server entry point is [main.js](main.js). It creates the web server and
 [js/application.js](js/application.js) is the integration point for the JS runtime:
 
 - [js/input-evaluator.js](js/input-evaluator.js) parses source text using [grammar.txt](grammar.txt)
-- [js/rendering-tree.js](js/rendering-tree.js) turns the parsed model into operator and pattern nodes
+- [js/renderer/render-tree.js](js/renderer/render-tree.js) turns the parsed model into render nodes and pattern nodes
 - [js/playback/engine.js](js/playback/engine.js) schedules playback in cycle time
 - [js/playback/rendering-tree-player.js](js/playback/rendering-tree-player.js) advances the current tree and returns the next event to emit
 - [js/playback/playback-device.js](js/playback/playback-device.js) converts event values into MIDI output
@@ -47,9 +47,9 @@ The JS parser output is also the bridge toward the embedded implementation, so m
 
 ## Rendering tree and operator principles
 
-[js/rendering-tree.js](js/rendering-tree.js) is the bridge between parsed data and runtime behavior. It recursively walks parsed nodes and dispatches them to operator constructors.
+[js/renderer/render-tree.js](js/renderer/render-tree.js) is the bridge between parsed data and runtime behavior. It recursively walks parsed nodes and dispatches them to render-node constructors.
 
-The operator framework lives in [js/operators/operators.js](js/operators/operators.js). Operators follow a simple contract:
+The render-node framework lives in [js/renderer/nodes/render-nodes.js](js/renderer/nodes/render-nodes.js). Render nodes follow a simple contract:
 
 - they receive arguments that can be rendered
 - `tick()` advances stateful children
@@ -57,14 +57,14 @@ The operator framework lives in [js/operators/operators.js](js/operators/operato
 
 Most feature work on the JS side should happen here:
 
-- new transformations usually belong in a new file under [js/operators/](js/operators/)
+- new transformations usually belong in a new file under [js/renderer/nodes/](js/renderer/nodes/)
 - new pattern composition behavior should reuse the pattern utilities in [js/patterns/](js/patterns/)
-- operator dispatch should be wired in [js/rendering-tree.js](js/rendering-tree.js)
+- render-node dispatch should be wired in [js/renderer/render-tree.js](js/renderer/render-tree.js)
 
 Representative files:
 
-- [js/operators/op-add.js](js/operators/op-add.js) shows a binary operator using pattern weaving
-- [js/operators/op-pattern.js](js/operators/op-pattern.js) shows how weighted steps and sequence rendering are built
+- [js/renderer/nodes/add-render-node.js](js/renderer/nodes/add-render-node.js) shows a binary render node using pattern weaving
+- [js/renderer/nodes/weighted-pattern-render-node.js](js/renderer/nodes/weighted-pattern-render-node.js) shows how weighted steps and sequence rendering are built
 - [js/patterns/pattern.js](js/patterns/pattern.js) defines the core pattern data structure and timing helpers
 - [js/patterns/weaving.js](js/patterns/weaving.js) is the place to look for pattern-combination behavior
 
@@ -83,15 +83,15 @@ If a feature changes musical meaning, it usually belongs in the parser or operat
 Use this rule of thumb:
 
 - New syntax or notation: update [grammar.txt](grammar.txt) and verify the parsed model through [js/input-evaluator.js](js/input-evaluator.js)
-- New operator: add an operator file under [js/operators/](js/operators/), wire it in [js/rendering-tree.js](js/rendering-tree.js), and add tests
+- New render node: add a render-node file under [js/renderer/nodes/](js/renderer/nodes/), wire it in [js/renderer/render-tree.js](js/renderer/render-tree.js), and add tests
 - New pattern behavior: extend [js/patterns/pattern.js](js/patterns/pattern.js) or related pattern utilities rather than special-casing callers
 - New playback or timing behavior: start in [js/playback/rendering-tree-player.js](js/playback/rendering-tree-player.js) or [js/playback/engine.js](js/playback/engine.js), but only if the feature is truly about scheduling
 
-Typical operator work usually touches four places:
+Typical render-node work usually touches four places:
 
 1. [grammar.txt](grammar.txt) if the syntax is new
-2. a new or updated file in [js/operators/](js/operators/)
-3. operator dispatch in [js/rendering-tree.js](js/rendering-tree.js)
+2. a new or updated file in [js/renderer/nodes/](js/renderer/nodes/)
+3. render-node dispatch in [js/renderer/render-tree.js](js/renderer/render-tree.js)
 4. tests in [tests/](tests/)
 
 ## Tests
@@ -102,7 +102,7 @@ Useful entry points:
 
 - [tests/base.js](tests/base.js) provides shared evaluator helpers
 - [tests/test-evaluator.js](tests/test-evaluator.js) covers parser and model behavior
-- [tests/test-operator.js](tests/test-operator.js) covers operator contracts
+- [tests/test-render-node.js](tests/test-render-node.js) covers render-node contracts
 - [tests/test-pattern.js](tests/test-pattern.js) covers pattern-level behavior
 - [tests/test-weaving.js](tests/test-weaving.js) covers pattern combination behavior
 - [tests/test-sequence-player.js](tests/test-sequence-player.js) covers playback timing
@@ -116,8 +116,8 @@ For changes that affect user-visible musical behavior, prefer adding or updating
 - [js/application.js](js/application.js) for top-level JS wiring
 - [grammar.txt](grammar.txt) for syntax ownership
 - [js/input-evaluator.js](js/input-evaluator.js) for parse entry
-- [js/rendering-tree.js](js/rendering-tree.js) for parsed-model to runtime dispatch
-- [js/operators/operators.js](js/operators/operators.js) for operator contract
+- [js/renderer/render-tree.js](js/renderer/render-tree.js) for parsed-model to runtime dispatch
+- [js/renderer/nodes/render-nodes.js](js/renderer/nodes/render-nodes.js) for render-node contract
 - [js/patterns/pattern.js](js/patterns/pattern.js) for core pattern behavior
 - [js/playback/rendering-tree-player.js](js/playback/rendering-tree-player.js) for event scheduling within a cycle
 - [tests/test-run-cases.js](tests/test-run-cases.js) for end-to-end JS behavior

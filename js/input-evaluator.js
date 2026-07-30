@@ -1,6 +1,5 @@
 var peg = require("pegjs");
 var fs = require('fs');
-const _ = require('lodash');
 
 ///////////////////////////////////////////////////////////////////////////////
 // from https://stackoverflow.com/questions/286141/remove-blank-attributes-from-an-object-in-javascript/
@@ -23,4 +22,16 @@ Evaluator.prototype.evaluate = function(s)
 	// Parses the command and returns a recursive tree of node stub
   const raw = this.parser.parse(s);
   return removeEmpty(raw);
+}
+
+Evaluator.prototype.evaluateRenderingTree = function(s)
+{
+  if (typeof RenderingTreeBuilder === "undefined")
+  {
+    require("./renderer/render-tree.js");
+  }
+
+  var model = this.evaluate(s);
+  var renderingTreeBuilder = new RenderingTreeBuilder();
+  return renderingTreeBuilder.rebuild(model);
 }

@@ -7,7 +7,9 @@
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
+#include <iomanip>
 #include <memory>
+#include <sstream>
 #include <string>
 
 namespace krill {
@@ -440,7 +442,24 @@ struct KrillParser::Impl {
             const auto arg = firstOperatorArgumentValue(vs);
             if (arg.has_value())
             {
-                pushAnyToJsonArray(*args, arg, alloc);
+                if (arg.type() == typeid(double))
+                {
+                    std::ostringstream oss;
+                    oss << std::setprecision(15) << std::any_cast<double>(arg);
+                    auto text = oss.str();
+                    if (text.find('.') != std::string::npos)
+                    {
+                        while (!text.empty() && text.back() == '0') text.pop_back();
+                        if (!text.empty() && text.back() == '.') text.pop_back();
+                    }
+                    rapidjson::Value v;
+                    v.SetString(text.c_str(), rapidjson::SizeType(text.size()), alloc);
+                    args->PushBack(v, alloc);
+                }
+                else
+                {
+                    pushAnyToJsonArray(*args, arg, alloc);
+                }
             }
             args->PushBack(rapidjson::Value(1), alloc);
             return OperatorInfo{"shift", args};
@@ -452,7 +471,24 @@ struct KrillParser::Impl {
             const auto arg = firstOperatorArgumentValue(vs);
             if (arg.has_value())
             {
-                pushAnyToJsonArray(*args, arg, alloc);
+                if (arg.type() == typeid(double))
+                {
+                    std::ostringstream oss;
+                    oss << std::setprecision(15) << std::any_cast<double>(arg);
+                    auto text = oss.str();
+                    if (text.find('.') != std::string::npos)
+                    {
+                        while (!text.empty() && text.back() == '0') text.pop_back();
+                        if (!text.empty() && text.back() == '.') text.pop_back();
+                    }
+                    rapidjson::Value v;
+                    v.SetString(text.c_str(), rapidjson::SizeType(text.size()), alloc);
+                    args->PushBack(v, alloc);
+                }
+                else
+                {
+                    pushAnyToJsonArray(*args, arg, alloc);
+                }
             }
             args->PushBack(rapidjson::Value(-1), alloc);
             return OperatorInfo{"shift", args};

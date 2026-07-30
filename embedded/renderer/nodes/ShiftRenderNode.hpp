@@ -1,107 +1,170 @@
 #pragma once
 
-#include "RenderNode.hpp"
-#include "utils/Weaving.hpp"
+#include <cctype>
+#include <memory>
+#include <optional>
+#include <string>
+#include <vector>
 
-#include <algorithm>
+#include "renderer/RenderNode.hpp"
 
 namespace krill
 {
-class ShiftRenderNode : public RenderNode
-{
-public:
-  ShiftRenderNode(RenderNodePtr child, Fraction shift)
-    : mpChild(child)
-    , mShift(shift)
-    , mUseDynamicShift(false)
-  {}
-
-  ShiftRenderNode(RenderNodePtr child, RenderNodePtr shiftArg, Fraction direction)
-    : mpChild(child)
-    , mpShiftArg(shiftArg)
-    , mDirection(direction)
-    , mUseDynamicShift(true)
-  {}
-
-  void tick() override
+  class ShiftRenderNode : public RenderNode
   {
-    mpChild->tick();
-    if (mUseDynamicShift)
+  public:
+    ShiftRenderNode(RenderNodePtr source, Fraction amount, long direction)
+      : mpSource(std::move(source)), mAmount(amount), mDirection(direction)
     {
-      mpShiftArg->tick();
     }
-  }
 
-  Cycle render() override
-  {
-    Cycle result = mpChild->render();
-
-    if (mUseDynamicShift)
+    ShiftRenderNode(RenderNodePtr source, RenderNodePtr amountSource, long direction)
+      : mpSource(std::move(source)), mpAmountSource(std::move(amountSource)), mAmount(Fraction(0)), mDirection(direction)
     {
-      const auto shifts = mpShiftArg->render();
-      if (result.length == Fraction(0))
+    }
+
+    std::vector<QueryFragment> query(const QueryRequest& request) const override
+    {
+      if (!(request.start < request.end))
       {
-        return result;
+        return {};
       }
 
-      EventArray shiftedEvents;
-      shiftedEvents.reserve(result.events.size());
+      const auto amount = resolveAmount(request.start);
+      const auto delta = amount * Fraction(mDirection, 1);
 
-      for (const auto& e : result.events)
+      QueryRequest shifted;
+      shifted.start = request.start - delta;
+      shifted.end = request.end - delta;
+      const auto sourceFragments = mpSource->query(shifted);
+
+      std::vector<QueryFragment> out;
+      out.reserve(sourceFragments.size());
+      for (const auto& fragment : sourceFragments)
       {
-        const auto shiftValues = detail::sampleCycle(shifts, e.time);
-        for (const auto& shiftValue : shiftValues)
+        QueryFragment mapped;
+        mapped.wholeStart = fragment.wholeStart + delta;
+        mapped.wholeEnd = fragment.wholeEnd + delta;
+        mapped.partStart = fragment.partStart + delta;
+        mapped.partEnd = fragment.partEnd + delta;
+        mapped.value = fragment.value;
+        out.push_back(mapped);
+      }
+      return out;
+    }
+
+  private:
+    std::optional<Fraction> parseAmountText(const std::string& text) const
+    {
+      if (text.empty())
+      {
+        return std::nullopt;
+      }
+
+      if (text.find('/') != std::string::npos)
+      {
+        try
         {
-          Fraction delta = detail::fractionFromValueOrZero(shiftValue);
-          delta *= mDirection;
-
-          auto shiftedTime = e.time + delta;
-          while (shiftedTime >= result.length) shiftedTime -= result.length;
-          while (shiftedTime < Fraction(0)) shiftedTime += result.length;
-          shiftedTime.reduce();
-
-          shiftedEvents.push_back(Cycle::Event{shiftedTime, e.values});
+          return Fraction(text);
+        }
+        catch (...)
+        {
+          return std::nullopt;
         }
       }
 
-      return {result.length, detail::mergeEventsByTime(shiftedEvents)};
+      size_t pos = 0;
+      bool negative = false;
+      if (text[pos] == '+' || text[pos] == '-')
+      {
+        negative = text[pos] == '-';
+        pos++;
+      }
+      if (pos >= text.size())
+      {
+        return std::nullopt;
+      }
+
+      const auto dot = text.find('.', pos);
+      const auto hasDot = dot != std::string::npos;
+      const auto intPart = hasDot ? text.substr(pos, dot - pos) : text.substr(pos);
+      const auto fracPart = hasDot ? text.substr(dot + 1) : std::string{};
+
+      if (intPart.empty() && fracPart.empty())
+      {
+        return std::nullopt;
+      }
+
+      for (const char c : intPart)
+      {
+        if (!std::isdigit(static_cast<unsigned char>(c)))
+        {
+          return std::nullopt;
+        }
+      }
+      for (const char c : fracPart)
+      {
+        if (!std::isdigit(static_cast<unsigned char>(c)))
+        {
+          return std::nullopt;
+        }
+      }
+
+      long whole = 0;
+      if (!intPart.empty())
+      {
+        whole = std::stol(intPart);
+      }
+
+      long denom = 1;
+      for (size_t i = 0; i < fracPart.size(); i++)
+      {
+        denom *= 10;
+      }
+
+      long frac = 0;
+      if (!fracPart.empty())
+      {
+        frac = std::stol(fracPart);
+      }
+
+      long numer = whole * denom + frac;
+      if (negative)
+      {
+        numer = -numer;
+      }
+
+      return Fraction(numer, denom);
     }
 
-    const auto length = result.length;
-
-    for (auto& e : result.events)
+    Fraction resolveAmount(const Fraction& start) const
     {
-      e.time = e.time + mShift;
-      while (e.time >= length) e.time = e.time - length;
-      while (e.time < Fraction(0)) e.time = e.time + length;
-      e.time.reduce();
+      if (!mpAmountSource)
+      {
+        return mAmount;
+      }
+
+      QueryRequest req;
+      req.start = start;
+      req.end = start + Fraction(1, 1024);
+      const auto fragments = mpAmountSource->query(req);
+      if (fragments.empty())
+      {
+        return Fraction(0);
+      }
+
+      const auto parsed = parseAmountText(fragments[0].value);
+      if (parsed.has_value())
+      {
+        return parsed.value();
+      }
+
+      return Fraction(0);
     }
 
-    std::sort(result.events.begin(), result.events.end(),
-              [](const Cycle::Event& a, const Cycle::Event& b) {
-                return a.time < b.time;
-              });
-
-    return result;
-  }
-
-private:
-  RenderNodePtr mpChild;
-  RenderNodePtr mpShiftArg;
-  Fraction      mShift;
-  Fraction      mDirection{1};
-  bool          mUseDynamicShift;
-};
-
-static RenderNodePtr makeShiftRenderNode(RenderNodePtr child, Fraction shift)
-{
-  return std::make_shared<ShiftRenderNode>(child, shift);
+    RenderNodePtr mpSource;
+    RenderNodePtr mpAmountSource;
+    Fraction mAmount;
+    long mDirection;
+  };
 }
-
-static RenderNodePtr makeShiftRenderNode(RenderNodePtr child,
-                                         RenderNodePtr shiftArg,
-                                         Fraction direction)
-{
-  return std::make_shared<ShiftRenderNode>(child, shiftArg, direction);
-}
-} // namespace krill

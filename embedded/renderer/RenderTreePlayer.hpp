@@ -1,8 +1,6 @@
 #pragma once
 
-#include "nodes/AllNodes.hpp"
-
-#include "cycle/Cycle.hpp"
+#include "RenderNode.hpp"
 
 #include <optional>
 
@@ -11,115 +9,151 @@ namespace krill
   class RenderTreePlayer
   {
   public:
-
-    RenderTreePlayer()
-    {}
-
-    void setTree(RenderNodePtr pTree)
+    void setTree(RenderNodePtr tree)
     {
-      mpQueuedTree = pTree;
+      if (!mpTree)
+      {
+        mpTree = std::move(tree);
+        return;
+      }
+
+      // Mid-cycle updates are applied when nextOnsetTimeFrom() crosses a cycle boundary.
+      mpPendingTree = std::move(tree);
     }
 
-    // Advance in the current cycle and returns the position
-    // where eventForTime should be called. We prepare the next
-    // event to broadcast when @eventForTime will be called.
-    // (An empty event is always sent at the end of the 
-    // current cycle).
-    Fraction advance(const Fraction& currentTime)
+    void reset()
     {
-      const auto cycleTimeAndStart = calcCycleTimeAndStart(currentTime);
-      const auto cycleTime = cycleTimeAndStart.first;
-      const auto cycleStart = cycleTimeAndStart.second;
-
-      // Do we have an event to broadcast ?
-      const std::optional<Cycle::Event> oNextEvent = mpCurrentTree ? findEventAfter(mCurrentCycle, cycleTime) : std::optional<Cycle::Event>{};
-      if (oNextEvent)
+      if (mpPendingTree)
       {
-        const auto position = cycleStart + oNextEvent->time;
-        mQueuedEvent = Cycle::Event{ position, oNextEvent->values };
+        mpTree = mpPendingTree;
+        mpPendingTree.reset();
       }
-      else
-      {
-        mShouldReset = true;
-        const auto cycleLength = mCurrentCycle.length;
-        const auto position = cycleStart + cycleLength;
-        mQueuedEvent = Cycle::Event{ position, {} };
-      }
-      return mQueuedEvent.time;
     }
 
-    std::optional<Cycle::Event> eventForTime(const Fraction& currentTime)
+    std::vector<QueryFragment> queryArc(const Fraction& start, const Fraction& end) const
     {
-      // In the case we have a reset, there could be an even waiting for
-      // us at the beginning of the next sequence, in which case we'll
-      // update mQueuedEvent to contain the values associated to that event.
-      if (mShouldReset)
+      if (!mpTree)
       {
-        if (mpQueuedTree)
+        return {};
+      }
+      return mpTree->query(QueryRequest{start, end});
+    }
+
+    std::vector<QueryFragment> queryPointWindow(const Fraction& time) const
+    {
+      return queryArc(time, time + epsilon());
+    }
+
+    // Preferred payload API: returns the values array at the given time, or {} if none.
+    std::vector<std::string> eventsAtTime(const Fraction& time) const
+    {
+      const auto fragments = queryPointWindow(time);
+      std::vector<std::string> values;
+
+      for (const auto& fragment : fragments)
+      {
+        if (fragment.wholeStart == time)
         {
-          mpCurrentTree = mpQueuedTree;
-          mpQueuedTree = nullptr;
+          values.push_back(fragment.value);
+        }
+      }
+
+      return values;
+    }
+
+    // Preferred scheduler API: returns the next onset time strictly after the given time.
+    //
+    // Uses a point query (queryPointWindow) at each step rather than a large arc
+    // query, so time-varying render-node parameters are always resolved at the
+    // correct point in time. Within each step, wholeEnd from the returned fragment
+    // is used to jump directly to the start of the next slot, avoiding fixed-size
+    // step scanning.
+    Fraction nextOnsetTimeFrom(const Fraction& time)
+    {
+      const Fraction current = time;
+      const Fraction nextBoundary = nextCycleBoundary(current);
+      const Fraction searchEnd = mpPendingTree ? nextBoundary : (current + lookAheadCycles());
+
+      Fraction t = current;
+
+      while (t < searchEnd)
+      {
+        const auto fragments = queryPointWindow(t);
+
+        if (fragments.empty())
+        {
+          t = nextCycleBoundary(t);
+          continue;
         }
 
-        mShouldReset = false;
+        std::optional<Fraction> nextOnset;
+        std::optional<Fraction> nextT;
 
-        if (mpCurrentTree)
+        for (const auto& f : fragments)
         {
-          mpCurrentTree->tick();
-          mCurrentCycle = mpCurrentTree->render();
-          mCurrentCycleOffset = currentTime;
-          if (mCurrentCycle.events.size() > 0)
+          Fraction onset = f.wholeStart;
+          onset.reduce();
+
+          // Onset strictly after current and within the search range.
+          if (onset > current && onset <= searchEnd)
           {
-            const auto firstEvent = mCurrentCycle.events[0];
-            mQueuedEvent.values.clear();
-            if (firstEvent.time == Fraction(0))
+            if (!nextOnset || onset < *nextOnset)
             {
-              mQueuedEvent.values = firstEvent.values;
+              nextOnset = onset;
             }
           }
-          else
+
+          // wholeEnd gives the exact start of the next slot — use it to advance t.
+          Fraction end = f.wholeEnd;
+          end.reduce();
+          if (end > t && (!nextT || end < *nextT))
           {
-            clearQueuedEvent();
+            nextT = end;
           }
         }
-        else
+
+        if (nextOnset)
         {
-          mCurrentCycle = Cycle{ 1, {} };
-          clearQueuedEvent();
+          return *nextOnset;
         }
+
+        t = nextT ? *nextT : nextCycleBoundary(t);
+        t.reduce();
       }
 
-      if (mQueuedEvent.values.size() > 0)
+      if (mpPendingTree)
       {
-        if (mQueuedEvent.time == currentTime)
-        {
-          return mQueuedEvent;
-        }
+        mpTree = mpPendingTree;
+        mpPendingTree.reset();
       }
-      return {};
+
+      return nextBoundary;
     }
+
+
 
   private:
-
-    std::pair<Fraction, Fraction>  calcCycleTimeAndStart(const Fraction& time)
+    static Fraction cycleStart(const Fraction& time)
     {
-      const auto localTime = time - mCurrentCycleOffset;
-      const auto cycleLength = mCurrentCycle.length;
-      const auto cycleTime = localTime % cycleLength;
-      const auto cycleStart = floor(localTime / cycleLength) * cycleLength + mCurrentCycleOffset;
-      return { Fraction(cycleTime), cycleStart };
+      return floor(time);
     }
 
-    void clearQueuedEvent()
+    static Fraction nextCycleBoundary(const Fraction& time)
     {
-      mQueuedEvent.values = {};
+      return cycleStart(time) + Fraction(1);
     }
 
-    RenderNodePtr mpCurrentTree{};
-    RenderNodePtr mpQueuedTree{};
-    bool mShouldReset{ false };
-    Cycle mCurrentCycle{ 1, {} };
-    Fraction mCurrentCycleOffset{ 0 };
-    Cycle::Event mQueuedEvent;
+    static Fraction epsilon()
+    {
+      return Fraction(1, 1024);
+    }
+
+    static Fraction lookAheadCycles()
+    {
+      return Fraction(16);
+    }
+
+    RenderNodePtr mpTree{};
+    RenderNodePtr mpPendingTree{};
   };
-} // namespace krill
+}

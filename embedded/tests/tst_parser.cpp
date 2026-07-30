@@ -139,6 +139,12 @@ TEST_CASE("Parser")
     checkParsing("slow 2 $ euclid 5 8 $ 'bd'", "{'type_':'stretch','arguments_':[2.0],'source_':{'type_':'bjorklund','arguments_':[5,8],'source_':{'type_':'element','source_':'bd'}}}");
   }
 
+	SECTION("rotation operator canonicalization")
+	{
+		checkParsing("rotR 0.125 $ 'bd ~ sd ~'", "{'type_':'shift','arguments_':['0.125',1],'source_':{'type_':'pattern','arguments_':{'alignment':'h'},'source_':[{'type_':'element','source_':'bd'},{'type_':'element','source_':'~'},{'type_':'element','source_':'sd'},{'type_':'element','source_':'~'}]}}");
+		checkParsing("rotL '<0 0.125>' $ 'bd ~ sd ~'", "{'type_':'shift','arguments_':[{'type_':'element','source_':{'type_':'pattern','arguments_':{'alignment':'t'},'source_':[{'type_':'element','source_':'0'},{'type_':'element','source_':'0.125'}]}},-1],'source_':{'type_':'pattern','arguments_':{'alignment':'h'},'source_':[{'type_':'element','source_':'bd'},{'type_':'element','source_':'~'},{'type_':'element','source_':'sd'},{'type_':'element','source_':'~'}]}}");
+	}
+
 	SECTION("timing transform canonicalization")
 	{
 		checkParsingFromXml("{ 'source': '[a]/2', 'model': { 'type_':'element', 'source_': {'type_':'element','source_':'a'}, 'options_': {'operator': {'type_':'stretch','arguments_':[2.0]}} } }");

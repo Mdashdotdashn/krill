@@ -1,76 +1,97 @@
 #pragma once
 
-#include "RenderNode.hpp"
+#include <optional>
+#include <string>
+#include <vector>
 
 #include "harmony/theory/Scale.hpp"
-
-#include <string>
+#include "renderer/RenderNode.hpp"
 
 namespace krill
 {
-class ScaleRenderNode : public RenderNode
-{
-public:
-  ScaleRenderNode(RenderNodePtr child, std::string scaleName)
-    : mpChild(std::move(child))
-    , mScaleName(std::move(scaleName))
-    , mIntervals(harmony::scaleIntervals(mScaleName))
-  {}
-
-  void tick() override
+  class ScaleRenderNode : public RenderNode
   {
-    mpChild->tick();
-  }
-
-  Cycle render() override
-  {
-    const auto source = mpChild->render();
-    if (!mIntervals.has_value() || mIntervals->empty())
+  public:
+    ScaleRenderNode(std::string scaleName, RenderNodePtr source)
+      : mScaleName(std::move(scaleName)), mpSource(std::move(source))
     {
-      return Cycle{};
+      const auto maybeIntervals = harmony::scaleIntervals(mScaleName);
+      if (maybeIntervals.has_value())
+      {
+        mIntervals = maybeIntervals.value();
+      }
     }
 
-    Cycle out;
-    out.length = source.length;
-
-    const int n = static_cast<int>(mIntervals->size());
-    for (const auto& event : source.events)
+    std::vector<QueryFragment> query(const QueryRequest& request) const override
     {
-      std::vector<std::string> values;
-      values.reserve(event.values.size());
+      const auto sourceFragments = mpSource->query(request);
+      std::vector<QueryFragment> out;
+      out.reserve(sourceFragments.size());
 
-      for (const auto& v : event.values)
+      for (const auto& fragment : sourceFragments)
       {
-        try
-        {
-          const int degree = std::stoi(v);
-          const int modulo = degree % n;
-          const int remainder = (degree - modulo) / n;
-          const int intervalIndex = degree < 0 ? n + modulo : modulo;
-          const int octave = (degree < 0 ? remainder - 1 : remainder) * 12;
-          const int semitones = (*mIntervals)[static_cast<size_t>(intervalIndex)] + octave;
-          values.push_back(std::to_string(semitones));
-        }
-        catch (...)
-        {
-          values.push_back("~");
-        }
+        QueryFragment mapped = fragment;
+        mapped.value = mapValue(fragment.value);
+        out.push_back(mapped);
       }
 
-      out.events.push_back({event.time, values});
+      return out;
     }
 
-    return out;
-  }
+  private:
+    std::optional<long> parseLongStrict(const std::string& value) const
+    {
+      try
+      {
+        size_t idx = 0;
+        const long parsed = std::stol(value, &idx);
+        if (idx != value.size())
+        {
+          return std::nullopt;
+        }
+        return parsed;
+      }
+      catch (...)
+      {
+        return std::nullopt;
+      }
+    }
 
-private:
-  RenderNodePtr mpChild;
-  std::string mScaleName;
-  std::optional<std::vector<int>> mIntervals;
-};
+    long floorDiv(long a, long b) const
+    {
+      const long q = a / b;
+      const long r = a % b;
+      return (r != 0 && ((r < 0) != (b < 0))) ? (q - 1) : q;
+    }
 
-static RenderNodePtr makeScaleRenderNode(RenderNodePtr child, const std::string& scaleName)
-{
-  return std::make_shared<ScaleRenderNode>(std::move(child), scaleName);
+    long positiveMod(long a, long b) const
+    {
+      const long m = a % b;
+      return m < 0 ? m + b : m;
+    }
+
+    std::string mapValue(const std::string& value) const
+    {
+      if (mIntervals.empty())
+      {
+        return value;
+      }
+
+      const auto degree = parseLongStrict(value);
+      if (!degree.has_value())
+      {
+        return value;
+      }
+
+      const auto size = static_cast<long>(mIntervals.size());
+      const auto octave = floorDiv(degree.value(), size);
+      const auto index = positiveMod(degree.value(), size);
+      const auto semitone = octave * 12 + mIntervals[static_cast<size_t>(index)];
+      return std::to_string(semitone);
+    }
+
+    std::string mScaleName;
+    std::vector<int> mIntervals;
+    RenderNodePtr mpSource;
+  };
 }
-} // namespace krill
