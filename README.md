@@ -1,12 +1,71 @@
-Krill
-=====
-Krill is a livecoding environment inspired from [TidalCycles](https://tidalcycles.org).
+# Krill: Live Coding Pattern Language
 
-The aim of this project is preserve Tidal's wonderful flexibility while allowing an faster way to hack at it in Javascript. At this moment, Krill only sequences note-events via midi, there is no equivalent to Tidal's superdirt (although there's some plan in the future to allow things along that line).
+A dual-implementation live coding environment with parallel C++ and JavaScript playback infrastructure, plus a web-based editor. Inspired by [TidalCycles](https://tidalcycles.org).
 
-It is presently under active development.
+## Quick Start
 
-If you are contributing to the codebase, see [CONTRIBUTING.md](CONTRIBUTING.md) for the Javascript architecture notes and [embedded/readme.md](embedded/readme.md) for the embedded parser and renderer guide.
+### Run the Web App
+```bash
+npm install
+npm start
+```
+Visit `http://localhost:3000` in your browser. Type a pattern (e.g., `"2 3 4"` with quotes), then Shift-Enter to start playback.
+
+### Run Tests
+```bash
+npm test                        # JavaScript tests
+npm run test-parity-contract-all  # C++ + JS parity validation
+```
+
+### Build C++ Implementation
+```bash
+cd core/cpp
+./prepare_build.sh
+cd build && cmake --build .
+./Tests.exe
+```
+
+## Repository Structure
+
+```
+krill/
+├── core/                      # All playback infrastructure
+│   ├── test-cases.json       # Shared test patterns
+│   ├── test-cases-ast.json   # AST snapshots (parity)
+│   ├── cpp/                  # C++ parser, renderer, harmony
+│   │   ├── src/              # Implementation
+│   │   ├── tests/            # Unit tests
+│   │   └── README.md
+│   └── js/                   # JS parser, renderer, playback
+│       ├── tests/            # Unit tests
+│       └── README.md
+├── app/                       # Web editor & Hapi server
+│   ├── main.js
+│   ├── public/
+│   └── README.md
+├── tests/                     # Parity validation (cross-language)
+│   ├── test-parity-contract.js
+│   ├── test-parity-contract-all.sh
+│   └── README.md
+├── docs/                      # Architecture & guides
+├── package.json
+└── CONTRIBUTING.md
+```
+
+## What is Krill?
+
+Krill sequences MIDI note events via live-coded patterns. It supports:
+- **Note notation:** `"1 2 3"` (relative to C0), `"c4 d4 e4"`, chords, drum names
+- **Operators:** scale, shift, stretch, pattern transformations
+- **Dual runtimes:** JavaScript (primary) and C++ (parity validation)
+
+To stop playback, send a single rest: `"~"`
+
+## Development
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for architecture notes and contribution guidelines.
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for data flow, operator sets, and test strategy.
 
 ## AST parity (JS/C++)
 

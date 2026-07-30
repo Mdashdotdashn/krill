@@ -2,15 +2,15 @@
   "name": "krill",
   "version": "1.0.0",
   "description": "liv coding environment",
-  "main": "main.js",
+  "main": "app/main.js",
   "scripts": {
-    "test": "node test.js",
-    "test-js": "node test.js",
-    "test-reporter": "node tests/test-reporter.js",
+    "test": "node core/js/tests/test-runner.js",
+    "test-js": "node core/js/tests/test-runner.js",
+    "test-reporter": "node core/js/tests/test-reporter.js",
     "test-parity-contract-js": "node tests/test-parity-contract.js",
     "test-parity-contract-all": "bash tests/test-parity-contract-all.sh",
-    "start": "node server.js",
-    "update-ast-cases": "node tests/update-ast-cases.js"
+    "start": "node app/main.js",
+    "update-ast-cases": "node core/js/tests/update-ast-cases.js"
   },
   "repository": {
     "type": "git",
