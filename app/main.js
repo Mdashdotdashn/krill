@@ -1,4 +1,5 @@
 'use strict';
+const Path = require('path');
 const Hapi = require('@hapi/hapi');
 const program = require('commander');
 
@@ -21,7 +22,7 @@ async function createServer(app, options)
       method: 'GET',
       path: '/',
       handler: function (request, h) {
-          return h.file('public/index-edit.html');
+          return h.file(Path.join(__dirname, 'public', 'index-edit.html'));
       }
   });
 
@@ -30,7 +31,7 @@ async function createServer(app, options)
 			path: '/{file*}',
 			handler: {
 					directory: {
-							path: 'public'
+							path: Path.join(__dirname, 'public')
 					}
 			}
 	});
@@ -39,7 +40,7 @@ async function createServer(app, options)
 			method: 'GET',
 			path: '/grammar.txt',
 			handler: function (request, h) {
-					return h.file('../grammar.txt');
+					return h.file(Path.join(__dirname, '..', 'grammar.txt'));
 			}
 	});
 
