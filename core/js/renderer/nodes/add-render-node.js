@@ -23,6 +23,16 @@ function transposeNote(value, semitones)
   var parsed = parser.parse(String(value));
   if (!parsed || parsed.midi === null || parsed.midi === undefined)
   {
+    if (parsed && parsed.chroma !== undefined)
+    {
+      var fallbackMidi = parsed.chroma + 60;
+      var transposedFallback = fallbackMidi + semitones;
+      if (transposedFallback < 0 || transposedFallback > 127)
+      {
+        return null;
+      }
+      return midiToSharpName(transposedFallback);
+    }
     return null;
   }
 

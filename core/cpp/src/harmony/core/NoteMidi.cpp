@@ -53,7 +53,7 @@ std::optional<std::string> midiToNote(int midi, SpellingPolicy policy)
 
 std::optional<int> noteToMidi(const std::string& note)
 {
-  if (note.size() < 2)
+  if (note.empty())
   {
     return std::nullopt;
   }
@@ -93,7 +93,12 @@ std::optional<int> noteToMidi(const std::string& note)
 
   if (idx >= note.size())
   {
-    return std::nullopt;
+    const int midi = 60 + pitchClass + accidentalOffset;
+    if (!isValidMidi(midi))
+    {
+      return std::nullopt;
+    }
+    return midi;
   }
 
   bool negativeOctave = false;
