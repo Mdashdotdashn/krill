@@ -19,11 +19,18 @@
     this.source_ = source;
   }
 
-  var ElementStub = function(source, options)
+  var ElementStub = function(source, options, controls)
   {
     this.type_ = "element";
     this.source_ = source;
-    this.options_ = options;
+    if (options)
+    {
+      this.options_ = options;
+    }
+    if (controls)
+    {
+      this.controls_ = controls;
+    }
   }
 
   var CommandStub = function(name, options)
@@ -93,9 +100,9 @@ timeline = ws "<" ws sc:single_cycle ws ">" ws
 // a slice is either a single step or a sub cycle
 slice = step / sub_cycle  / timeline
 
-// slice modifier affects the timing/size of a slice (e.g. [a b c]@3)
+// slice modifier affects timing/size or controls of a slice (e.g. [a b c]@3 or bd:0.8)
 // at this point, we assume we can represent them as regular sequence operators
-slice_modifier = slice_weight / slice_bjorklund / slice_slow / slice_fast / slice_fixed_step
+slice_modifier = slice_weight / slice_bjorklund / slice_slow / slice_fast / slice_fixed_step / slice_velocity
 
 slice_weight =  "@" a:number
   { return { weight: a} }
@@ -112,10 +119,20 @@ slice_fast = "*"a:number
 slice_fixed_step = "%"a:number
   { return { operator : { type_: "fixed-step", arguments_ : [a ] } } }
 
+slice_velocity = ":" a:number
+  { return { velocity: a } }
+
 // a slice with an modifier applied i.e [bd@4 sd@3]@2 hh]
 // TODO: reduce to source if s in an object and o is undefined
 slice_with_modifier = s:slice o:slice_modifier?
-  { return new ElementStub(s, o);}
+  {
+    if (!o) { return new ElementStub(s); }
+    if (o.velocity !== undefined)
+    {
+      return new ElementStub(s, undefined, o);
+    }
+    return new ElementStub(s, o);
+  }
 
 // a single cycle is a combination of one or more successive slices (as an array). If we
 // have only one element, we skip the array and return the element itself
