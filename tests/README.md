@@ -11,6 +11,41 @@ This folder contains validation tests that ensure the C++ and JavaScript impleme
   3. Runs C++ tests
   4. Validates both produced identical ASTs
 
+## Windows Notes
+
+Verified working commands from Git Bash on Windows:
+
+### JavaScript Test Suite
+```bash
+node test.js
+```
+
+This root shim runs the canonical JS test runner under `core/js/tests/test-runner.js`.
+
+### Fresh C++ Build
+```bash
+mkdir -p core/cpp/build
+cd core/cpp/build
+cmake ..
+cmake --build .
+```
+
+With the Visual Studio generator, the Catch2 test binary was generated at:
+
+```bash
+core/cpp/build/tests/Debug/Tests.exe.exe
+```
+
+### Run C++ Tests
+
+From inside `core/cpp/build`:
+
+```bash
+./tests/Debug/Tests.exe.exe
+```
+
+This path differs from older examples that assume a flat `Tests.exe` in the build directory.
+
 ## Running Parity Tests
 
 ### JavaScript Tests Only
@@ -65,5 +100,15 @@ When making changes that affect parsing or rendering:
 - C++17 compiler
 - CMake 2.8+
 - Run `core/cpp/prepare_build.sh` for first-time setup
+
+On Windows with Git Bash and a Visual Studio CMake generator, you can also build directly with:
+
+```bash
+mkdir -p core/cpp/build
+cd core/cpp/build
+cmake ..
+cmake --build .
+./tests/Debug/Tests.exe.exe
+```
 
 The shell script `test-parity-contract-all.sh` checks for the C++ build directory and fails with helpful instructions if it doesn't exist.
