@@ -106,4 +106,35 @@ TEST_CASE("Render query request and fragments contract")
     REQUIRE(fragments[0].controls.count("velocity") == 1);
     CHECK(fragments[0].controls.at("velocity") == "100");
   }
+
+  SECTION("Nested velocity controls compose through inherited factor")
+  {
+    std::map<std::string, std::string> controls{{"velocity", "100"}};
+
+    class VelocitySpyRenderNode final : public RenderNode
+    {
+    public:
+      std::vector<QueryFragment> query(const QueryRequest& request) const override
+      {
+        QueryFragment fragment;
+        fragment.wholeStart = Fraction(0);
+        fragment.wholeEnd = Fraction(1);
+        fragment.partStart = request.start;
+        fragment.partEnd = request.end;
+        fragment.value = "nested";
+        fragment.controls = {{"velocity", "80"}};
+        return {fragment};
+      }
+    };
+
+    auto child = std::make_shared<VelocitySpyRenderNode>();
+    ElementRenderNode node(child, controls);
+
+    const auto fragments = node.query({Fraction(0), Fraction(1)});
+    REQUIRE(fragments.size() == 1);
+    REQUIRE(fragments[0].controls.count("velocity") == 1);
+    REQUIRE(fragments[0].controls.count("velocityFactor") == 1);
+    CHECK(fragments[0].controls.at("velocity") == "80");
+    CHECK(fragments[0].controls.at("velocityFactor") == "100");
+  }
 }

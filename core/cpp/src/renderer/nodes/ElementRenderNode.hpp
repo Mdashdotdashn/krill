@@ -1,5 +1,8 @@
 #pragma once
 
+#include <algorithm>
+#include <cmath>
+#include <optional>
 #include <map>
 #include <utility>
 
@@ -47,12 +50,7 @@ namespace krill
 
         for (auto& fragment : fragments)
         {
-          auto mergedControls = mControls;
-          for (const auto& entry : fragment.controls)
-          {
-            mergedControls[entry.first] = entry.second;
-          }
-          fragment.controls = std::move(mergedControls);
+          fragment.controls = mergeControls(mControls, fragment.controls);
         }
         return fragments;
       }
@@ -86,6 +84,104 @@ namespace krill
     }
 
   private:
+    static std::optional<double> parseVelocityValue(const std::string& text)
+    {
+      try
+      {
+        size_t consumed = 0;
+        const double parsed = std::stod(text, &consumed);
+        if (consumed != text.size())
+        {
+          return std::nullopt;
+        }
+        return parsed;
+      }
+      catch (...)
+      {
+        return std::nullopt;
+      }
+    }
+
+    static int normalizeVelocityValue(double value)
+    {
+      const double absoluteValue = std::fabs(value);
+      const double scaledValue = (value >= 0.0 && value <= 1.0) ? (absoluteValue * 127.0) : absoluteValue;
+      const auto roundedValue = static_cast<int>(std::llround(scaledValue));
+      return std::clamp(roundedValue, 0, 127);
+    }
+
+    static std::optional<int> velocityValueFromControls(
+      const std::map<std::string, std::string>& controls,
+      const std::string& key)
+    {
+      const auto found = controls.find(key);
+      if (found == controls.end())
+      {
+        return std::nullopt;
+      }
+
+      const auto parsed = parseVelocityValue(found->second);
+      if (!parsed.has_value())
+      {
+        return std::nullopt;
+      }
+
+      return normalizeVelocityValue(parsed.value());
+    }
+
+    static int combineVelocityValues(int left, int right)
+    {
+      return std::clamp(static_cast<int>(std::llround((static_cast<double>(left) * static_cast<double>(right)) / 127.0)), 0, 127);
+    }
+
+    static std::map<std::string, std::string> mergeControls(
+      const std::map<std::string, std::string>& parentControls,
+      const std::map<std::string, std::string>& childControls)
+    {
+      auto mergedControls = parentControls;
+      for (const auto& entry : childControls)
+      {
+        mergedControls[entry.first] = entry.second;
+      }
+
+      const auto parentVelocity = velocityValueFromControls(parentControls, "velocity");
+      const auto parentVelocityFactor = velocityValueFromControls(parentControls, "velocityFactor");
+      const auto childVelocityFactor = velocityValueFromControls(childControls, "velocityFactor");
+
+      std::optional<int> combinedVelocityFactor;
+
+      if (parentVelocityFactor.has_value())
+      {
+        combinedVelocityFactor = parentVelocityFactor.value();
+      }
+
+      if (parentVelocity.has_value())
+      {
+        combinedVelocityFactor = combinedVelocityFactor.has_value()
+          ? combineVelocityValues(combinedVelocityFactor.value(), parentVelocity.value())
+          : parentVelocity.value();
+      }
+
+      if (childVelocityFactor.has_value())
+      {
+        combinedVelocityFactor = combinedVelocityFactor.has_value()
+          ? combineVelocityValues(combinedVelocityFactor.value(), childVelocityFactor.value())
+          : childVelocityFactor.value();
+      }
+
+      if (combinedVelocityFactor.has_value())
+      {
+        mergedControls["velocityFactor"] = std::to_string(combinedVelocityFactor.value());
+      }
+
+      if (!childControls.count("velocity") && parentVelocity.has_value())
+      {
+        mergedControls.erase("velocity");
+      }
+
+      return mergedControls;
+    }
+
     std::string mValue;
     RenderNodePtr mpSourceNode{};
     std::map<std::string, std::string> mControls;

@@ -31,6 +31,38 @@ ElementRenderNode.prototype.withControls_ = function(fragment)
     mergedControls = Object.assign(mergedControls, fragment.controls);
   }
 
+  var parentVelocity = this.controls_.velocity;
+  var parentVelocityFactor = this.controls_.velocityFactor;
+  var childVelocityFactor = fragment.controls && typeof fragment.controls === "object"
+    ? fragment.controls.velocityFactor
+    : undefined;
+
+  if (parentVelocity !== undefined)
+  {
+    mergedControls.velocityFactor = mergedControls.velocityFactor !== undefined
+      ? combineVelocityFactors_(mergedControls.velocityFactor, parentVelocity)
+      : parentVelocity;
+
+    if (fragment.controls === undefined || fragment.controls.velocity === undefined)
+    {
+      delete mergedControls.velocity;
+    }
+  }
+
+  if (parentVelocityFactor !== undefined)
+  {
+    mergedControls.velocityFactor = mergedControls.velocityFactor !== undefined
+      ? combineVelocityFactors_(mergedControls.velocityFactor, parentVelocityFactor)
+      : parentVelocityFactor;
+  }
+
+  if (childVelocityFactor !== undefined)
+  {
+    mergedControls.velocityFactor = mergedControls.velocityFactor !== undefined
+      ? combineVelocityFactors_(mergedControls.velocityFactor, childVelocityFactor)
+      : childVelocityFactor;
+  }
+
   return this.makeFragment_(
     fragment.wholeStart,
     fragment.wholeEnd,
@@ -39,6 +71,29 @@ ElementRenderNode.prototype.withControls_ = function(fragment)
     fragment.value,
     mergedControls
   );
+}
+
+function normalizeVelocityValue_(value)
+{
+  var numeric = Number(value);
+  if (!isFinite(numeric))
+  {
+    return 127;
+  }
+
+  if (numeric >= 0 && numeric <= 1)
+  {
+    return Math.max(0, Math.min(127, Math.round(127 * numeric)));
+  }
+
+  return Math.max(0, Math.min(127, Math.round(Math.abs(numeric))));
+}
+
+function combineVelocityFactors_(left, right)
+{
+  return Math.max(0, Math.min(127, Math.round(
+    (normalizeVelocityValue_(left) * normalizeVelocityValue_(right)) / 127
+  )));
 }
 
 ElementRenderNode.prototype.executeQuery_ = function(requestStart, requestEnd)
