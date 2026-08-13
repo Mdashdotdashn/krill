@@ -4,6 +4,8 @@ const fs = require('fs');
 
 require('../music/conversion.js');
 
+var DEFAULT_VELOCITY = 127;
+
 var defaultLoopback = function()
 {
   var devices =
@@ -39,6 +41,51 @@ var findMidiDevice = function(name)
   process.exit();
 }
 
+function normalizeVelocityValue(value)
+{
+  var numeric = Number(value);
+  if (!isFinite(numeric))
+  {
+    return DEFAULT_VELOCITY;
+  }
+
+  if (numeric >= 0 && numeric <= 1)
+  {
+    return Math.max(0, Math.min(DEFAULT_VELOCITY, Math.round(DEFAULT_VELOCITY * numeric)));
+  }
+
+  return Math.max(0, Math.min(DEFAULT_VELOCITY, Math.round(Math.abs(numeric))));
+}
+
+function combineVelocityValues(left, right)
+{
+  return Math.max(0, Math.min(DEFAULT_VELOCITY, Math.round(
+    (normalizeVelocityValue(left) * normalizeVelocityValue(right)) / DEFAULT_VELOCITY
+  )));
+}
+
+function resolveVelocity(fragment)
+{
+  var controls = fragment && fragment.controls && typeof fragment.controls === "object"
+    ? fragment.controls
+    : null;
+  var velocity = controls && controls.velocity !== undefined ? controls.velocity : undefined;
+  var velocityFactor = controls && controls.velocityFactor !== undefined ? controls.velocityFactor : undefined;
+
+  var baseVelocity = velocity !== undefined ? normalizeVelocityValue(velocity) : DEFAULT_VELOCITY;
+  var factorVelocity = velocityFactor !== undefined ? normalizeVelocityValue(velocityFactor) : DEFAULT_VELOCITY;
+
+  return combineVelocityValues(baseVelocity, factorVelocity);
+}
+
+function noteObjectsFromValue(value, fragment)
+{
+  var velocity = resolveVelocity(fragment);
+  return convertToNotes(value).map(function(note) {
+    return Object.assign({}, note, { velocity: velocity });
+  });
+}
+
 var tickPlayer = function(player, events)
 {
   var device = player.midiDevice_;
@@ -48,7 +95,7 @@ var tickPlayer = function(player, events)
 		if (v) v.forEach(function(x) {
 			device.send(m, {
 			  note: x.note,
-			  velocity: 127,
+			  velocity: x.velocity,
         channel: x.channel
       });
 		});
@@ -56,10 +103,18 @@ var tickPlayer = function(player, events)
 
 	processNotes(player.values_, 'noteoff');
 
-  player.values_ = events.values.reduce((c,x) => {
-     const notes = convertToNotes(x);
-     return c.concat(notes);
-   },[]);
+	if (events && Array.isArray(events.fragments) && events.fragments.length > 0)
+	{
+	  player.values_ = events.fragments.reduce((c, fragment) => {
+	     return c.concat(noteObjectsFromValue(fragment.value, fragment));
+	   }, []);
+	}
+	else
+	{
+	  player.values_ = (events && Array.isArray(events.values) ? events.values : []).reduce((c, value) => {
+	     return c.concat(noteObjectsFromValue(value, null));
+	   }, []);
+	}
 	processNotes(player.values_, 'noteon');
 }
 
@@ -119,7 +174,8 @@ MidiFileRenderer.prototype.send = function(message, options)
           var noteData = {
               midi: value.note,
               time: toDuration(value.time),
-              duration: toDuration(this.currentTime_ - value.time)
+              duration: toDuration(this.currentTime_ - value.time),
+              velocity: normalizeVelocityValue(value.velocity) / DEFAULT_VELOCITY
           }
           if (!this.trackArray_[value.channel])
           {
