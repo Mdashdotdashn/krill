@@ -98,6 +98,13 @@ Passing only one language is not sufficient for feature completion in this repos
 - MIDI export uses expected velocity values
 - Existing playback without velocity annotations remains unchanged
 
+### Status
+
+- Story 3.1 complete: inherited velocity now resolves through a separate `velocityFactor` in the shared render contract.
+- Story 3.2 complete: JS live MIDI and MIDI-file export use the resolved per-note velocity.
+- JS tests passed.
+- C++ tests passed.
+
 ## Epic 4: Test Infrastructure Modernization
 
 ### Story 4.1: Extend shared run-case schema to support optional controls

@@ -10,6 +10,7 @@ require("./test-run-cases.js")
 console.log("Running test player state machine...");
 require("./test-player-state-machine.js")
 require("./test-render-query-contract.js")
+require("./test-playback-device-velocity.js")
 console.log("Running test render nodes...");
 require("./test-render-nodes.js")
 require("./test-harmony.js")
