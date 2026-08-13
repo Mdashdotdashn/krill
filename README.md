@@ -22,7 +22,17 @@ npm run test-parity-contract-all  # C++ + JS parity validation
 cd core/cpp
 ./prepare_build.sh
 cd build && cmake --build .
-./Tests.exe
+./tests/Debug/Tests.exe.exe
+```
+
+On Windows using Git Bash and a Visual Studio-backed CMake generator, the verified root-level workflow is:
+
+```bash
+mkdir -p core/cpp/build
+cd core/cpp/build
+cmake ..
+cmake --build .
+./tests/Debug/Tests.exe.exe
 ```
 
 ## Repository Structure

@@ -13,6 +13,7 @@
  * @property {*} partStart Clipped interval start inside the current query window.
  * @property {*} partEnd Clipped interval end inside the current query window.
  * @property {string} value Rendered value for this interval.
+ * @property {Object<string, *>} [controls] Optional control metadata.
  */
 
 module.exports = {};

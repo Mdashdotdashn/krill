@@ -79,7 +79,10 @@ TimelinePatternRenderNode.prototype.query = function(start, end)
           wholeEnd: math.add(fragment.wholeEnd, slotStart),
           partStart: math.add(fragment.partStart, slotStart),
           partEnd: math.add(fragment.partEnd, slotStart),
-          value: fragment.value
+          value: fragment.value,
+          controls: fragment.controls && typeof fragment.controls === "object"
+            ? Object.assign({}, fragment.controls)
+            : undefined
         });
       }
     }

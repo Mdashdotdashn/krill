@@ -90,6 +90,7 @@ namespace krill
             mapped.partStart = childFragment.partStart + slotStart;
             mapped.partEnd = childFragment.partEnd + slotStart;
             mapped.value = childFragment.value;
+            mapped.controls = childFragment.controls;
             fragments.push_back(mapped);
           }
         }

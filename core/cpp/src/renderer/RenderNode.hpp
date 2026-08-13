@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -34,6 +35,7 @@ namespace krill
     Fraction partStart{0};
     Fraction partEnd{0};
     std::string value;
+    std::map<std::string, std::string> controls;
   };
 
   class RenderNode

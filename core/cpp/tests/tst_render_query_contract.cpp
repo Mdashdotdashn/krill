@@ -1,5 +1,8 @@
 #include "renderer/nodes/ElementRenderNode.hpp"
 #include "renderer/nodes/EmptyRenderNode.hpp"
+#include "renderer/nodes/HorizontalPatternRenderNode.hpp"
+#include "renderer/RenderTreeBuilder.hpp"
+#include "parser/Parser.hpp"
 
 #include "../third_party/catch2/catch.hpp"
 
@@ -75,5 +78,32 @@ TEST_CASE("Render query request and fragments contract")
     CHECK(result[0].value == "nested");
     CHECK(result[0].partStart == Fraction(1, 8));
     CHECK(result[0].partEnd == Fraction(3, 8));
+  }
+
+  SECTION("Parsed velocity becomes fragment controls through render tree")
+  {
+    Parser parser;
+    rapidjson::Document parsingDocument;
+    auto result = parser.parse(parsingDocument, "'bd:0.8'");
+    REQUIRE(result.has_value());
+
+    auto tree = RenderTreeBuilder::fromJson(result.value());
+    const auto fragments = tree->query({Fraction(0), Fraction(1)});
+
+    REQUIRE(fragments.size() == 1);
+    REQUIRE(fragments[0].controls.count("velocity") == 1);
+    CHECK(fragments[0].controls.at("velocity") == "0.8");
+  }
+
+  SECTION("Horizontal remapping preserves controls metadata")
+  {
+    std::map<std::string, std::string> controls{{"velocity", "100"}};
+    auto child = std::make_shared<ElementRenderNode>(std::string("snare"), controls);
+    HorizontalPatternRenderNode node({child}, {Fraction(1)});
+
+    const auto fragments = node.query({Fraction(0), Fraction(1)});
+    REQUIRE(fragments.size() == 1);
+    REQUIRE(fragments[0].controls.count("velocity") == 1);
+    CHECK(fragments[0].controls.at("velocity") == "100");
   }
 }

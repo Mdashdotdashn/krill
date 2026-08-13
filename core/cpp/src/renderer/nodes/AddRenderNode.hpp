@@ -47,6 +47,7 @@ namespace krill
           mapped.partStart = rhs.partStart;
           mapped.partEnd = rhs.partEnd;
           mapped.value = addValues(lhs.value, rhs.value);
+          mapped.controls = rhs.controls;
           out.push_back(mapped);
         }
       }

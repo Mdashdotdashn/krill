@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <utility>
 
 #include "../RenderNode.hpp"
@@ -14,8 +15,18 @@ namespace krill
     {
     }
 
+    ElementRenderNode(std::string value, std::map<std::string, std::string> controls)
+    : mValue(std::move(value)), mControls(std::move(controls))
+    {
+    }
+
     explicit ElementRenderNode(RenderNodePtr sourceNode)
     : mpSourceNode(std::move(sourceNode))
+    {
+    }
+
+    ElementRenderNode(RenderNodePtr sourceNode, std::map<std::string, std::string> controls)
+    : mpSourceNode(std::move(sourceNode)), mControls(std::move(controls))
     {
     }
 
@@ -28,7 +39,22 @@ namespace krill
 
       if (mpSourceNode)
       {
-        return mpSourceNode->query(request);
+        auto fragments = mpSourceNode->query(request);
+        if (mControls.empty())
+        {
+          return fragments;
+        }
+
+        for (auto& fragment : fragments)
+        {
+          auto mergedControls = mControls;
+          for (const auto& entry : fragment.controls)
+          {
+            mergedControls[entry.first] = entry.second;
+          }
+          fragment.controls = std::move(mergedControls);
+        }
+        return fragments;
       }
 
       const auto numerator = request.start.getNumerator();
@@ -55,11 +81,13 @@ namespace krill
       fragment.partStart = (localStart > wholeStart ? localStart : wholeStart) + Fraction(cycleIndex);
       fragment.partEnd = (localEnd < wholeEnd ? localEnd : wholeEnd) + Fraction(cycleIndex);
       fragment.value = mValue;
+      fragment.controls = mControls;
       return {fragment};
     }
 
   private:
     std::string mValue;
     RenderNodePtr mpSourceNode{};
+    std::map<std::string, std::string> mControls;
   };
 }

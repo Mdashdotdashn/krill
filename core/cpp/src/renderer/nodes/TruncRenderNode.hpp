@@ -67,6 +67,7 @@ namespace krill
           mapped.partStart = fragment.partStart + cycleBase;
           mapped.partEnd = fragment.partEnd + cycleBase;
           mapped.value = fragment.value;
+          mapped.controls = fragment.controls;
           out.push_back(mapped);
         }
       }

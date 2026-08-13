@@ -89,7 +89,8 @@ HorizontalPatternRenderNode.prototype.executeQuery_ = function(requestStart, req
           TimeUtils.add(slotStart, math.multiply(normalizedWholeEnd, slotSize)),
           TimeUtils.add(slotStart, math.multiply(normalizedPartStart, slotSize)),
           TimeUtils.add(slotStart, math.multiply(normalizedPartEnd, slotSize)),
-          fragment.value
+          fragment.value,
+          fragment.controls
         ));
       }
     }

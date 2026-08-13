@@ -16,13 +16,20 @@ function F(v)
 
 function fragmentToComparable(fragment)
 {
-  return {
+  var comparable = {
     wholeStart: fracToString(fragment.wholeStart),
     wholeEnd: fracToString(fragment.wholeEnd),
     partStart: fracToString(fragment.partStart),
     partEnd: fracToString(fragment.partEnd),
     value: String(fragment.value)
   };
+
+  if (fragment.controls && typeof fragment.controls === "object")
+  {
+    comparable.controls = Object.assign({}, fragment.controls);
+  }
+
+  return comparable;
 }
 
 (function testEmptyRenderNodeReturnsNoFragments()
@@ -91,5 +98,49 @@ function fragmentToComparable(fragment)
     partStart: F("1/8"),
     partEnd: F("3/8"),
     value: "nested"
+  }]);
+})();
+
+(function testElementRenderNodeEmitsOptionalControls()
+{
+  var node = new ElementRenderNode("snare", { velocity: 100 });
+  var fragments = node.query("0", "1").map(fragmentToComparable);
+
+  assert.deepStrictEqual(fragments, [{
+    wholeStart: F("0"),
+    wholeEnd: F("1"),
+    partStart: F("0"),
+    partEnd: F("1"),
+    value: "snare",
+    controls: { velocity: 100 }
+  }]);
+})();
+
+(function testElementRenderNodeMergesControlsFromNestedSource()
+{
+  var sourceNode = {
+    query: function(start, end)
+    {
+      return [{
+        wholeStart: math.fraction(0),
+        wholeEnd: math.fraction(1),
+        partStart: start,
+        partEnd: end,
+        value: "nested",
+        controls: { velocity: 80, pan: 0.2 }
+      }];
+    }
+  };
+
+  var node = new ElementRenderNode(sourceNode, { velocity: 100, gain: 0.7 });
+  var result = node.query("1/8", "3/8").map(fragmentToComparable);
+
+  assert.deepStrictEqual(result, [{
+    wholeStart: F("0"),
+    wholeEnd: F("1"),
+    partStart: F("1/8"),
+    partEnd: F("3/8"),
+    value: "nested",
+    controls: { velocity: 80, gain: 0.7, pan: 0.2 }
   }]);
 })();

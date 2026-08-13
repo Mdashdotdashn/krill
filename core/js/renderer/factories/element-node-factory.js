@@ -5,6 +5,16 @@ require("../nodes/bjorklund-render-node.js");
 require("../nodes/element-render-node.js");
 require("../nodes/stretch-render-node.js");
 
+function elementControlsFromModel(modelNode)
+{
+  if (!modelNode || !modelNode.controls_ || !(modelNode.controls_ instanceof Object))
+  {
+    return null;
+  }
+
+  return Object.keys(modelNode.controls_).length > 0 ? Object.assign({}, modelNode.controls_) : null;
+}
+
 function sourceUnitsForFixedStep(modelNode)
 {
   if (!factoryUtils.isObjectNode(modelNode))
@@ -109,13 +119,14 @@ function makeElementNode(modelNode, buildRenderNode)
   }
 
   var elementNode;
+  var controls = elementControlsFromModel(modelNode);
   if (modelNode.source_ && modelNode.source_ instanceof Object)
   {
-    elementNode = new ElementRenderNode(buildRenderNode(modelNode.source_));
+    elementNode = new ElementRenderNode(buildRenderNode(modelNode.source_), controls);
     return applyElementOperator(elementNode, modelNode);
   }
 
-  elementNode = new ElementRenderNode(modelNode.source_);
+  elementNode = new ElementRenderNode(modelNode.source_, controls);
   return applyElementOperator(elementNode, modelNode);
 }
 

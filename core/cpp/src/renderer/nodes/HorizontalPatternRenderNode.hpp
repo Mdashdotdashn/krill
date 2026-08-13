@@ -116,6 +116,7 @@ namespace krill
               mapped.partStart = wholeStart + ((childFragment.partStart - Fraction(cycle)) * slotSize);
               mapped.partEnd = wholeStart + ((childFragment.partEnd - Fraction(cycle)) * slotSize);
               mapped.value = childFragment.value;
+              mapped.controls = childFragment.controls;
               fragments.push_back(mapped);
             }
             continue;
