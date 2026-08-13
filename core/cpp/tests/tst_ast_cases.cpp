@@ -5,14 +5,42 @@
 #include "../../third_party/rapidjson/document.h"
 #include "../../third_party/rapidjson/istreamwrapper.h"
 
+#include <array>
 #include <fstream>
 #include <string>
 
 using namespace rapidjson;
 
+namespace
+{
+std::ifstream openSharedAstCasesFile()
+{
+  const std::array<const char*, 7> candidatePaths = {
+    "../test-cases-ast.json",
+    "../../test-cases-ast.json",
+    "../../../test-cases-ast.json",
+    "../../../../test-cases-ast.json",
+    "../../../../../test-cases-ast.json",
+    "../../../../../../test-cases-ast.json",
+    "../../../../../../../test-cases-ast.json"
+  };
+
+  for (const auto* path : candidatePaths)
+  {
+    std::ifstream ifs(path);
+    if (ifs.is_open())
+    {
+      return ifs;
+    }
+  }
+
+  return std::ifstream{};
+}
+} // namespace
+
 TEST_CASE("AST parity with shared test-cases-ast.json")
 {
-  std::ifstream ifs{ R"(../../test-cases-ast.json)" };
+  std::ifstream ifs = openSharedAstCasesFile();
   REQUIRE(ifs.is_open());
 
   IStreamWrapper isw{ ifs };

@@ -35,12 +35,16 @@ TEST_CASE("Harmony NoteMidi")
   {
     CHECK(noteToMidi("") == std::nullopt);
     CHECK(noteToMidi("H4") == std::nullopt);
-    CHECK(noteToMidi("C#") == std::nullopt);
     CHECK(noteToMidi("4C") == std::nullopt);
     CHECK(noteToMidi("Cb#4") == std::nullopt);
     CHECK(noteToMidi("C4x") == std::nullopt);
     CHECK(noteToMidi("C-2") == std::nullopt);
     CHECK(noteToMidi("B9") == std::nullopt);
+  }
+
+  SECTION("Supports octave-less notes using the default octave")
+  {
+    CHECK(noteToMidi("C#").value() == 61);
   }
 
   SECTION("Alias spellings map to equal MIDI values")

@@ -17,7 +17,8 @@ namespace
 {
 std::ifstream openSharedRunCasesFile()
 {
-  const std::array<const char*, 6> candidatePaths = {
+  const std::array<const char*, 7> candidatePaths = {
+    "../test-cases.json",
     "../../test-cases.json",
     "../../../test-cases.json",
     "../../../../test-cases.json",
