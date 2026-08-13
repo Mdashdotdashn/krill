@@ -157,6 +157,8 @@ Both implementations support identical operator sets organized by category:
 
 **Goal**: Ensure C++ and JavaScript produce identical AST and render trees for identical input
 
+**Development Rule**: Unless a change is explicitly platform-specific, feature work in Krill is only considered complete when both the JavaScript and C++ implementations are updated and validated. Partial single-language progress should be tracked as incomplete.
+
 **Validation Method**:
 1. Load shared `test-cases.json` and `test-cases-ast.json`
 2. Parse each case in both implementations
