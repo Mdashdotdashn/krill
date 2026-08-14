@@ -21,6 +21,14 @@ cmake --build "${EMBEDDED_BUILD_DIR}"
 pushd "${EMBEDDED_BUILD_DIR}" >/dev/null
 
 TESTS_EXE="./tests/Tests.exe.exe"
+if [[ ! -x "${TESTS_EXE}" ]]; then
+  TESTS_EXE="./tests/Debug/Tests.exe.exe"
+fi
+
+if [[ ! -x "${TESTS_EXE}" ]]; then
+  echo "[parity] ERROR: test executable not found in ./tests or ./tests/Debug" >&2
+  exit 1
+fi
 
 echo "[parity] Embedded AST parity"
 "${TESTS_EXE}" "*AST parity*"

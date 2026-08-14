@@ -3,6 +3,9 @@ var math = require("mathjs");
 
 require("../renderer/nodes/empty-render-node.js");
 require("../renderer/nodes/element-render-node.js");
+require("../input-evaluator.js");
+require("../renderer/render-tree.js");
+require("../playback/rendering-tree-player.js");
 
 function fracToString(v)
 {
@@ -243,4 +246,31 @@ function fragmentToComparable(fragment)
   assert.throws(function() {
     return new ElementRenderNode(leafSourceNode, { velocityFactor: 64 });
   }, /\[0, 1\]/);
+})();
+
+(function testVelocityControlsRemainPerEventAndDoNotBleedToSiblings()
+{
+  var evaluator = new Evaluator();
+  var builder = new RenderingTreeBuilder();
+  var tree = builder.rebuild(evaluator.evaluate("'bd:80 sd'"));
+
+  var player = new RenderingTreePlayer();
+  player.setRenderingTree(tree);
+  player.reset();
+
+  var firstTime = math.fraction(0);
+  var firstFragments = player.queryPointWindow(firstTime) || [];
+  var firstOnset = firstFragments.filter(function(fragment) {
+    return math.equal(math.fraction(fragment.wholeStart), firstTime);
+  });
+  assert.strictEqual(firstOnset.length, 1);
+  assert.strictEqual(String(firstOnset[0].controls.velocity), "80");
+
+  var secondTime = math.fraction("1/2");
+  var secondFragments = player.queryPointWindow(secondTime) || [];
+  var secondOnset = secondFragments.filter(function(fragment) {
+    return math.equal(math.fraction(fragment.wholeStart), secondTime);
+  });
+  assert.strictEqual(secondOnset.length, 1);
+  assert.strictEqual(secondOnset[0].controls && secondOnset[0].controls.velocity, undefined);
 })();

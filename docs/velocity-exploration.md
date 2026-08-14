@@ -125,6 +125,10 @@ Passing only one language is not sufficient for feature completion in this repos
 - Add propagation cases
 - Add runtime output cases
 
+### Status
+
+- Deferred by request until additional hands-on usage feedback clarifies target scenarios.
+
 ### Acceptance Criteria
 
 - Legacy fixtures continue to pass unchanged
@@ -149,6 +153,12 @@ Passing only one language is not sufficient for feature completion in this repos
 - Velocity remains attached to individual events
 - Future stream operations can target `velocity` by control name
 
+### Status
+
+- Story 5.1 complete: velocity remains per-event and no global velocity state was introduced.
+- Story 5.2 complete for current scope: `:` remains canonical Krill syntax and compatibility-mode work is explicitly deferred.
+- JS and C++ guardrail tests now assert sibling event isolation for velocity controls.
+
 ## Epic 6: Documentation And Release Readiness
 
 ### Story 6.1: Update user-facing docs
@@ -165,6 +175,12 @@ Passing only one language is not sufficient for feature completion in this repos
 - C++ tests green
 - Parity checks green
 - Manual MIDI verification complete
+
+### Status
+
+- Story 6.1 complete: user-facing velocity syntax and semantics documented.
+- Story 6.2 complete: architecture flow updated with parse -> fragment controls -> playback velocity resolution details.
+- Story 6.3 in progress: automated validation items are tracked; manual MIDI verification remains a final release-gate step.
 
 ## Cross-Language Completion Policy
 

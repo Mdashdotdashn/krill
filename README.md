@@ -71,6 +71,20 @@ Krill sequences MIDI note events via live-coded patterns. It supports:
 
 To stop playback, send a single rest: `"~"`
 
+## Velocity Syntax
+
+Krill supports per-event velocity with the `:` suffix.
+
+- `"bd:100 sd"` sets an absolute velocity for `bd`.
+- `"hh:0.8"` uses a normalized multiplier of the default velocity (`127`).
+- `"[bd sd]:0.5"` applies an inherited factor to grouped children.
+
+Current velocity model:
+
+- leaf events may set absolute `velocity`
+- nested/group controls use `velocityFactor` in `[0,1]`
+- final playback resolves to MIDI velocity per emitted event (no global velocity state)
+
 ## Development
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for architecture notes and contribution guidelines.
@@ -103,6 +117,11 @@ If parity fails, the failing source expression is printed so mismatches can be f
 Runtime operator coverage and naming parity are documented in [docs/render-operator-parity.md](docs/render-operator-parity.md).
 
 Use this matrix when adding, renaming, or changing operators so JS and C++ stay aligned at the render-tree level.
+
+## Shared Fixture Files
+
+- `core/test-cases.json`: user-facing source/expected behavior fixtures
+- `core/test-cases-runner.json`: harness-focused schema normalization fixtures (mixed shorthand/object expectations)
 
 ## Installation
 

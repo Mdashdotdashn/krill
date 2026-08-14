@@ -15,6 +15,7 @@ The core contains the complete playback pipeline implemented in parallel languag
 
 ### Shared Components
 - **`test-cases.json`** - Shared test fixtures for pattern evaluation
+- **`test-cases-runner.json`** - Shared harness-focused fixture normalization cases
 - **`test-cases-ast.json`** - Shared AST snapshots for parity validation
 - **`grammar.txt`** - PEG grammar (used by both implementations)
 
@@ -116,10 +117,17 @@ Renderer (Operator evaluation)
     ↓
 Render Tree (Operator nodes with state)
     ↓
-Player (Timeline execution)
+Player (Timeline execution + per-event control resolution)
     ↓
 MIDI Events
 ```
+
+Velocity-specific control flow uses the same path:
+
+- parser attaches velocity intent to AST nodes
+- render nodes emit optional `controls` in query fragments
+- nested composition carries inherited `velocityFactor` in normalized `[0,1]`
+- playback resolves final MIDI velocity per fragment/event
 
 ### Example
 ```
@@ -183,6 +191,7 @@ Exit code 0 = Complete parity.
 
 ### Shared Fixtures
 - **`test-cases.json`** - 100+ pattern evaluation test cases
+- **`test-cases-runner.json`** - runner schema compatibility and normalization cases
 - **`test-cases-ast.json`** - 50+ AST validation snapshots
 
 ### JavaScript Tests (`core/js/tests/`)

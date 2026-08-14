@@ -215,4 +215,36 @@ TEST_CASE("Render query request and fragments contract")
       ElementRenderNode(leaf, std::map<std::string, std::string>{{"velocityFactor", "64"}}),
       std::invalid_argument);
   }
+
+  SECTION("Velocity controls remain per-event and do not bleed to siblings")
+  {
+    Parser parser;
+    rapidjson::Document parsingDocument;
+    auto result = parser.parse(parsingDocument, "'bd:80 sd'");
+    REQUIRE(result.has_value());
+
+    auto tree = RenderTreeBuilder::fromJson(result.value());
+    const auto fragments = tree->query({Fraction(0), Fraction(1)});
+    REQUIRE(fragments.size() == 2);
+
+    const auto findAt = [&](const Fraction& onset) -> const QueryFragment* {
+      for (const auto& fragment : fragments)
+      {
+        if (fragment.wholeStart == onset)
+        {
+          return &fragment;
+        }
+      }
+      return nullptr;
+    };
+
+    const auto* first = findAt(Fraction(0));
+    const auto* second = findAt(Fraction(1, 2));
+    REQUIRE(first != nullptr);
+    REQUIRE(second != nullptr);
+
+    REQUIRE(first->controls.count("velocity") == 1);
+    CHECK(first->controls.at("velocity") == "80");
+    CHECK(second->controls.count("velocity") == 0);
+  }
 }
