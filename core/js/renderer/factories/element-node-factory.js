@@ -1,5 +1,6 @@
 var math = require("mathjs");
 var factoryUtils = require("./factory-utils.js");
+var TypeGuards = require("../../utils/type-guards.js");
 
 require("../nodes/bjorklund-render-node.js");
 require("../nodes/element-render-node.js");
@@ -7,7 +8,7 @@ require("../nodes/stretch-render-node.js");
 
 function elementControlsFromModel(modelNode)
 {
-  if (!modelNode || !modelNode.controls_ || !(modelNode.controls_ instanceof Object))
+  if (!modelNode || !TypeGuards.isPlainObject(modelNode.controls_))
   {
     return null;
   }
@@ -22,7 +23,7 @@ function sourceUnitsForFixedStep(modelNode)
     return math.fraction(1);
   }
 
-  if (modelNode.type_ === "element" && modelNode.source_ && modelNode.source_ instanceof Object)
+  if (modelNode.type_ === "element" && TypeGuards.isPlainObject(modelNode.source_))
   {
     return sourceUnitsForFixedStep(modelNode.source_);
   }
@@ -120,7 +121,7 @@ function makeElementNode(modelNode, buildRenderNode)
 
   var elementNode;
   var controls = elementControlsFromModel(modelNode);
-  if (modelNode.source_ && modelNode.source_ instanceof Object)
+  if (TypeGuards.isPlainObject(modelNode.source_))
   {
     elementNode = new ElementRenderNode(buildRenderNode(modelNode.source_), controls);
     return applyElementOperator(elementNode, modelNode);

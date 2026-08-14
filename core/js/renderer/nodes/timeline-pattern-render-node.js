@@ -1,4 +1,5 @@
 var math = require("mathjs");
+var TypeGuards = require("../../utils/type-guards.js");
 
 require("./query-node-utils.js");
 
@@ -80,7 +81,7 @@ TimelinePatternRenderNode.prototype.query = function(start, end)
           partStart: math.add(fragment.partStart, slotStart),
           partEnd: math.add(fragment.partEnd, slotStart),
           value: fragment.value,
-          controls: fragment.controls && typeof fragment.controls === "object"
+          controls: TypeGuards.isPlainObject(fragment.controls)
             ? Object.assign({}, fragment.controls)
             : undefined
         });

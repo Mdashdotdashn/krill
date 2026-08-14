@@ -1,6 +1,7 @@
 var math = require("mathjs");
 var TimeUtils = require("../../utils/time-utils.js");
 var NoteVelocity = require("../../utils/note-velocity.js");
+var TypeGuards = require("../../utils/type-guards.js");
 require("./query-node-utils.js");
 require("./base-query-render-node.js");
 
@@ -10,7 +11,7 @@ ElementRenderNode = function(source)
   this.source_ = source;
   this.controls_ = null;
 
-  if (arguments.length > 1 && arguments[1] && typeof arguments[1] === "object")
+  if (arguments.length > 1 && TypeGuards.isPlainObject(arguments[1]))
   {
     this.controls_ = Object.assign({}, arguments[1]);
   }
@@ -21,20 +22,20 @@ ElementRenderNode.prototype.constructor = ElementRenderNode;
 
 ElementRenderNode.prototype.withControls_ = function(fragment)
 {
-  if (!this.controls_ || !(this.controls_ instanceof Object))
+  if (!TypeGuards.isPlainObject(this.controls_))
   {
     return fragment;
   }
 
   var mergedControls = Object.assign({}, this.controls_);
-  if (fragment.controls && typeof fragment.controls === "object")
+  if (TypeGuards.isPlainObject(fragment.controls))
   {
     mergedControls = Object.assign(mergedControls, fragment.controls);
   }
 
   var parentVelocity = this.controls_.velocity;
   var parentVelocityFactor = this.controls_.velocityFactor;
-  var childVelocityFactor = fragment.controls && typeof fragment.controls === "object"
+  var childVelocityFactor = TypeGuards.isPlainObject(fragment.controls)
     ? fragment.controls.velocityFactor
     : undefined;
 

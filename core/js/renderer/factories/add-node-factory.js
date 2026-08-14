@@ -1,6 +1,7 @@
 require("../nodes/add-render-node.js");
 require("../nodes/element-render-node.js");
 var factoryUtils = require("./factory-utils.js");
+var TypeGuards = require("../../utils/type-guards.js");
 
 function makeAddNode(modelNode, buildRenderNode)
 {
@@ -11,7 +12,7 @@ function makeAddNode(modelNode, buildRenderNode)
   }
 
   var arg = modelNode.arguments_[0];
-  var lhs = (arg && arg instanceof Object)
+  var lhs = TypeGuards.isPlainObject(arg)
     ? buildRenderNode(arg)
     : new ElementRenderNode(String(arg));
 

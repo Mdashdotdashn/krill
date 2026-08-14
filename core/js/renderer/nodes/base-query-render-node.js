@@ -1,5 +1,6 @@
 var math = require("mathjs");
 var TimeUtils = require("../../utils/time-utils.js");
+var TypeGuards = require("../../utils/type-guards.js");
 
 // Base class for render nodes that follow the common query pattern.
 // Provides template method for input validation and fragment construction.
@@ -61,7 +62,7 @@ BaseQueryRenderNode.prototype.makeFragment_ = function(wholeStart, wholeEnd, par
     value: String(value)
   };
 
-  if (controls && typeof controls === "object")
+  if (TypeGuards.isPlainObject(controls))
   {
     fragment.controls = Object.assign({}, controls);
   }

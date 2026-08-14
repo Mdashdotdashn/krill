@@ -1,6 +1,8 @@
+var TypeGuards = require("../../utils/type-guards.js");
+
 function isObjectNode(modelNode)
 {
-  return !!(modelNode && modelNode instanceof Object);
+  return TypeGuards.isPlainObject(modelNode);
 }
 
 function hasArrayArguments(modelNode, minimumCount)
