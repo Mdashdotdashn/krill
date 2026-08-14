@@ -8,6 +8,7 @@
 
 #include <array>
 #include <algorithm>
+#include <cstdlib>
 #include <cmath>
 #include <fstream>
 #include <map>
@@ -116,7 +117,25 @@ ExpectedEvent::ExpectedEntry parseExpectedEntry(const rapidjson::Value& value)
 
   if (value.IsString())
   {
-    parsed.value = value.GetString();
+    const std::string text = value.GetString();
+    const auto delimiter = text.rfind(':');
+    if (delimiter == std::string::npos || delimiter == 0 || delimiter == text.size() - 1)
+    {
+      parsed.value = text;
+      return parsed;
+    }
+
+    const auto velocityText = text.substr(delimiter + 1);
+    char* parseEnd = nullptr;
+    const auto parsedVelocity = std::strtod(velocityText.c_str(), &parseEnd);
+    if (!parseEnd || *parseEnd != '\0' || !std::isfinite(parsedVelocity))
+    {
+      parsed.value = text;
+      return parsed;
+    }
+
+    parsed.value = text.substr(0, delimiter);
+    parsed.controls["velocity"] = formatDouble(parsedVelocity);
     return parsed;
   }
 

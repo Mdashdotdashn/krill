@@ -57,10 +57,27 @@ function entriesAtTime(player, time)
 
 function expectedEntries(rawEntries)
 {
+  function parseShorthandStringEntry(entry)
+  {
+    var text = String(entry);
+    var shorthandMatch = /^([^:]+):(-?\d+(?:\.\d+)?)$/.exec(text);
+    if (!shorthandMatch)
+    {
+      return { value: text };
+    }
+
+    return {
+      value: shorthandMatch[1],
+      controls: {
+        velocity: String(shorthandMatch[2])
+      }
+    };
+  }
+
   return (rawEntries || []).map(function(entry) {
     if (typeof entry === "string")
     {
-      return { value: entry };
+      return parseShorthandStringEntry(entry);
     }
 
     if (!entry || typeof entry !== "object")
