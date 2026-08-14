@@ -56,6 +56,11 @@ namespace krill
       return clampMidiVelocity(combined);
     }
 
+    inline int accumulateVelocityFactor(int accumulatedFactor, int nextContribution)
+    {
+      return multiplyMidiVelocities(accumulatedFactor, nextContribution);
+    }
+
     inline std::optional<int> resolveControlVelocityToMidi(
       const std::map<std::string, std::string>& controls,
       const std::string& key)

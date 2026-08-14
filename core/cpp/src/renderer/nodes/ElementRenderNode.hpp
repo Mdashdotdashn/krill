@@ -106,14 +106,14 @@ namespace krill
       if (parentVelocity.has_value())
       {
         combinedVelocityFactor = combinedVelocityFactor.has_value()
-          ? note_velocity::multiplyMidiVelocities(combinedVelocityFactor.value(), parentVelocity.value())
+          ? note_velocity::accumulateVelocityFactor(combinedVelocityFactor.value(), parentVelocity.value())
           : parentVelocity.value();
       }
 
       if (childVelocityFactor.has_value())
       {
         combinedVelocityFactor = combinedVelocityFactor.has_value()
-          ? note_velocity::multiplyMidiVelocities(combinedVelocityFactor.value(), childVelocityFactor.value())
+          ? note_velocity::accumulateVelocityFactor(combinedVelocityFactor.value(), childVelocityFactor.value())
           : childVelocityFactor.value();
       }
 

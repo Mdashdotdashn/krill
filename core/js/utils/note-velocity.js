@@ -31,11 +31,18 @@ function multiplyMidiVelocities(left, right)
   return clampMidiVelocity(combined);
 }
 
+// Render-tree composition helper: accumulate parent/child velocity contributions.
+function accumulateVelocityFactor(accumulatedFactor, nextContribution)
+{
+  return multiplyMidiVelocities(accumulatedFactor, nextContribution);
+}
+
 module.exports = {
   MIN_VELOCITY: MIN_VELOCITY,
   MAX_VELOCITY: MAX_VELOCITY,
   DEFAULT_VELOCITY: DEFAULT_VELOCITY,
   clampMidiVelocity: clampMidiVelocity,
   resolveVelocityToMidi: resolveVelocityToMidi,
-  multiplyMidiVelocities: multiplyMidiVelocities
+  multiplyMidiVelocities: multiplyMidiVelocities,
+  accumulateVelocityFactor: accumulateVelocityFactor
 };

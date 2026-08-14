@@ -27,23 +27,25 @@ ElementRenderNode.prototype.withControls_ = function(fragment)
     return fragment;
   }
 
+  // Start from element-level controls, then let child controls override by key.
   var mergedControls = Object.assign({}, this.controls_);
   if (TypeGuards.isPlainObject(fragment.controls))
   {
     mergedControls = Object.assign(mergedControls, fragment.controls);
   }
 
-  var parentVelocity = this.controls_.velocity;
-  var parentVelocityFactor = this.controls_.velocityFactor;
-  var childVelocityFactor = TypeGuards.isPlainObject(fragment.controls)
+  var parentVelocityContribution = this.controls_.velocity;
+  var parentVelocityFactorContribution = this.controls_.velocityFactor;
+  var childVelocityFactorContribution = TypeGuards.isPlainObject(fragment.controls)
     ? fragment.controls.velocityFactor
     : undefined;
 
-  if (parentVelocity !== undefined)
+  // Parent element velocity contributes to inherited factor unless child set its own velocity.
+  if (parentVelocityContribution !== undefined)
   {
     mergedControls.velocityFactor = mergedControls.velocityFactor !== undefined
-      ? NoteVelocity.multiplyMidiVelocities(mergedControls.velocityFactor, parentVelocity)
-      : parentVelocity;
+      ? NoteVelocity.accumulateVelocityFactor(mergedControls.velocityFactor, parentVelocityContribution)
+      : parentVelocityContribution;
 
     if (fragment.controls === undefined || fragment.controls.velocity === undefined)
     {
@@ -51,18 +53,20 @@ ElementRenderNode.prototype.withControls_ = function(fragment)
     }
   }
 
-  if (parentVelocityFactor !== undefined)
+  // Explicit parent velocityFactor also contributes to the accumulated factor.
+  if (parentVelocityFactorContribution !== undefined)
   {
     mergedControls.velocityFactor = mergedControls.velocityFactor !== undefined
-      ? NoteVelocity.multiplyMidiVelocities(mergedControls.velocityFactor, parentVelocityFactor)
-      : parentVelocityFactor;
+      ? NoteVelocity.accumulateVelocityFactor(mergedControls.velocityFactor, parentVelocityFactorContribution)
+      : parentVelocityFactorContribution;
   }
 
-  if (childVelocityFactor !== undefined)
+  // Preserve child-provided factor composition when both levels are present.
+  if (childVelocityFactorContribution !== undefined)
   {
     mergedControls.velocityFactor = mergedControls.velocityFactor !== undefined
-      ? NoteVelocity.multiplyMidiVelocities(mergedControls.velocityFactor, childVelocityFactor)
-      : childVelocityFactor;
+      ? NoteVelocity.accumulateVelocityFactor(mergedControls.velocityFactor, childVelocityFactorContribution)
+      : childVelocityFactorContribution;
   }
 
   return this.makeFragment_(
