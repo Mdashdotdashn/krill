@@ -12,6 +12,72 @@ function fracToString(v)
   return math.format(math.fraction(v));
 }
 
+function controlsToComparable(controls)
+{
+  if (!controls || typeof controls !== "object")
+  {
+    return undefined;
+  }
+
+  var comparable = {};
+  Object.keys(controls).forEach(function(key) {
+    comparable[String(key)] = String(controls[key]);
+  });
+  return comparable;
+}
+
+function entriesAtTime(player, time)
+{
+  var eventTime = math.fraction(time);
+  var fragments = player.queryPointWindow(eventTime) || [];
+
+  var entries = [];
+  fragments.forEach(function(fragment) {
+    if (fragment.wholeStart === undefined)
+    {
+      return;
+    }
+
+    if (!math.equal(math.fraction(fragment.wholeStart), eventTime))
+    {
+      return;
+    }
+
+    var entry = { value: String(fragment.value) };
+    var controls = controlsToComparable(fragment.controls);
+    if (controls && Object.keys(controls).length > 0)
+    {
+      entry.controls = controls;
+    }
+    entries.push(entry);
+  });
+
+  return entries;
+}
+
+function expectedEntries(rawEntries)
+{
+  return (rawEntries || []).map(function(entry) {
+    if (typeof entry === "string")
+    {
+      return { value: entry };
+    }
+
+    if (!entry || typeof entry !== "object")
+    {
+      throw new Error("Expected entry must be a string or object");
+    }
+
+    var out = { value: String(entry.value) };
+    var controls = controlsToComparable(entry.controls);
+    if (controls && Object.keys(controls).length > 0)
+    {
+      out.controls = controls;
+    }
+    return out;
+  });
+}
+
 function valuesAtTime(player, expectedTime)
 {
   var values = player.eventsAtTime(expectedTime);
@@ -84,8 +150,9 @@ function runAllTestCases()
         "Unexpected event time for case: " + source
       );
 
-      var actualValues = eventValues(values);
-      assert.deepStrictEqual(actualValues, expected[expectedTime], "Case failed: " + source + " @ " + expectedTime);
+      var actualEntries = entriesAtTime(player, nextTime);
+      var expectedAtTime = expectedEntries(expected[expectedTime]);
+      assert.deepStrictEqual(actualEntries, expectedAtTime, "Case failed: " + source + " @ " + expectedTime);
     }
 
   }

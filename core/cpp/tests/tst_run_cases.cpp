@@ -8,7 +8,9 @@
 
 #include <array>
 #include <algorithm>
+#include <cmath>
 #include <fstream>
+#include <map>
 #include <optional>
 #include <string>
 #include <vector>
@@ -42,8 +44,98 @@ std::ifstream openSharedRunCasesFile()
 struct ExpectedEvent
 {
   Fraction time{0};
-  std::vector<std::string> values;
+  struct ExpectedEntry
+  {
+    std::string value;
+    std::map<std::string, std::string> controls;
+
+    bool operator==(const ExpectedEntry& other) const
+    {
+      return value == other.value && controls == other.controls;
+    }
+  };
+
+  std::vector<ExpectedEntry> entries;
 };
+
+std::string formatDouble(double value)
+{
+  if (std::fabs(value - std::round(value)) < 1e-9)
+  {
+    return std::to_string(static_cast<long>(std::llround(value)));
+  }
+
+  std::string text = std::to_string(value);
+  while (!text.empty() && text.back() == '0')
+  {
+    text.pop_back();
+  }
+  if (!text.empty() && text.back() == '.')
+  {
+    text.pop_back();
+  }
+  return text;
+}
+
+std::string rapidValueToString(const rapidjson::Value& value)
+{
+  if (value.IsString())
+  {
+    return value.GetString();
+  }
+  if (value.IsBool())
+  {
+    return value.GetBool() ? "true" : "false";
+  }
+  if (value.IsInt())
+  {
+    return std::to_string(value.GetInt());
+  }
+  if (value.IsInt64())
+  {
+    return std::to_string(value.GetInt64());
+  }
+  if (value.IsUint())
+  {
+    return std::to_string(value.GetUint());
+  }
+  if (value.IsUint64())
+  {
+    return std::to_string(value.GetUint64());
+  }
+  if (value.IsDouble())
+  {
+    return formatDouble(value.GetDouble());
+  }
+  return "";
+}
+
+ExpectedEvent::ExpectedEntry parseExpectedEntry(const rapidjson::Value& value)
+{
+  ExpectedEvent::ExpectedEntry parsed;
+
+  if (value.IsString())
+  {
+    parsed.value = value.GetString();
+    return parsed;
+  }
+
+  REQUIRE(value.IsObject());
+  REQUIRE(value.HasMember("value"));
+  parsed.value = rapidValueToString(value["value"]);
+
+  if (value.HasMember("controls"))
+  {
+    REQUIRE(value["controls"].IsObject());
+    for (const auto& control : value["controls"].GetObject())
+    {
+      REQUIRE(control.name.IsString());
+      parsed.controls[control.name.GetString()] = rapidValueToString(control.value);
+    }
+  }
+
+  return parsed;
+}
 
 std::vector<ExpectedEvent> sortedExpectedEvents(const rapidjson::Value::ConstObject& expected)
 {
@@ -59,8 +151,7 @@ std::vector<ExpectedEvent> sortedExpectedEvents(const rapidjson::Value::ConstObj
 
     for (const auto& v : expectedEntry.value.GetArray())
     {
-      REQUIRE(v.IsString());
-      parsed.values.push_back(v.GetString());
+      parsed.entries.push_back(parseExpectedEntry(v));
     }
 
     events.push_back(std::move(parsed));
@@ -71,6 +162,27 @@ std::vector<ExpectedEvent> sortedExpectedEvents(const rapidjson::Value::ConstObj
   });
 
   return events;
+}
+
+std::vector<ExpectedEvent::ExpectedEntry> entriesAtTime(krill::RenderTreePlayer& player, const Fraction& time)
+{
+  std::vector<ExpectedEvent::ExpectedEntry> entries;
+
+  const auto fragments = player.queryPointWindow(time);
+  for (const auto& fragment : fragments)
+  {
+    if (fragment.wholeStart != time)
+    {
+      continue;
+    }
+
+    ExpectedEvent::ExpectedEntry entry;
+    entry.value = fragment.value;
+    entry.controls = fragment.controls;
+    entries.push_back(std::move(entry));
+  }
+
+  return entries;
 }
 } // namespace
 
@@ -131,7 +243,7 @@ TEST_CASE("Rendertree")
       }
 
       CHECK(nextTime == expectedEvent.time);
-      CHECK(values == expectedEvent.values);
+      CHECK(entriesAtTime(player, nextTime) == expectedEvent.entries);
     }
   }
 }
