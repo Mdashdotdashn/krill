@@ -1,5 +1,6 @@
 var math = require("mathjs");
 var TimeUtils = require("../../utils/time-utils.js");
+var NoteVelocity = require("../../utils/note-velocity.js");
 require("./query-node-utils.js");
 require("./base-query-render-node.js");
 
@@ -40,7 +41,7 @@ ElementRenderNode.prototype.withControls_ = function(fragment)
   if (parentVelocity !== undefined)
   {
     mergedControls.velocityFactor = mergedControls.velocityFactor !== undefined
-      ? combineVelocityFactors_(mergedControls.velocityFactor, parentVelocity)
+      ? NoteVelocity.multiplyMidiVelocities(mergedControls.velocityFactor, parentVelocity)
       : parentVelocity;
 
     if (fragment.controls === undefined || fragment.controls.velocity === undefined)
@@ -52,14 +53,14 @@ ElementRenderNode.prototype.withControls_ = function(fragment)
   if (parentVelocityFactor !== undefined)
   {
     mergedControls.velocityFactor = mergedControls.velocityFactor !== undefined
-      ? combineVelocityFactors_(mergedControls.velocityFactor, parentVelocityFactor)
+      ? NoteVelocity.multiplyMidiVelocities(mergedControls.velocityFactor, parentVelocityFactor)
       : parentVelocityFactor;
   }
 
   if (childVelocityFactor !== undefined)
   {
     mergedControls.velocityFactor = mergedControls.velocityFactor !== undefined
-      ? combineVelocityFactors_(mergedControls.velocityFactor, childVelocityFactor)
+      ? NoteVelocity.multiplyMidiVelocities(mergedControls.velocityFactor, childVelocityFactor)
       : childVelocityFactor;
   }
 
@@ -71,29 +72,6 @@ ElementRenderNode.prototype.withControls_ = function(fragment)
     fragment.value,
     mergedControls
   );
-}
-
-function normalizeVelocityValue_(value)
-{
-  var numeric = Number(value);
-  if (!isFinite(numeric))
-  {
-    return 127;
-  }
-
-  if (numeric >= 0 && numeric <= 1)
-  {
-    return Math.max(0, Math.min(127, Math.round(127 * numeric)));
-  }
-
-  return Math.max(0, Math.min(127, Math.round(Math.abs(numeric))));
-}
-
-function combineVelocityFactors_(left, right)
-{
-  return Math.max(0, Math.min(127, Math.round(
-    (normalizeVelocityValue_(left) * normalizeVelocityValue_(right)) / 127
-  )));
 }
 
 ElementRenderNode.prototype.executeQuery_ = function(requestStart, requestEnd)

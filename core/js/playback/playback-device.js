@@ -1,10 +1,9 @@
 var easymidi = require('easymidi');
 const { Midi } = require('@tonejs/midi')
 const fs = require('fs');
+var NoteVelocity = require('../utils/note-velocity.js');
 
 require('../music/conversion.js');
-
-var DEFAULT_VELOCITY = 127;
 
 var defaultLoopback = function()
 {
@@ -41,29 +40,6 @@ var findMidiDevice = function(name)
   process.exit();
 }
 
-function normalizeVelocityValue(value)
-{
-  var numeric = Number(value);
-  if (!isFinite(numeric))
-  {
-    return DEFAULT_VELOCITY;
-  }
-
-  if (numeric >= 0 && numeric <= 1)
-  {
-    return Math.max(0, Math.min(DEFAULT_VELOCITY, Math.round(DEFAULT_VELOCITY * numeric)));
-  }
-
-  return Math.max(0, Math.min(DEFAULT_VELOCITY, Math.round(Math.abs(numeric))));
-}
-
-function combineVelocityValues(left, right)
-{
-  return Math.max(0, Math.min(DEFAULT_VELOCITY, Math.round(
-    (normalizeVelocityValue(left) * normalizeVelocityValue(right)) / DEFAULT_VELOCITY
-  )));
-}
-
 function resolveVelocity(fragment)
 {
   var controls = fragment && fragment.controls && typeof fragment.controls === "object"
@@ -72,10 +48,14 @@ function resolveVelocity(fragment)
   var velocity = controls && controls.velocity !== undefined ? controls.velocity : undefined;
   var velocityFactor = controls && controls.velocityFactor !== undefined ? controls.velocityFactor : undefined;
 
-  var baseVelocity = velocity !== undefined ? normalizeVelocityValue(velocity) : DEFAULT_VELOCITY;
-  var factorVelocity = velocityFactor !== undefined ? normalizeVelocityValue(velocityFactor) : DEFAULT_VELOCITY;
+  var baseVelocity = velocity !== undefined
+    ? NoteVelocity.resolveVelocityToMidi(velocity)
+    : NoteVelocity.DEFAULT_VELOCITY;
+  var factorVelocity = velocityFactor !== undefined
+    ? NoteVelocity.resolveVelocityToMidi(velocityFactor)
+    : NoteVelocity.DEFAULT_VELOCITY;
 
-  return combineVelocityValues(baseVelocity, factorVelocity);
+  return NoteVelocity.multiplyMidiVelocities(baseVelocity, factorVelocity);
 }
 
 function noteObjectsFromValue(value, fragment)
@@ -175,7 +155,7 @@ MidiFileRenderer.prototype.send = function(message, options)
               midi: value.note,
               time: toDuration(value.time),
               duration: toDuration(this.currentTime_ - value.time),
-              velocity: normalizeVelocityValue(value.velocity) / DEFAULT_VELOCITY
+                velocity: NoteVelocity.resolveVelocityToMidi(value.velocity) / NoteVelocity.DEFAULT_VELOCITY
           }
           if (!this.trackArray_[value.channel])
           {
