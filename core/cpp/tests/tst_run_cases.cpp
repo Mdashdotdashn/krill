@@ -18,20 +18,21 @@
 
 namespace
 {
-std::ifstream openSharedRunCasesFile()
+std::ifstream openSharedRunCasesFileByName(const char* fileName)
 {
   const std::array<const char*, 7> candidatePaths = {
-    "../test-cases.json",
-    "../../test-cases.json",
-    "../../../test-cases.json",
-    "../../../../test-cases.json",
-    "../../../../../test-cases.json",
-    "../../../../../../test-cases.json",
-    "../../../../../../../test-cases.json"
+    "../",
+    "../../",
+    "../../../",
+    "../../../../",
+    "../../../../../",
+    "../../../../../../",
+    "../../../../../../../"
   };
 
-  for (const auto* path : candidatePaths)
+  for (const auto* root : candidatePaths)
   {
+    const std::string path = std::string(root) + fileName;
     std::ifstream ifs(path);
     if (ifs.is_open())
     {
@@ -209,60 +210,68 @@ TEST_CASE("Rendertree")
 {
   using namespace rapidjson;
 
-  std::ifstream ifs = openSharedRunCasesFile();
-  REQUIRE(ifs.is_open());
+  const std::array<const char*, 2> sharedFiles = {
+    "test-cases.json",
+    "test-cases-runner.json"
+  };
 
-  IStreamWrapper isw{ifs};
-  Document document{};
-  REQUIRE(!document.ParseStream(isw).HasParseError());
-  REQUIRE(document.HasMember("cases"));
-  REQUIRE(document["cases"].IsObject());
-
-  const auto& cases = document["cases"].GetObject();
-
-  for (const auto& entry : cases)
+  for (const auto* sharedFile : sharedFiles)
   {
-    REQUIRE(entry.name.IsString());
-    REQUIRE(entry.value.IsObject());
+    std::ifstream ifs = openSharedRunCasesFileByName(sharedFile);
+    REQUIRE(ifs.is_open());
 
-    const std::string source = entry.name.GetString();
-    const auto& expected = entry.value.GetObject();
+    IStreamWrapper isw{ifs};
+    Document document{};
+    REQUIRE(!document.ParseStream(isw).HasParseError());
+    REQUIRE(document.HasMember("cases"));
+    REQUIRE(document["cases"].IsObject());
 
-    krill::Parser parser;
-    Document parseDoc;
-    auto parseResult = parser.parse(parseDoc, source);
-    INFO("source: " << source);
-    REQUIRE(parseResult.has_value());
+    const auto& cases = document["cases"].GetObject();
 
-    auto pTree = krill::RenderTreeBuilder::fromJson(parseResult.value());
-    krill::RenderTreePlayer player;
-    player.setTree(pTree);
-    player.reset();
-
-    const auto expectedEvents = sortedExpectedEvents(expected);
-    Fraction currentTime(-1, 10000);
-
-    for (const auto& expectedEvent : expectedEvents)
+    for (const auto& entry : cases)
     {
-      Fraction nextTime;
-      std::vector<std::string> values;
-      int guard = 0;
+      REQUIRE(entry.name.IsString());
+      REQUIRE(entry.value.IsObject());
 
-      while (values.empty())
+      const std::string source = entry.name.GetString();
+      const auto& expected = entry.value.GetObject();
+
+      krill::Parser parser;
+      Document parseDoc;
+      auto parseResult = parser.parse(parseDoc, source);
+      INFO("source: " << source << " (" << sharedFile << ")");
+      REQUIRE(parseResult.has_value());
+
+      auto pTree = krill::RenderTreeBuilder::fromJson(parseResult.value());
+      krill::RenderTreePlayer player;
+      player.setTree(pTree);
+      player.reset();
+
+      const auto expectedEvents = sortedExpectedEvents(expected);
+      Fraction currentTime(-1, 10000);
+
+      for (const auto& expectedEvent : expectedEvents)
       {
-        nextTime = player.nextOnsetTimeFrom(currentTime);
-        values = player.eventsAtTime(nextTime);
-        currentTime = nextTime;
-        guard += 1;
+        Fraction nextTime;
+        std::vector<std::string> values;
+        int guard = 0;
 
-        if (guard > 4096)
+        while (values.empty())
         {
-          FAIL("Stuck while advancing player for source");
-        }
-      }
+          nextTime = player.nextOnsetTimeFrom(currentTime);
+          values = player.eventsAtTime(nextTime);
+          currentTime = nextTime;
+          guard += 1;
 
-      CHECK(nextTime == expectedEvent.time);
-      CHECK(entriesAtTime(player, nextTime) == expectedEvent.entries);
+          if (guard > 4096)
+          {
+            FAIL("Stuck while advancing player for source");
+          }
+        }
+
+        CHECK(nextTime == expectedEvent.time);
+        CHECK(entriesAtTime(player, nextTime) == expectedEvent.entries);
+      }
     }
   }
 }

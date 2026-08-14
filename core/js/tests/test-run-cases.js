@@ -121,12 +121,21 @@ function sortExpectedTimes(expected)
   });
 }
 
+function loadSharedCases(fileName)
+{
+  var contents = fs.readFileSync(path.join(__dirname, '../../' + fileName), "utf8");
+  return JSON.parse(contents).cases || {};
+}
+
 function runAllTestCases()
 {
   var evaluator = new Evaluator();
   var builder = new RenderingTreeBuilder();
-  var contents = fs.readFileSync(path.join(__dirname, '../../test-cases.json'), "utf8");
-  var testCases = JSON.parse(contents).cases || {};
+  var testCases = Object.assign(
+    {},
+    loadSharedCases('test-cases.json'),
+    loadSharedCases('test-cases-runner.json')
+  );
 
   for (var source in testCases)
   {
