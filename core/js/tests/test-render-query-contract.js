@@ -132,7 +132,7 @@ function fragmentToComparable(fragment)
     }
   };
 
-  var node = new ElementRenderNode(sourceNode, { velocity: 100, gain: 0.7 });
+  var node = new ElementRenderNode(sourceNode, { velocityFactor: 0.8, gain: 0.7 });
   var result = node.query("1/8", "3/8").map(fragmentToComparable);
 
   assert.deepStrictEqual(result, [{
@@ -141,7 +141,7 @@ function fragmentToComparable(fragment)
     partStart: F("1/8"),
     partEnd: F("3/8"),
     value: "nested",
-    controls: { velocity: 80, gain: 0.7, pan: 0.2, velocityFactor: 100 }
+    controls: { velocity: 80, gain: 0.7, pan: 0.2, velocityFactor: 0.8 }
   }]);
 })();
 
@@ -161,7 +161,7 @@ function fragmentToComparable(fragment)
     }
   };
 
-  var node = new ElementRenderNode(sourceNode, { velocity: 100 });
+  var node = new ElementRenderNode(sourceNode, { velocityFactor: 0.8 });
   var result = node.query("1/8", "3/8").map(fragmentToComparable);
 
   assert.deepStrictEqual(result, [{
@@ -170,6 +170,77 @@ function fragmentToComparable(fragment)
     partStart: F("1/8"),
     partEnd: F("3/8"),
     value: "nested",
-    controls: { velocity: 80, velocityFactor: 100 }
+    controls: { velocity: 80, velocityFactor: 0.8 }
   }]);
+})();
+
+(function testElementRenderNodeComposesThreeLevelFactorHierarchy()
+{
+  var leafSourceNode = {
+    query: function(start, end)
+    {
+      return [{
+        wholeStart: math.fraction(0),
+        wholeEnd: math.fraction(1),
+        partStart: start,
+        partEnd: end,
+        value: "nested",
+        controls: { velocity: 80 }
+      }];
+    }
+  };
+
+  var middleFactorNode = new ElementRenderNode(leafSourceNode, { velocityFactor: 0.5 });
+  var topFactorNode = new ElementRenderNode(middleFactorNode, { velocityFactor: 0.5 });
+
+  var result = topFactorNode.query("1/8", "3/8").map(fragmentToComparable);
+
+  assert.deepStrictEqual(result, [{
+    wholeStart: F("0"),
+    wholeEnd: F("1"),
+    partStart: F("1/8"),
+    partEnd: F("3/8"),
+    value: "nested",
+    controls: { velocity: 80, velocityFactor: 0.25 }
+  }]);
+})();
+
+(function testNestedElementControlsRejectAbsoluteVelocity()
+{
+  var leafSourceNode = {
+    query: function(start, end)
+    {
+      return [{
+        wholeStart: math.fraction(0),
+        wholeEnd: math.fraction(1),
+        partStart: start,
+        partEnd: end,
+        value: "nested"
+      }];
+    }
+  };
+
+  assert.throws(function() {
+    return new ElementRenderNode(leafSourceNode, { velocity: 23 });
+  }, /velocityFactor/);
+})();
+
+(function testNestedElementControlsRejectOutOfRangeVelocityFactor()
+{
+  var leafSourceNode = {
+    query: function(start, end)
+    {
+      return [{
+        wholeStart: math.fraction(0),
+        wholeEnd: math.fraction(1),
+        partStart: start,
+        partEnd: end,
+        value: "nested"
+      }];
+    }
+  };
+
+  assert.throws(function() {
+    return new ElementRenderNode(leafSourceNode, { velocityFactor: 64 });
+  }, /\[0, 1\]/);
 })();

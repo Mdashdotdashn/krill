@@ -1,19 +1,37 @@
 var math = require("mathjs");
 var factoryUtils = require("./factory-utils.js");
+var NoteVelocity = require("../../utils/note-velocity.js");
 var TypeGuards = require("../../utils/type-guards.js");
 
 require("../nodes/bjorklund-render-node.js");
 require("../nodes/element-render-node.js");
 require("../nodes/stretch-render-node.js");
 
-function elementControlsFromModel(modelNode)
+function elementControlsFromModel(modelNode, isNestedSource)
 {
   if (!modelNode || !TypeGuards.isPlainObject(modelNode.controls_))
   {
     return null;
   }
 
-  return Object.keys(modelNode.controls_).length > 0 ? Object.assign({}, modelNode.controls_) : null;
+  var controls = Object.assign({}, modelNode.controls_);
+
+  // Language-level convenience: group velocity is interpreted as a factor.
+  if (isNestedSource && controls.velocity !== undefined)
+  {
+    var nestedVelocityFactor = NoteVelocity.resolveVelocityFactor(controls.velocity);
+    controls.velocityFactor = controls.velocityFactor !== undefined
+      ? NoteVelocity.accumulateVelocityFactor(controls.velocityFactor, nestedVelocityFactor)
+      : nestedVelocityFactor;
+    delete controls.velocity;
+  }
+
+  if (isNestedSource && controls.velocityFactor !== undefined)
+  {
+    controls.velocityFactor = NoteVelocity.resolveVelocityFactor(controls.velocityFactor);
+  }
+
+  return Object.keys(controls).length > 0 ? controls : null;
 }
 
 function sourceUnitsForFixedStep(modelNode)
@@ -120,8 +138,9 @@ function makeElementNode(modelNode, buildRenderNode)
   }
 
   var elementNode;
-  var controls = elementControlsFromModel(modelNode);
-  if (TypeGuards.isPlainObject(modelNode.source_))
+  var isNestedSource = TypeGuards.isPlainObject(modelNode.source_);
+  var controls = elementControlsFromModel(modelNode, isNestedSource);
+  if (isNestedSource)
   {
     elementNode = new ElementRenderNode(buildRenderNode(modelNode.source_), controls);
     return applyElementOperator(elementNode, modelNode);

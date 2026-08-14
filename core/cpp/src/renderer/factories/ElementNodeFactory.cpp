@@ -1,7 +1,9 @@
 #include "ElementNodeFactory.hpp"
 
 #include <string>
+#include <stdexcept>
 
+#include "../NoteVelocity.hpp"
 #include "../nodes/BjorklundRenderNode.hpp"
 #include "../nodes/ElementRenderNode.hpp"
 #include "../nodes/StretchRenderNode.hpp"
@@ -14,6 +16,7 @@ namespace krill
     {
       std::map<std::string, std::string> controlsFromModel(
         const rapidjson::Value& elementNode,
+        bool isNestedSource,
         std::string (*sourceAsString)(const rapidjson::Value&))
       {
         std::map<std::string, std::string> controls;
@@ -32,6 +35,36 @@ namespace krill
 
           const auto key = std::string(option.name.GetString());
           controls[key] = sourceAsString(option.value);
+        }
+
+        // Language-level convenience: group velocity is interpreted as a factor.
+        if (isNestedSource && controls.count("velocity") > 0)
+        {
+          const auto velocity = note_velocity::resolveControlVelocityFactor(controls, "velocity");
+          const auto factor = note_velocity::resolveControlVelocityFactor(controls, "velocityFactor");
+
+          if (velocity.has_value())
+          {
+            controls["velocityFactor"] = factor.has_value()
+              ? note_velocity::formatVelocityFactor(note_velocity::accumulateVelocityFactor(factor.value(), velocity.value()))
+              : note_velocity::formatVelocityFactor(velocity.value());
+          }
+          else if (!controls.count("velocityFactor"))
+          {
+            throw std::invalid_argument("Nested velocity must be within [0, 1].");
+          }
+
+          controls.erase("velocity");
+        }
+
+        if (isNestedSource && controls.count("velocityFactor") > 0)
+        {
+          const auto factor = note_velocity::resolveControlVelocityFactor(controls, "velocityFactor");
+          if (!factor.has_value())
+          {
+            throw std::invalid_argument("Nested velocityFactor must be within [0, 1].");
+          }
+          controls["velocityFactor"] = note_velocity::formatVelocityFactor(factor.value());
         }
 
         return controls;
@@ -180,7 +213,8 @@ namespace krill
       }
 
       const auto& source = v["source_"];
-      const auto controls = controlsFromModel(v, sourceAsString);
+      const auto isNestedSource = source.IsObject();
+      const auto controls = controlsFromModel(v, isNestedSource, sourceAsString);
       if (source.IsObject())
       {
         auto element = std::make_shared<ElementRenderNode>(buildRenderTree(source), controls);

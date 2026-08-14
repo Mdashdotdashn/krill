@@ -3,7 +3,9 @@
 #include <algorithm>
 #include <cmath>
 #include <map>
+#include <sstream>
 #include <optional>
+#include <stdexcept>
 #include <string>
 
 namespace krill
@@ -13,6 +15,8 @@ namespace krill
     inline constexpr int kMin = 0;
     inline constexpr int kMax = 127;
     inline constexpr int kDefault = 127;
+    inline constexpr double kMinFactor = 0.0;
+    inline constexpr double kMaxFactor = 1.0;
 
     inline int clampMidiVelocity(int value)
     {
@@ -56,9 +60,35 @@ namespace krill
       return clampMidiVelocity(combined);
     }
 
-    inline int accumulateVelocityFactor(int accumulatedFactor, int nextContribution)
+    inline double resolveVelocityFactor(double value)
     {
-      return multiplyMidiVelocities(accumulatedFactor, nextContribution);
+      if (!std::isfinite(value) || value < kMinFactor || value > kMaxFactor)
+      {
+        throw std::invalid_argument("velocityFactor must be within [0, 1].");
+      }
+      return value;
+    }
+
+    inline double accumulateVelocityFactor(double accumulatedFactor, double nextContribution)
+    {
+      return resolveVelocityFactor(accumulatedFactor) * resolveVelocityFactor(nextContribution);
+    }
+
+    inline std::string formatVelocityFactor(double factor)
+    {
+      std::ostringstream out;
+      out.precision(12);
+      out << std::fixed << resolveVelocityFactor(factor);
+      std::string text = out.str();
+      while (!text.empty() && text.back() == '0')
+      {
+        text.pop_back();
+      }
+      if (!text.empty() && text.back() == '.')
+      {
+        text.pop_back();
+      }
+      return text.empty() ? "0" : text;
     }
 
     inline std::optional<int> resolveControlVelocityToMidi(
@@ -78,6 +108,25 @@ namespace krill
       }
 
       return resolveVelocityToMidi(parsed.value());
+    }
+
+    inline std::optional<double> resolveControlVelocityFactor(
+      const std::map<std::string, std::string>& controls,
+      const std::string& key)
+    {
+      const auto found = controls.find(key);
+      if (found == controls.end())
+      {
+        return std::nullopt;
+      }
+
+      const auto parsed = parseVelocityNumber(found->second);
+      if (!parsed.has_value())
+      {
+        return std::nullopt;
+      }
+
+      return resolveVelocityFactor(parsed.value());
     }
   }
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <stdexcept>
 #include <utility>
 
 #include "../NoteVelocity.hpp"
@@ -29,6 +30,20 @@ namespace krill
     ElementRenderNode(RenderNodePtr sourceNode, std::map<std::string, std::string> controls)
     : mpSourceNode(std::move(sourceNode)), mControls(std::move(controls))
     {
+      if (mControls.count("velocity") > 0)
+      {
+        throw std::invalid_argument("Nested ElementRenderNode controls must use velocityFactor, not velocity.");
+      }
+
+      if (mControls.count("velocityFactor") > 0)
+      {
+        const auto factor = note_velocity::resolveControlVelocityFactor(mControls, "velocityFactor");
+        if (!factor.has_value())
+        {
+          throw std::invalid_argument("Nested ElementRenderNode velocityFactor must be within [0, 1].");
+        }
+        mControls["velocityFactor"] = note_velocity::formatVelocityFactor(factor.value());
+      }
     }
 
     std::vector<QueryFragment> query(const QueryRequest& request) const override
@@ -92,39 +107,28 @@ namespace krill
         mergedControls[entry.first] = entry.second;
       }
 
-      const auto parentVelocity = note_velocity::resolveControlVelocityToMidi(parentControls, "velocity");
-      const auto parentVelocityFactor = note_velocity::resolveControlVelocityToMidi(parentControls, "velocityFactor");
-      const auto childVelocityFactor = note_velocity::resolveControlVelocityToMidi(childControls, "velocityFactor");
+      const auto parentVelocityFactor = note_velocity::resolveControlVelocityFactor(parentControls, "velocityFactor");
+      const auto childVelocityFactor = note_velocity::resolveControlVelocityFactor(childControls, "velocityFactor");
 
-      std::optional<int> combinedVelocityFactor;
-
-      if (parentVelocityFactor.has_value())
+      std::optional<double> combinedVelocityFactor;
+      auto accumulateContribution = [&combinedVelocityFactor](const std::optional<double>& contribution)
       {
-        combinedVelocityFactor = parentVelocityFactor.value();
-      }
+        if (!contribution.has_value())
+        {
+          return;
+        }
 
-      if (parentVelocity.has_value())
-      {
         combinedVelocityFactor = combinedVelocityFactor.has_value()
-          ? note_velocity::accumulateVelocityFactor(combinedVelocityFactor.value(), parentVelocity.value())
-          : parentVelocity.value();
-      }
+          ? note_velocity::accumulateVelocityFactor(combinedVelocityFactor.value(), contribution.value())
+          : contribution.value();
+      };
 
-      if (childVelocityFactor.has_value())
-      {
-        combinedVelocityFactor = combinedVelocityFactor.has_value()
-          ? note_velocity::accumulateVelocityFactor(combinedVelocityFactor.value(), childVelocityFactor.value())
-          : childVelocityFactor.value();
-      }
+      accumulateContribution(parentVelocityFactor);
+      accumulateContribution(childVelocityFactor);
 
       if (combinedVelocityFactor.has_value())
       {
-        mergedControls["velocityFactor"] = std::to_string(combinedVelocityFactor.value());
-      }
-
-      if (!childControls.count("velocity") && parentVelocity.has_value())
-      {
-        mergedControls.erase("velocity");
+        mergedControls["velocityFactor"] = note_velocity::formatVelocityFactor(combinedVelocityFactor.value());
       }
 
       return mergedControls;

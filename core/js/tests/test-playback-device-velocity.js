@@ -87,12 +87,12 @@ function makeFragment(value, controls)
 
   renderer.tick("0", {
     time: "0",
-    fragments: [makeFragment("bd", { velocity: 100, velocityFactor: 80 })],
+    fragments: [makeFragment("bd", { velocity: 100, velocityFactor: 0.5 })],
     values: ["bd"]
   });
   renderer.tick("1/4", { time: "1/4", values: [] });
 
   assert.strictEqual(exported.length, 1);
   assert.strictEqual(exported[0].midi, 36);
-  assert(Math.abs(exported[0].velocity - (63 / 127)) < 1e-9);
+  assert(Math.abs(exported[0].velocity - (50 / 127)) < 1e-9);
 })();
