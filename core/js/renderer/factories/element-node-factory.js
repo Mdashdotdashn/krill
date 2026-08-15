@@ -1,6 +1,6 @@
 var math = require("mathjs");
 var factoryUtils = require("./factory-utils.js");
-var NoteVelocity = require("../../utils/note-velocity.js");
+var ControlMetadata = require("../../utils/control-metadata.js");
 var TypeGuards = require("../../utils/type-guards.js");
 
 require("../nodes/bjorklund-render-node.js");
@@ -9,29 +9,9 @@ require("../nodes/stretch-render-node.js");
 
 function elementControlsFromModel(modelNode, isNestedSource)
 {
-  if (!modelNode || !TypeGuards.isPlainObject(modelNode.controls_))
-  {
-    return null;
-  }
-
-  var controls = Object.assign({}, modelNode.controls_);
-
-  // Language-level convenience: group velocity is interpreted as a factor.
-  if (isNestedSource && controls.velocity !== undefined)
-  {
-    var nestedVelocityFactor = NoteVelocity.resolveVelocityFactor(controls.velocity);
-    controls.velocityFactor = controls.velocityFactor !== undefined
-      ? NoteVelocity.accumulateVelocityFactor(controls.velocityFactor, nestedVelocityFactor)
-      : nestedVelocityFactor;
-    delete controls.velocity;
-  }
-
-  if (isNestedSource && controls.velocityFactor !== undefined)
-  {
-    controls.velocityFactor = NoteVelocity.resolveVelocityFactor(controls.velocityFactor);
-  }
-
-  return Object.keys(controls).length > 0 ? controls : null;
+  return modelNode
+    ? ControlMetadata.canonicalizeModelControls(modelNode.controls_, isNestedSource)
+    : null;
 }
 
 function sourceUnitsForFixedStep(modelNode)

@@ -1,6 +1,6 @@
 var math = require("mathjs");
 var TimeUtils = require("../../utils/time-utils.js");
-var NoteVelocity = require("../../utils/note-velocity.js");
+var ControlMetadata = require("../../utils/control-metadata.js");
 var TypeGuards = require("../../utils/type-guards.js");
 require("./query-node-utils.js");
 require("./base-query-render-node.js");
@@ -13,19 +13,9 @@ ElementRenderNode = function(source)
 
   if (arguments.length > 1 && TypeGuards.isPlainObject(arguments[1]))
   {
-    this.controls_ = Object.assign({}, arguments[1]);
-
-    // Strict contract: absolute velocity is leaf-only.
-    if (this.source_ && this.source_.query instanceof Function && this.controls_.velocity !== undefined)
-    {
-      throw new Error("Nested ElementRenderNode controls must use velocityFactor, not velocity.");
-    }
-
-    // Strict contract: factors are normalized [0,1] values.
-    if (this.source_ && this.source_.query instanceof Function && this.controls_.velocityFactor !== undefined)
-    {
-      this.controls_.velocityFactor = NoteVelocity.resolveVelocityFactor(this.controls_.velocityFactor);
-    }
+    this.controls_ = this.source_ && this.source_.query instanceof Function
+      ? ControlMetadata.validateNestedControls(arguments[1])
+      : ControlMetadata.cloneControls(arguments[1]);
   }
 }
 
@@ -39,49 +29,7 @@ ElementRenderNode.prototype.withControls_ = function(fragment)
     return fragment;
   }
 
-  // Start from element-level controls, then let child controls override by key.
-  var mergedControls = Object.assign({}, this.controls_);
-  var childControls = TypeGuards.isPlainObject(fragment.controls) ? fragment.controls : null;
-
-  if (childControls)
-  {
-    mergedControls = Object.assign(mergedControls, childControls);
-  }
-
-  var parentVelocityFactorContribution = this.controls_.velocityFactor;
-  var childVelocityFactorContribution = childControls
-    ? childControls.velocityFactor
-    : undefined;
-  var accumulatedVelocityFactor = undefined;
-
-  function accumulateContribution(contribution)
-  {
-    if (contribution === undefined)
-    {
-      return;
-    }
-
-    accumulatedVelocityFactor = accumulatedVelocityFactor !== undefined
-      ? NoteVelocity.accumulateVelocityFactor(accumulatedVelocityFactor, contribution)
-      : contribution;
-  }
-
-  // Explicit parent velocityFactor also contributes to the accumulated factor.
-  if (parentVelocityFactorContribution !== undefined)
-  {
-    accumulateContribution(parentVelocityFactorContribution);
-  }
-
-  // Preserve child-provided factor composition when both levels are present.
-  if (childVelocityFactorContribution !== undefined)
-  {
-    accumulateContribution(childVelocityFactorContribution);
-  }
-
-  if (accumulatedVelocityFactor !== undefined)
-  {
-    mergedControls.velocityFactor = accumulatedVelocityFactor;
-  }
+  var mergedControls = ControlMetadata.composeNestedControls(this.controls_, fragment.controls);
 
   return this.makeFragment_(
     fragment.wholeStart,

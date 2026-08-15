@@ -2,7 +2,7 @@ var easymidi = require('easymidi');
 const { Midi } = require('@tonejs/midi')
 const fs = require('fs');
 var NoteVelocity = require('../utils/note-velocity.js');
-var TypeGuards = require('../utils/type-guards.js');
+var ControlMetadata = require('../utils/control-metadata.js');
 
 require('../music/conversion.js');
 
@@ -43,20 +43,7 @@ var findMidiDevice = function(name)
 
 function resolveVelocity(fragment)
 {
-  var controls = fragment && TypeGuards.isPlainObject(fragment.controls)
-    ? fragment.controls
-    : null;
-  var velocity = controls && controls.velocity !== undefined ? controls.velocity : undefined;
-  var velocityFactor = controls && controls.velocityFactor !== undefined ? controls.velocityFactor : undefined;
-
-  var baseVelocity = velocity !== undefined
-    ? NoteVelocity.resolveVelocityToMidi(velocity)
-    : NoteVelocity.DEFAULT_VELOCITY;
-  var factorVelocity = velocityFactor !== undefined
-    ? NoteVelocity.resolveVelocityToMidi(velocityFactor)
-    : NoteVelocity.DEFAULT_VELOCITY;
-
-  return NoteVelocity.multiplyMidiVelocities(baseVelocity, factorVelocity);
+  return ControlMetadata.resolveVelocityFromFragment(fragment);
 }
 
 function noteObjectsFromValue(value, fragment)

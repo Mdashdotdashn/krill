@@ -1,9 +1,9 @@
 #include "ElementNodeFactory.hpp"
 
 #include <string>
-#include <stdexcept>
+#include <utility>
 
-#include "../NoteVelocity.hpp"
+#include "../ControlMetadata.hpp"
 #include "../nodes/BjorklundRenderNode.hpp"
 #include "../nodes/ElementRenderNode.hpp"
 #include "../nodes/StretchRenderNode.hpp"
@@ -37,37 +37,7 @@ namespace krill
           controls[key] = sourceAsString(option.value);
         }
 
-        // Language-level convenience: group velocity is interpreted as a factor.
-        if (isNestedSource && controls.count("velocity") > 0)
-        {
-          const auto velocity = note_velocity::resolveControlVelocityFactor(controls, "velocity");
-          const auto factor = note_velocity::resolveControlVelocityFactor(controls, "velocityFactor");
-
-          if (velocity.has_value())
-          {
-            controls["velocityFactor"] = factor.has_value()
-              ? note_velocity::formatVelocityFactor(note_velocity::accumulateVelocityFactor(factor.value(), velocity.value()))
-              : note_velocity::formatVelocityFactor(velocity.value());
-          }
-          else if (!controls.count("velocityFactor"))
-          {
-            throw std::invalid_argument("Nested velocity must be within [0, 1].");
-          }
-
-          controls.erase("velocity");
-        }
-
-        if (isNestedSource && controls.count("velocityFactor") > 0)
-        {
-          const auto factor = note_velocity::resolveControlVelocityFactor(controls, "velocityFactor");
-          if (!factor.has_value())
-          {
-            throw std::invalid_argument("Nested velocityFactor must be within [0, 1].");
-          }
-          controls["velocityFactor"] = note_velocity::formatVelocityFactor(factor.value());
-        }
-
-        return controls;
+        return control_metadata::canonicalizeModelControls(std::move(controls), isNestedSource);
       }
 
       Fraction sourceUnitsForFixedStep(
