@@ -1,9 +1,18 @@
 var math = require("mathjs");
 var factoryUtils = require("./factory-utils.js");
+var ControlMetadata = require("../../utils/control-metadata.js");
+var TypeGuards = require("../../utils/type-guards.js");
 
 require("../nodes/bjorklund-render-node.js");
 require("../nodes/element-render-node.js");
 require("../nodes/stretch-render-node.js");
+
+function elementControlsFromModel(modelNode, isNestedSource)
+{
+  return modelNode
+    ? ControlMetadata.canonicalizeModelControls(modelNode.controls_, isNestedSource)
+    : null;
+}
 
 function sourceUnitsForFixedStep(modelNode)
 {
@@ -12,7 +21,7 @@ function sourceUnitsForFixedStep(modelNode)
     return math.fraction(1);
   }
 
-  if (modelNode.type_ === "element" && modelNode.source_ && modelNode.source_ instanceof Object)
+  if (modelNode.type_ === "element" && TypeGuards.isPlainObject(modelNode.source_))
   {
     return sourceUnitsForFixedStep(modelNode.source_);
   }
@@ -109,13 +118,15 @@ function makeElementNode(modelNode, buildRenderNode)
   }
 
   var elementNode;
-  if (modelNode.source_ && modelNode.source_ instanceof Object)
+  var isNestedSource = TypeGuards.isPlainObject(modelNode.source_);
+  var controls = elementControlsFromModel(modelNode, isNestedSource);
+  if (isNestedSource)
   {
-    elementNode = new ElementRenderNode(buildRenderNode(modelNode.source_));
+    elementNode = new ElementRenderNode(buildRenderNode(modelNode.source_), controls);
     return applyElementOperator(elementNode, modelNode);
   }
 
-  elementNode = new ElementRenderNode(modelNode.source_);
+  elementNode = new ElementRenderNode(modelNode.source_, controls);
   return applyElementOperator(elementNode, modelNode);
 }
 

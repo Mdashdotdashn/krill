@@ -45,12 +45,12 @@ namespace krill
           const auto sourceFragments = mpSource->query(sourceRequest);
           for (const auto& sourceFragment : sourceFragments)
           {
-            QueryFragment mapped;
-            mapped.wholeStart = slotStart;
-            mapped.wholeEnd = slotEnd;
-            mapped.partStart = sourceFragment.partStart;
-            mapped.partEnd = sourceFragment.partEnd;
-            mapped.value = sourceFragment.value;
+            auto mapped = remapFragmentTiming(
+              sourceFragment,
+              slotStart,
+              slotEnd,
+              sourceFragment.partStart,
+              sourceFragment.partEnd);
             out.push_back(mapped);
           }
           continue;

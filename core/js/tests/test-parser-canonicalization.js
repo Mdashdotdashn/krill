@@ -29,6 +29,12 @@ function testSliceModifierCanonicalization()
   const fixedStepSlice = evaluator.evaluate('"[a]%3"');
   assert.equal(fixedStepSlice.options_.operator.type_, "fixed-step");
   assert.deepEqual(fixedStepSlice.options_.operator.arguments_, [3]);
+
+  const velocitySlice = evaluator.evaluate('"bd:0.8"');
+  assert.equal(velocitySlice.controls_.velocity, 0.8);
+
+  const velocitySubCycle = evaluator.evaluate('"[bd sd]:100"');
+  assert.equal(velocitySubCycle.controls_.velocity, 100);
 }
 
 testTopLevelTimingCanonicalization();

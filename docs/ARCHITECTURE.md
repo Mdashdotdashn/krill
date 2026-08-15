@@ -15,6 +15,7 @@ The core contains the complete playback pipeline implemented in parallel languag
 
 ### Shared Components
 - **`test-cases.json`** - Shared test fixtures for pattern evaluation
+- **`test-cases-runner.json`** - Shared harness-focused fixture normalization cases
 - **`test-cases-ast.json`** - Shared AST snapshots for parity validation
 - **`grammar.txt`** - PEG grammar (used by both implementations)
 
@@ -116,10 +117,32 @@ Renderer (Operator evaluation)
     ↓
 Render Tree (Operator nodes with state)
     ↓
-Player (Timeline execution)
+Player (Timeline execution + per-event control resolution)
     ↓
 MIDI Events
 ```
+
+Velocity-specific control flow uses the same path:
+
+- parser attaches velocity intent to AST nodes
+- render nodes emit optional `controls` in query fragments
+- nested composition carries inherited `velocityFactor` in normalized `[0,1]`
+- playback resolves final MIDI velocity per fragment/event
+
+### Future Generic Control Operator
+
+The planned generic control operator will preserve this event-oriented shape:
+
+```text
+control velocityFactor "[1 0.5 0.3]%3" $ "[hh hh hh hh]%4"
+```
+
+The source pattern remains responsible for musical values and timing. The
+control pattern is sampled at each source event onset and contributes metadata
+to that fragment. This keeps controls addressable by name, avoids global
+velocity state, and leaves the design compatible with future independent
+streams. The operator and patterned colon syntax are planned work, not current
+runtime features.
 
 ### Example
 ```
@@ -157,6 +180,8 @@ Both implementations support identical operator sets organized by category:
 
 **Goal**: Ensure C++ and JavaScript produce identical AST and render trees for identical input
 
+**Development Rule**: Unless a change is explicitly platform-specific, feature work in Krill is only considered complete when both the JavaScript and C++ implementations are updated and validated. Partial single-language progress should be tracked as incomplete.
+
 **Validation Method**:
 1. Load shared `test-cases.json` and `test-cases-ast.json`
 2. Parse each case in both implementations
@@ -181,6 +206,7 @@ Exit code 0 = Complete parity.
 
 ### Shared Fixtures
 - **`test-cases.json`** - 100+ pattern evaluation test cases
+- **`test-cases-runner.json`** - runner schema compatibility and normalization cases
 - **`test-cases-ast.json`** - 50+ AST validation snapshots
 
 ### JavaScript Tests (`core/js/tests/`)
@@ -301,4 +327,4 @@ When modifying the architecture:
 3. **Parser changes** → Update parser logic in both implementations → Ensure parity tests pass
 4. **Playback changes** → Modify rendering/player pipeline → Validate with `npm run test-parity-contract-all`
 
-See [CONTRIBUTING.md](../CONTRIBUTING.md) for detailed guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.

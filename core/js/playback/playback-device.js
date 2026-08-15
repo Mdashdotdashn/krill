@@ -1,6 +1,8 @@
 var easymidi = require('easymidi');
 const { Midi } = require('@tonejs/midi')
 const fs = require('fs');
+var NoteVelocity = require('../utils/note-velocity.js');
+var ControlMetadata = require('../utils/control-metadata.js');
 
 require('../music/conversion.js');
 
@@ -39,6 +41,19 @@ var findMidiDevice = function(name)
   process.exit();
 }
 
+function resolveVelocity(fragment)
+{
+  return ControlMetadata.resolveVelocityFromFragment(fragment);
+}
+
+function noteObjectsFromValue(value, fragment)
+{
+  var velocity = resolveVelocity(fragment);
+  return convertToNotes(value).map(function(note) {
+    return Object.assign({}, note, { velocity: velocity });
+  });
+}
+
 var tickPlayer = function(player, events)
 {
   var device = player.midiDevice_;
@@ -48,7 +63,7 @@ var tickPlayer = function(player, events)
 		if (v) v.forEach(function(x) {
 			device.send(m, {
 			  note: x.note,
-			  velocity: 127,
+			  velocity: x.velocity,
         channel: x.channel
       });
 		});
@@ -56,10 +71,18 @@ var tickPlayer = function(player, events)
 
 	processNotes(player.values_, 'noteoff');
 
-  player.values_ = events.values.reduce((c,x) => {
-     const notes = convertToNotes(x);
-     return c.concat(notes);
-   },[]);
+	if (events && Array.isArray(events.fragments) && events.fragments.length > 0)
+	{
+	  player.values_ = events.fragments.reduce((c, fragment) => {
+	     return c.concat(noteObjectsFromValue(fragment.value, fragment));
+	   }, []);
+	}
+	else
+	{
+	  player.values_ = (events && Array.isArray(events.values) ? events.values : []).reduce((c, value) => {
+	     return c.concat(noteObjectsFromValue(value, null));
+	   }, []);
+	}
 	processNotes(player.values_, 'noteon');
 }
 
@@ -119,7 +142,8 @@ MidiFileRenderer.prototype.send = function(message, options)
           var noteData = {
               midi: value.note,
               time: toDuration(value.time),
-              duration: toDuration(this.currentTime_ - value.time)
+              duration: toDuration(this.currentTime_ - value.time),
+                velocity: NoteVelocity.resolveVelocityToMidi(value.velocity) / NoteVelocity.DEFAULT_VELOCITY
           }
           if (!this.trackArray_[value.channel])
           {

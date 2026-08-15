@@ -29,12 +29,13 @@ step                <- ws step_char+ ws
 sub_cycle           <- ws '[' ws stack ws ']' ws
 timeline            <- ws '<' ws single_cycle ws '>' ws
 slice               <- sub_cycle / timeline / step
-slice_modifier      <- slice_weight / slice_bjorklund / slice_slow / slice_fast / slice_fixed_step
+slice_modifier      <- slice_weight / slice_bjorklund / slice_slow / slice_fast / slice_fixed_step / slice_velocity
 slice_weight        <- '@' number
 slice_bjorklund     <- '(' ws number ws comma ws number ws ')'
 slice_slow          <- '/' number
 slice_fast          <- '*' number
 slice_fixed_step    <- '%' number
+slice_velocity      <- ':' number
 slice_with_modifier <- slice slice_modifier?
 single_cycle        <- slice_with_modifier+
 stack               <- single_cycle (comma single_cycle)*
@@ -129,6 +130,13 @@ TEST_CASE("S2.3 slice_fixed_step", "[mininotation]")
     REQUIRE_FALSE(matchesRule("slice_fixed_step", "4"));
 }
 
+TEST_CASE("S2.3 slice_velocity", "[mininotation]")
+{
+    REQUIRE(matchesRule("slice_velocity", ":100"));
+    REQUIRE(matchesRule("slice_velocity", ":0.8"));
+    REQUIRE_FALSE(matchesRule("slice_velocity", "100"));
+}
+
 // ── slice_with_modifier ───────────────────────────────────────────────────────
 
 TEST_CASE("S2.2 slice_with_modifier", "[mininotation]")
@@ -138,6 +146,7 @@ TEST_CASE("S2.2 slice_with_modifier", "[mininotation]")
     REQUIRE(matchesRule("slice_with_modifier", "bd/2"));       // slow
     REQUIRE(matchesRule("slice_with_modifier", "bd*3"));       // fast
     REQUIRE(matchesRule("slice_with_modifier", "bd%4"));       // fixed step
+    REQUIRE(matchesRule("slice_with_modifier", "bd:0.8"));     // velocity
     REQUIRE(matchesRule("slice_with_modifier", "bd(3,8)"));    // bjorklund
     REQUIRE(matchesRule("slice_with_modifier", "[1 2]/2"));    // sub_cycle + slow
     REQUIRE(matchesRule("slice_with_modifier", "<a b>@3"));    // timeline + weight
@@ -179,6 +188,7 @@ TEST_CASE("S2.2 sequence", "[mininotation]")
     REQUIRE(matchesRule("sequence", "\"1 <2 3> 4\""));         // timeline
     REQUIRE(matchesRule("sequence", "\"1 2, 3 4\""));          // stack (comma)
     REQUIRE(matchesRule("sequence", "\"bd@2 sd\""));           // modifier
+    REQUIRE(matchesRule("sequence", "\"bd:0.8 sd:100\""));      // velocity modifier
     REQUIRE(matchesRule("sequence", "\"c#4 d#0 g1\""));        // note names
 
     REQUIRE_FALSE(matchesRule("sequence", "1 2 3"));           // no quotes

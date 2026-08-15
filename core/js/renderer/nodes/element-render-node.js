@@ -1,5 +1,7 @@
 var math = require("mathjs");
 var TimeUtils = require("../../utils/time-utils.js");
+var ControlMetadata = require("../../utils/control-metadata.js");
+var TypeGuards = require("../../utils/type-guards.js");
 require("./query-node-utils.js");
 require("./base-query-render-node.js");
 
@@ -7,16 +9,47 @@ ElementRenderNode = function(source)
 {
   BaseQueryRenderNode.call(this);
   this.source_ = source;
+  this.controls_ = null;
+
+  if (arguments.length > 1 && TypeGuards.isPlainObject(arguments[1]))
+  {
+    this.controls_ = this.source_ && this.source_.query instanceof Function
+      ? ControlMetadata.validateNestedControls(arguments[1])
+      : ControlMetadata.cloneControls(arguments[1]);
+  }
 }
 
 ElementRenderNode.prototype = Object.create(BaseQueryRenderNode.prototype);
 ElementRenderNode.prototype.constructor = ElementRenderNode;
 
+ElementRenderNode.prototype.withControls_ = function(fragment)
+{
+  if (!TypeGuards.isPlainObject(this.controls_))
+  {
+    return fragment;
+  }
+
+  var mergedControls = ControlMetadata.composeNestedControls(this.controls_, fragment.controls);
+
+  return this.makeFragment_(
+    fragment.wholeStart,
+    fragment.wholeEnd,
+    fragment.partStart,
+    fragment.partEnd,
+    fragment.value,
+    mergedControls
+  );
+}
+
 ElementRenderNode.prototype.executeQuery_ = function(requestStart, requestEnd)
 {
   if (this.source_ && this.source_.query instanceof Function)
   {
-    return this.source_.query(requestStart, requestEnd);
+    var childFragments = this.source_.query(requestStart, requestEnd) || [];
+    var self = this;
+    return childFragments.map(function(fragment) {
+      return self.withControls_(fragment);
+    });
   }
 
   var cycleIndex = math.floor(requestStart);
@@ -36,6 +69,7 @@ ElementRenderNode.prototype.executeQuery_ = function(requestStart, requestEnd)
     TimeUtils.add(wholeEnd, cycleIndex),
     TimeUtils.add(bounds.partStart, cycleIndex),
     TimeUtils.add(bounds.partEnd, cycleIndex),
-    this.source_
+    this.source_,
+    this.controls_
   )];
 }

@@ -1,5 +1,6 @@
 var math = require("mathjs");
 var TimeUtils = require("../../utils/time-utils.js");
+var FragmentUtils = require("../fragment-utils.js");
 
 // Base class for render nodes that follow the common query pattern.
 // Provides template method for input validation and fragment construction.
@@ -51,15 +52,9 @@ BaseQueryRenderNode.prototype.hasValidChild_ = function(child)
 }
 
 // Helper: construct a fragment object with all required fields.
-BaseQueryRenderNode.prototype.makeFragment_ = function(wholeStart, wholeEnd, partStart, partEnd, value)
+BaseQueryRenderNode.prototype.makeFragment_ = function(wholeStart, wholeEnd, partStart, partEnd, value, controls)
 {
-  return {
-    wholeStart: TimeUtils.toFraction(wholeStart),
-    wholeEnd: TimeUtils.toFraction(wholeEnd),
-    partStart: TimeUtils.toFraction(partStart),
-    partEnd: TimeUtils.toFraction(partEnd),
-    value: String(value)
-  };
+  return FragmentUtils.createFragment(wholeStart, wholeEnd, partStart, partEnd, value, controls);
 }
 
 // Helper: transform all fragments from a query by scaling their bounds.
@@ -72,7 +67,8 @@ BaseQueryRenderNode.prototype.scaleFragments_ = function(fragments, scaleFactor)
       TimeUtils.multiply(f.wholeEnd, scaleFactor),
       TimeUtils.multiply(f.partStart, scaleFactor),
       TimeUtils.multiply(f.partEnd, scaleFactor),
-      f.value
+      f.value,
+      f.controls
     );
   });
 }
@@ -87,7 +83,8 @@ BaseQueryRenderNode.prototype.shiftFragments_ = function(fragments, offset)
       TimeUtils.add(f.wholeEnd, offset),
       TimeUtils.add(f.partStart, offset),
       TimeUtils.add(f.partEnd, offset),
-      f.value
+      f.value,
+      f.controls
     );
   });
 }

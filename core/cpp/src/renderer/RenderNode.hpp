@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -34,7 +35,25 @@ namespace krill
     Fraction partStart{0};
     Fraction partEnd{0};
     std::string value;
+    std::map<std::string, std::string> controls;
   };
+
+  inline QueryFragment remapFragmentTiming(
+    const QueryFragment& source,
+    const Fraction& wholeStart,
+    const Fraction& wholeEnd,
+    const Fraction& partStart,
+    const Fraction& partEnd)
+  {
+    QueryFragment mapped;
+    mapped.wholeStart = wholeStart;
+    mapped.wholeEnd = wholeEnd;
+    mapped.partStart = partStart;
+    mapped.partEnd = partEnd;
+    mapped.value = source.value;
+    mapped.controls = source.controls;
+    return mapped;
+  }
 
   class RenderNode
   {

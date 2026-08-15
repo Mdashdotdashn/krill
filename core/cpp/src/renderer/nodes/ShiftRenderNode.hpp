@@ -42,12 +42,12 @@ namespace krill
       out.reserve(sourceFragments.size());
       for (const auto& fragment : sourceFragments)
       {
-        QueryFragment mapped;
-        mapped.wholeStart = fragment.wholeStart + delta;
-        mapped.wholeEnd = fragment.wholeEnd + delta;
-        mapped.partStart = fragment.partStart + delta;
-        mapped.partEnd = fragment.partEnd + delta;
-        mapped.value = fragment.value;
+        auto mapped = remapFragmentTiming(
+          fragment,
+          fragment.wholeStart + delta,
+          fragment.wholeEnd + delta,
+          fragment.partStart + delta,
+          fragment.partEnd + delta);
         out.push_back(mapped);
       }
       return out;

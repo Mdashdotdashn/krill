@@ -1,7 +1,9 @@
 #include "ElementNodeFactory.hpp"
 
 #include <string>
+#include <utility>
 
+#include "../ControlMetadata.hpp"
 #include "../nodes/BjorklundRenderNode.hpp"
 #include "../nodes/ElementRenderNode.hpp"
 #include "../nodes/StretchRenderNode.hpp"
@@ -12,6 +14,32 @@ namespace krill
   {
     namespace
     {
+      std::map<std::string, std::string> controlsFromModel(
+        const rapidjson::Value& elementNode,
+        bool isNestedSource,
+        std::string (*sourceAsString)(const rapidjson::Value&))
+      {
+        std::map<std::string, std::string> controls;
+
+        if (!elementNode.IsObject() || !elementNode.HasMember("controls_") || !elementNode["controls_"].IsObject())
+        {
+          return controls;
+        }
+
+        for (const auto& option : elementNode["controls_"].GetObject())
+        {
+          if (!option.name.IsString())
+          {
+            continue;
+          }
+
+          const auto key = std::string(option.name.GetString());
+          controls[key] = sourceAsString(option.value);
+        }
+
+        return control_metadata::canonicalizeModelControls(std::move(controls), isNestedSource);
+      }
+
       Fraction sourceUnitsForFixedStep(
         const rapidjson::Value& source,
         std::optional<Fraction> (*valueAsFraction)(const rapidjson::Value&))
@@ -155,13 +183,15 @@ namespace krill
       }
 
       const auto& source = v["source_"];
+      const auto isNestedSource = source.IsObject();
+      const auto controls = controlsFromModel(v, isNestedSource, sourceAsString);
       if (source.IsObject())
       {
-        auto element = std::make_shared<ElementRenderNode>(buildRenderTree(source));
+        auto element = std::make_shared<ElementRenderNode>(buildRenderTree(source), controls);
         return applyElementOperator(element, v, valueAsFraction, valueAsLong);
       }
 
-      auto element = std::make_shared<ElementRenderNode>(sourceAsString(source));
+      auto element = std::make_shared<ElementRenderNode>(sourceAsString(source), controls);
       return applyElementOperator(element, v, valueAsFraction, valueAsLong);
     }
   }

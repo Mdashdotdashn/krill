@@ -104,10 +104,26 @@ Engine.prototype.processUnsyncedEvent = function()
 
 Engine.prototype.emitTickIfNeeded_ = function()
 {
-  var values = this.renderingPlayer_.eventsAtTime(this.currentTime_);
-  if (values && values.length > 0)
+  var fragments = this.renderingPlayer_.queryPointWindow(this.currentTime_);
+  var values = [];
+  var selectedFragments = [];
+
+  fragments.forEach(function(fragment) {
+    if (fragment.wholeStart === undefined)
+    {
+      return;
+    }
+
+    if (math.equal(math.fraction(fragment.wholeStart), this.currentTime_))
+    {
+      values.push(String(fragment.value));
+      selectedFragments.push(fragment);
+    }
+  }, this);
+
+  if (values.length > 0)
   {
-    this.emit("tick", {time: this.currentTime_, values: values});
+    this.emit("tick", {time: this.currentTime_, values: values, fragments: selectedFragments});
   }
   return values ? values.length : 0;
 }

@@ -151,4 +151,10 @@ TEST_CASE("Parser")
 		checkParsingFromXml("{ 'source': '[a]*4', 'model': { 'type_':'element', 'source_': {'type_':'element','source_':'a'}, 'options_': {'operator': {'type_':'stretch','arguments_':['1/4']}} } }");
 		checkParsingFromXml("{ 'source': '[a]%3', 'model': { 'type_':'element', 'source_': {'type_':'element','source_':'a'}, 'options_': {'operator': {'type_':'fixed-step','arguments_':[3.0]}} } }");
 	}
+
+	SECTION("velocity modifier canonicalization")
+	{
+		checkParsingFromXml("{ 'source': 'bd:0.8', 'model': { 'type_':'element', 'source_':'bd', 'controls_': { 'velocity': 0.8 } } }");
+		checkParsingFromXml("{ 'source': '[bd sd]:100', 'model': { 'type_':'element', 'source_': {'type_':'pattern','arguments_':{'alignment':'h'},'source_':[{'type_':'element','source_':'bd'},{'type_':'element','source_':'sd'}]}, 'controls_': { 'velocity': 100.0 } } }");
+	}
 }

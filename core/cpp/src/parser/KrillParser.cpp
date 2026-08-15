@@ -247,13 +247,29 @@ struct KrillParser::Impl {
             return std::make_shared<rapidjson::Value>(std::move(opts));
         };
 
+        // slice_velocity ':' number → {velocity:n}
+        parser_["slice_velocity"] = [](const peg::SemanticValues& vs, std::any& dt) -> std::any {
+            auto& ud = std::any_cast<UserData&>(dt);
+            auto& alloc = ud.ctx.document().GetAllocator();
+            rapidjson::Value opts(rapidjson::kObjectType);
+            for (const auto& v : vs)
+            {
+                if (v.type() == typeid(double))
+                {
+                    opts.AddMember("velocity", rapidjson::Value(std::any_cast<double>(v)), alloc);
+                    break;
+                }
+            }
+            return std::make_shared<rapidjson::Value>(std::move(opts));
+        };
+
         // slice_modifier: pass the matched sub-rule's PValue up
         parser_["slice_modifier"] = [](const peg::SemanticValues& vs, std::any&) -> std::any {
             return firstPValue(vs);
         };
 
         // ── S3.2: slice_with_modifier ─────────────────────────────────────────
-        // JS parity: always build ElementStub(source=slice, options_=modifier?)
+        // JS parity: structural modifiers go to options_, event controls go to controls_.
         parser_["slice_with_modifier"] = [](const peg::SemanticValues& vs, std::any& dt) -> std::any {
             auto& ud = std::any_cast<UserData&>(dt);
             auto& alloc = ud.ctx.document().GetAllocator();
@@ -277,9 +293,18 @@ struct KrillParser::Impl {
 
             if (modPv)
             {
-                rapidjson::Value optCopy;
-                optCopy.CopyFrom(*modPv, alloc);
-                elem.AddMember("options_", optCopy, alloc);
+                if (modPv->IsObject() && modPv->HasMember("velocity"))
+                {
+                    rapidjson::Value controlsCopy;
+                    controlsCopy.CopyFrom(*modPv, alloc);
+                    elem.AddMember("controls_", controlsCopy, alloc);
+                }
+                else
+                {
+                    rapidjson::Value optCopy;
+                    optCopy.CopyFrom(*modPv, alloc);
+                    elem.AddMember("options_", optCopy, alloc);
+                }
             }
 
             return std::make_shared<rapidjson::Value>(std::move(elem));

@@ -63,12 +63,13 @@ slice               <- sub_cycle / timeline / step
 # ── [S2.3] Slice modifiers ────────────────────────────────────────────────────
 # (included here because slice_with_modifier depends on them)
 
-slice_modifier      <- slice_weight / slice_bjorklund / slice_slow / slice_fast / slice_fixed_step
+slice_modifier      <- slice_weight / slice_bjorklund / slice_slow / slice_fast / slice_fixed_step / slice_velocity
 slice_weight        <- '@' number
 slice_bjorklund     <- '(' ws number ws comma ws number ws ')'
 slice_slow          <- '/' number
 slice_fast          <- '*' number
 slice_fixed_step    <- '%' number
+slice_velocity      <- ':' number
 
 # ── [S2.2 cont.] ──────────────────────────────────────────────────────────────
 

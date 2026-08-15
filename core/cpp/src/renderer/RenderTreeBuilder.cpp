@@ -14,6 +14,8 @@
 #include "factories/TruncNodeFactory.hpp"
 #include "nodes/EmptyRenderNode.hpp"
 
+#include <cmath>
+
 namespace krill
 {
   namespace
@@ -31,6 +33,25 @@ namespace krill
         return false;
       }
       return std::string(v["type_"].GetString()) == "element" && v.HasMember("source_");
+    }
+
+    std::string formatDouble(double value)
+    {
+      if (std::fabs(value - std::round(value)) < 1e-9)
+      {
+        return std::to_string(static_cast<long>(std::llround(value)));
+      }
+
+      std::string text = std::to_string(value);
+      while (!text.empty() && text.back() == '0')
+      {
+        text.pop_back();
+      }
+      if (!text.empty() && text.back() == '.')
+      {
+        text.pop_back();
+      }
+      return text;
     }
 
     std::string sourceAsString(const rapidjson::Value& source)
@@ -61,7 +82,7 @@ namespace krill
       }
       if (source.IsDouble())
       {
-        return std::to_string(source.GetDouble());
+        return formatDouble(source.GetDouble());
       }
       return "";
     }

@@ -3,6 +3,9 @@ var math = require("mathjs");
 
 require("../renderer/nodes/empty-render-node.js");
 require("../renderer/nodes/element-render-node.js");
+require("../input-evaluator.js");
+require("../renderer/render-tree.js");
+require("../playback/rendering-tree-player.js");
 
 function fracToString(v)
 {
@@ -16,13 +19,20 @@ function F(v)
 
 function fragmentToComparable(fragment)
 {
-  return {
+  var comparable = {
     wholeStart: fracToString(fragment.wholeStart),
     wholeEnd: fracToString(fragment.wholeEnd),
     partStart: fracToString(fragment.partStart),
     partEnd: fracToString(fragment.partEnd),
     value: String(fragment.value)
   };
+
+  if (fragment.controls && typeof fragment.controls === "object")
+  {
+    comparable.controls = Object.assign({}, fragment.controls);
+  }
+
+  return comparable;
 }
 
 (function testEmptyRenderNodeReturnsNoFragments()
@@ -92,4 +102,175 @@ function fragmentToComparable(fragment)
     partEnd: F("3/8"),
     value: "nested"
   }]);
+})();
+
+(function testElementRenderNodeEmitsOptionalControls()
+{
+  var node = new ElementRenderNode("snare", { velocity: 100 });
+  var fragments = node.query("0", "1").map(fragmentToComparable);
+
+  assert.deepStrictEqual(fragments, [{
+    wholeStart: F("0"),
+    wholeEnd: F("1"),
+    partStart: F("0"),
+    partEnd: F("1"),
+    value: "snare",
+    controls: { velocity: 100 }
+  }]);
+})();
+
+(function testElementRenderNodeMergesControlsFromNestedSource()
+{
+  var sourceNode = {
+    query: function(start, end)
+    {
+      return [{
+        wholeStart: math.fraction(0),
+        wholeEnd: math.fraction(1),
+        partStart: start,
+        partEnd: end,
+        value: "nested",
+        controls: { velocity: 80, pan: 0.2 }
+      }];
+    }
+  };
+
+  var node = new ElementRenderNode(sourceNode, { velocityFactor: 0.8, gain: 0.7 });
+  var result = node.query("1/8", "3/8").map(fragmentToComparable);
+
+  assert.deepStrictEqual(result, [{
+    wholeStart: F("0"),
+    wholeEnd: F("1"),
+    partStart: F("1/8"),
+    partEnd: F("3/8"),
+    value: "nested",
+    controls: { velocity: 80, gain: 0.7, pan: 0.2, velocityFactor: 0.8 }
+  }]);
+})();
+
+(function testElementRenderNodeComposesVelocityFactorsFromNestedSource()
+{
+  var sourceNode = {
+    query: function(start, end)
+    {
+      return [{
+        wholeStart: math.fraction(0),
+        wholeEnd: math.fraction(1),
+        partStart: start,
+        partEnd: end,
+        value: "nested",
+        controls: { velocity: 80 }
+      }];
+    }
+  };
+
+  var node = new ElementRenderNode(sourceNode, { velocityFactor: 0.8 });
+  var result = node.query("1/8", "3/8").map(fragmentToComparable);
+
+  assert.deepStrictEqual(result, [{
+    wholeStart: F("0"),
+    wholeEnd: F("1"),
+    partStart: F("1/8"),
+    partEnd: F("3/8"),
+    value: "nested",
+    controls: { velocity: 80, velocityFactor: 0.8 }
+  }]);
+})();
+
+(function testElementRenderNodeComposesThreeLevelFactorHierarchy()
+{
+  var leafSourceNode = {
+    query: function(start, end)
+    {
+      return [{
+        wholeStart: math.fraction(0),
+        wholeEnd: math.fraction(1),
+        partStart: start,
+        partEnd: end,
+        value: "nested",
+        controls: { velocity: 80 }
+      }];
+    }
+  };
+
+  var middleFactorNode = new ElementRenderNode(leafSourceNode, { velocityFactor: 0.5 });
+  var topFactorNode = new ElementRenderNode(middleFactorNode, { velocityFactor: 0.5 });
+
+  var result = topFactorNode.query("1/8", "3/8").map(fragmentToComparable);
+
+  assert.deepStrictEqual(result, [{
+    wholeStart: F("0"),
+    wholeEnd: F("1"),
+    partStart: F("1/8"),
+    partEnd: F("3/8"),
+    value: "nested",
+    controls: { velocity: 80, velocityFactor: 0.25 }
+  }]);
+})();
+
+(function testNestedElementControlsRejectAbsoluteVelocity()
+{
+  var leafSourceNode = {
+    query: function(start, end)
+    {
+      return [{
+        wholeStart: math.fraction(0),
+        wholeEnd: math.fraction(1),
+        partStart: start,
+        partEnd: end,
+        value: "nested"
+      }];
+    }
+  };
+
+  assert.throws(function() {
+    return new ElementRenderNode(leafSourceNode, { velocity: 23 });
+  }, /velocityFactor/);
+})();
+
+(function testNestedElementControlsRejectOutOfRangeVelocityFactor()
+{
+  var leafSourceNode = {
+    query: function(start, end)
+    {
+      return [{
+        wholeStart: math.fraction(0),
+        wholeEnd: math.fraction(1),
+        partStart: start,
+        partEnd: end,
+        value: "nested"
+      }];
+    }
+  };
+
+  assert.throws(function() {
+    return new ElementRenderNode(leafSourceNode, { velocityFactor: 64 });
+  }, /\[0, 1\]/);
+})();
+
+(function testVelocityControlsRemainPerEventAndDoNotBleedToSiblings()
+{
+  var evaluator = new Evaluator();
+  var builder = new RenderingTreeBuilder();
+  var tree = builder.rebuild(evaluator.evaluate("'bd:80 sd'"));
+
+  var player = new RenderingTreePlayer();
+  player.setRenderingTree(tree);
+  player.reset();
+
+  var firstTime = math.fraction(0);
+  var firstFragments = player.queryPointWindow(firstTime) || [];
+  var firstOnset = firstFragments.filter(function(fragment) {
+    return math.equal(math.fraction(fragment.wholeStart), firstTime);
+  });
+  assert.strictEqual(firstOnset.length, 1);
+  assert.strictEqual(String(firstOnset[0].controls.velocity), "80");
+
+  var secondTime = math.fraction("1/2");
+  var secondFragments = player.queryPointWindow(secondTime) || [];
+  var secondOnset = secondFragments.filter(function(fragment) {
+    return math.equal(math.fraction(fragment.wholeStart), secondTime);
+  });
+  assert.strictEqual(secondOnset.length, 1);
+  assert.strictEqual(secondOnset[0].controls && secondOnset[0].controls.velocity, undefined);
 })();

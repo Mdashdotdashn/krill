@@ -21,6 +21,7 @@ var shiftNodeFactory = require("./factories/shift-node-factory.js");
 var stretchNodeFactory = require("./factories/stretch-node-factory.js");
 var structNodeFactory = require("./factories/struct-node-factory.js");
 var truncNodeFactory = require("./factories/trunc-node-factory.js");
+var TypeGuards = require("../utils/type-guards.js");
 
 function isElementNode(modelNode)
 {
@@ -141,7 +142,7 @@ function makeTruncNode(modelNode)
 
 function buildRenderNode(modelNode)
 {
-  if (!modelNode || !(modelNode instanceof Object))
+  if (!TypeGuards.isPlainObject(modelNode))
   {
     return new EmptyRenderNode();
   }

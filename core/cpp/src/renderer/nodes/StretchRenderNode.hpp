@@ -30,12 +30,12 @@ namespace krill
       fragments.reserve(childFragments.size());
       for (const auto& childFragment : childFragments)
       {
-        QueryFragment mapped;
-        mapped.wholeStart = childFragment.wholeStart * mFactor;
-        mapped.wholeEnd = childFragment.wholeEnd * mFactor;
-        mapped.partStart = childFragment.partStart * mFactor;
-        mapped.partEnd = childFragment.partEnd * mFactor;
-        mapped.value = childFragment.value;
+        auto mapped = remapFragmentTiming(
+          childFragment,
+          childFragment.wholeStart * mFactor,
+          childFragment.wholeEnd * mFactor,
+          childFragment.partStart * mFactor,
+          childFragment.partEnd * mFactor);
         fragments.push_back(mapped);
       }
 

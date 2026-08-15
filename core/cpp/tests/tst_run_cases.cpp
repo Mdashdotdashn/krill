@@ -8,27 +8,31 @@
 
 #include <array>
 #include <algorithm>
+#include <cstdlib>
+#include <cmath>
 #include <fstream>
+#include <map>
 #include <optional>
 #include <string>
 #include <vector>
 
 namespace
 {
-std::ifstream openSharedRunCasesFile()
+std::ifstream openSharedRunCasesFileByName(const char* fileName)
 {
   const std::array<const char*, 7> candidatePaths = {
-    "../test-cases.json",
-    "../../test-cases.json",
-    "../../../test-cases.json",
-    "../../../../test-cases.json",
-    "../../../../../test-cases.json",
-    "../../../../../../test-cases.json",
-    "../../../../../../../test-cases.json"
+    "../",
+    "../../",
+    "../../../",
+    "../../../../",
+    "../../../../../",
+    "../../../../../../",
+    "../../../../../../../"
   };
 
-  for (const auto* path : candidatePaths)
+  for (const auto* root : candidatePaths)
   {
+    const std::string path = std::string(root) + fileName;
     std::ifstream ifs(path);
     if (ifs.is_open())
     {
@@ -42,8 +46,116 @@ std::ifstream openSharedRunCasesFile()
 struct ExpectedEvent
 {
   Fraction time{0};
-  std::vector<std::string> values;
+  struct ExpectedEntry
+  {
+    std::string value;
+    std::map<std::string, std::string> controls;
+
+    bool operator==(const ExpectedEntry& other) const
+    {
+      return value == other.value && controls == other.controls;
+    }
+  };
+
+  std::vector<ExpectedEntry> entries;
 };
+
+std::string formatDouble(double value)
+{
+  if (std::fabs(value - std::round(value)) < 1e-9)
+  {
+    return std::to_string(static_cast<long>(std::llround(value)));
+  }
+
+  std::string text = std::to_string(value);
+  while (!text.empty() && text.back() == '0')
+  {
+    text.pop_back();
+  }
+  if (!text.empty() && text.back() == '.')
+  {
+    text.pop_back();
+  }
+  return text;
+}
+
+std::string rapidValueToString(const rapidjson::Value& value)
+{
+  if (value.IsString())
+  {
+    return value.GetString();
+  }
+  if (value.IsBool())
+  {
+    return value.GetBool() ? "true" : "false";
+  }
+  if (value.IsInt())
+  {
+    return std::to_string(value.GetInt());
+  }
+  if (value.IsInt64())
+  {
+    return std::to_string(value.GetInt64());
+  }
+  if (value.IsUint())
+  {
+    return std::to_string(value.GetUint());
+  }
+  if (value.IsUint64())
+  {
+    return std::to_string(value.GetUint64());
+  }
+  if (value.IsDouble())
+  {
+    return formatDouble(value.GetDouble());
+  }
+  return "";
+}
+
+ExpectedEvent::ExpectedEntry parseExpectedEntry(const rapidjson::Value& value)
+{
+  ExpectedEvent::ExpectedEntry parsed;
+
+  if (value.IsString())
+  {
+    const std::string text = value.GetString();
+    const auto delimiter = text.rfind(':');
+    if (delimiter == std::string::npos || delimiter == 0 || delimiter == text.size() - 1)
+    {
+      parsed.value = text;
+      return parsed;
+    }
+
+    const auto velocityText = text.substr(delimiter + 1);
+    char* parseEnd = nullptr;
+    const auto parsedVelocity = std::strtod(velocityText.c_str(), &parseEnd);
+    if (!parseEnd || *parseEnd != '\0' || !std::isfinite(parsedVelocity))
+    {
+      parsed.value = text;
+      return parsed;
+    }
+
+    parsed.value = text.substr(0, delimiter);
+    parsed.controls["velocity"] = formatDouble(parsedVelocity);
+    return parsed;
+  }
+
+  REQUIRE(value.IsObject());
+  REQUIRE(value.HasMember("value"));
+  parsed.value = rapidValueToString(value["value"]);
+
+  if (value.HasMember("controls"))
+  {
+    REQUIRE(value["controls"].IsObject());
+    for (const auto& control : value["controls"].GetObject())
+    {
+      REQUIRE(control.name.IsString());
+      parsed.controls[control.name.GetString()] = rapidValueToString(control.value);
+    }
+  }
+
+  return parsed;
+}
 
 std::vector<ExpectedEvent> sortedExpectedEvents(const rapidjson::Value::ConstObject& expected)
 {
@@ -59,8 +171,7 @@ std::vector<ExpectedEvent> sortedExpectedEvents(const rapidjson::Value::ConstObj
 
     for (const auto& v : expectedEntry.value.GetArray())
     {
-      REQUIRE(v.IsString());
-      parsed.values.push_back(v.GetString());
+      parsed.entries.push_back(parseExpectedEntry(v));
     }
 
     events.push_back(std::move(parsed));
@@ -72,66 +183,95 @@ std::vector<ExpectedEvent> sortedExpectedEvents(const rapidjson::Value::ConstObj
 
   return events;
 }
+
+std::vector<ExpectedEvent::ExpectedEntry> entriesAtTime(krill::RenderTreePlayer& player, const Fraction& time)
+{
+  std::vector<ExpectedEvent::ExpectedEntry> entries;
+
+  const auto fragments = player.queryPointWindow(time);
+  for (const auto& fragment : fragments)
+  {
+    if (fragment.wholeStart != time)
+    {
+      continue;
+    }
+
+    ExpectedEvent::ExpectedEntry entry;
+    entry.value = fragment.value;
+    entry.controls = fragment.controls;
+    entries.push_back(std::move(entry));
+  }
+
+  return entries;
+}
 } // namespace
 
 TEST_CASE("Rendertree")
 {
   using namespace rapidjson;
 
-  std::ifstream ifs = openSharedRunCasesFile();
-  REQUIRE(ifs.is_open());
+  const std::array<const char*, 2> sharedFiles = {
+    "test-cases.json",
+    "test-cases-runner.json"
+  };
 
-  IStreamWrapper isw{ifs};
-  Document document{};
-  REQUIRE(!document.ParseStream(isw).HasParseError());
-  REQUIRE(document.HasMember("cases"));
-  REQUIRE(document["cases"].IsObject());
-
-  const auto& cases = document["cases"].GetObject();
-
-  for (const auto& entry : cases)
+  for (const auto* sharedFile : sharedFiles)
   {
-    REQUIRE(entry.name.IsString());
-    REQUIRE(entry.value.IsObject());
+    std::ifstream ifs = openSharedRunCasesFileByName(sharedFile);
+    REQUIRE(ifs.is_open());
 
-    const std::string source = entry.name.GetString();
-    const auto& expected = entry.value.GetObject();
+    IStreamWrapper isw{ifs};
+    Document document{};
+    REQUIRE(!document.ParseStream(isw).HasParseError());
+    REQUIRE(document.HasMember("cases"));
+    REQUIRE(document["cases"].IsObject());
 
-    krill::Parser parser;
-    Document parseDoc;
-    auto parseResult = parser.parse(parseDoc, source);
-    INFO("source: " << source);
-    REQUIRE(parseResult.has_value());
+    const auto& cases = document["cases"].GetObject();
 
-    auto pTree = krill::RenderTreeBuilder::fromJson(parseResult.value());
-    krill::RenderTreePlayer player;
-    player.setTree(pTree);
-    player.reset();
-
-    const auto expectedEvents = sortedExpectedEvents(expected);
-    Fraction currentTime(-1, 10000);
-
-    for (const auto& expectedEvent : expectedEvents)
+    for (const auto& entry : cases)
     {
-      Fraction nextTime;
-      std::vector<std::string> values;
-      int guard = 0;
+      REQUIRE(entry.name.IsString());
+      REQUIRE(entry.value.IsObject());
 
-      while (values.empty())
+      const std::string source = entry.name.GetString();
+      const auto& expected = entry.value.GetObject();
+
+      krill::Parser parser;
+      Document parseDoc;
+      auto parseResult = parser.parse(parseDoc, source);
+      INFO("source: " << source << " (" << sharedFile << ")");
+      REQUIRE(parseResult.has_value());
+
+      auto pTree = krill::RenderTreeBuilder::fromJson(parseResult.value());
+      krill::RenderTreePlayer player;
+      player.setTree(pTree);
+      player.reset();
+
+      const auto expectedEvents = sortedExpectedEvents(expected);
+      Fraction currentTime(-1, 10000);
+
+      for (const auto& expectedEvent : expectedEvents)
       {
-        nextTime = player.nextOnsetTimeFrom(currentTime);
-        values = player.eventsAtTime(nextTime);
-        currentTime = nextTime;
-        guard += 1;
+        Fraction nextTime;
+        std::vector<std::string> values;
+        int guard = 0;
 
-        if (guard > 4096)
+        while (values.empty())
         {
-          FAIL("Stuck while advancing player for source");
-        }
-      }
+          nextTime = player.nextOnsetTimeFrom(currentTime);
+          values = player.eventsAtTime(nextTime);
+          currentTime = nextTime;
+          guard += 1;
 
-      CHECK(nextTime == expectedEvent.time);
-      CHECK(values == expectedEvent.values);
+          if (guard > 4096)
+          {
+            FAIL("Stuck while advancing player for source");
+          }
+        }
+
+        CHECK(nextTime == expectedEvent.time);
+        CHECK(entriesAtTime(player, nextTime) == expectedEvent.entries);
+      }
     }
   }
 }
