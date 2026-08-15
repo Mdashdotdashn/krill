@@ -129,6 +129,21 @@ Velocity-specific control flow uses the same path:
 - nested composition carries inherited `velocityFactor` in normalized `[0,1]`
 - playback resolves final MIDI velocity per fragment/event
 
+### Future Generic Control Operator
+
+The planned generic control operator will preserve this event-oriented shape:
+
+```text
+control velocityFactor "[1 0.5 0.3]%3" $ "[hh hh hh hh]%4"
+```
+
+The source pattern remains responsible for musical values and timing. The
+control pattern is sampled at each source event onset and contributes metadata
+to that fragment. This keeps controls addressable by name, avoids global
+velocity state, and leaves the design compatible with future independent
+streams. The operator and patterned colon syntax are planned work, not current
+runtime features.
+
 ### Example
 ```
 Input:    "add(scale(notes(C D E), 0.25), 2)"

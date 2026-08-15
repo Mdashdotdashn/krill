@@ -213,3 +213,65 @@ Excluded for now:
 - Full multi-stream runtime (`d1`/`d2`/`d3` style model)
 - Generic mininotation syntax for all controls
 - Stream-level mute/solo/panic workflow
+
+## Future Exploration: Generic Control Operator
+
+The next control-oriented design direction is intentionally recorded here for
+later exploration, without changing the current implementation yet.
+
+### Decision
+
+- Add a generic `control` operator as the canonical mechanism for applying a
+  pattern of control values to a musical source.
+- Use the operator form `control <controlName> <controlPattern> $ <source>`.
+- Route colon-based velocity syntax through the same control mechanism under
+  the hood where practical, rather than creating a separate velocity-only
+  runtime path.
+- Keep the runtime data model per-event and stream-agnostic.
+
+### Intended Example
+
+```text
+control velocityFactor "[1 0.5 0.3]%3" $ "[hh hh hh hh]%4"
+```
+
+This should combine a four-event hi-hat pattern with a three-event repeating
+factor pattern, sampling the control pattern at each musical event onset.
+
+### Proposed Stories
+
+1. **Grammar and AST**: add the generic control operator in JS and C++, with
+  parity-preserving AST fields for control name, control pattern, and source.
+2. **JS render integration**: add the JS control factory, dispatch, and render
+  node.
+3. **C++ render integration**: add the matching C++ factory, dispatch, and
+  render node.
+4. **Sampling and merge semantics**: sample controls at event `wholeStart`,
+  attach the result to fragment controls, and define deterministic conflict
+  precedence for duplicate control names.
+5. **Colon integration**: preserve scalar colon behavior while allowing a
+  patterned colon form to use the generic control path.
+6. **Velocity strictness**: keep absolute `velocity` at leaf events and use
+  normalized `[0,1]` `velocityFactor` for patterned/intermediate modulation.
+7. **Parity and regression coverage**: test parser shape, 3-against-4 timing,
+  sibling isolation, nested controls, and unchanged scalar velocity behavior
+  in both JS and C++.
+8. **Documentation**: document the compact user-facing form and the
+  parse-to-playback control flow.
+
+### Open Semantics To Resolve Before Implementation
+
+- Whether a missing control sample defaults to `1.0`, leaves the event
+  unchanged, or suppresses the event.
+- How multiple control samples at the same onset are resolved.
+- Whether inner/nearest controls override outer controls for the same key.
+- Whether patterned colon syntax is worth adding immediately or should follow
+  the explicit `control` operator first.
+
+### Explicit Non-Goals For This Exploration
+
+- No `velmod` alias yet; `control` is the proposed canonical command.
+- No global velocity state.
+- No multi-stream scheduler redesign.
+- No generic arbitrary-control mini-notation until control sampling semantics
+  are proven useful with velocity.
