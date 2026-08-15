@@ -327,4 +327,4 @@ When modifying the architecture:
 3. **Parser changes** → Update parser logic in both implementations → Ensure parity tests pass
 4. **Playback changes** → Modify rendering/player pipeline → Validate with `npm run test-parity-contract-all`
 
-See [CONTRIBUTING.md](../CONTRIBUTING.md) for detailed guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
