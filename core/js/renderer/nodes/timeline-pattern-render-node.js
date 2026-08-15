@@ -1,5 +1,5 @@
 var math = require("mathjs");
-var TypeGuards = require("../../utils/type-guards.js");
+var FragmentUtils = require("../fragment-utils.js");
 
 require("./query-node-utils.js");
 
@@ -75,16 +75,13 @@ TimelinePatternRenderNode.prototype.query = function(start, end)
       for (var j = 0; j < childFragments.length; j++)
       {
         var fragment = childFragments[j];
-        fragments.push({
-          wholeStart: math.add(fragment.wholeStart, slotStart),
-          wholeEnd: math.add(fragment.wholeEnd, slotStart),
-          partStart: math.add(fragment.partStart, slotStart),
-          partEnd: math.add(fragment.partEnd, slotStart),
-          value: fragment.value,
-          controls: TypeGuards.isPlainObject(fragment.controls)
-            ? Object.assign({}, fragment.controls)
-            : undefined
-        });
+        fragments.push(FragmentUtils.remapFragmentTiming(
+          fragment,
+          math.add(fragment.wholeStart, slotStart),
+          math.add(fragment.wholeEnd, slotStart),
+          math.add(fragment.partStart, slotStart),
+          math.add(fragment.partEnd, slotStart)
+        ));
       }
     }
   }

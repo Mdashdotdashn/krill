@@ -61,13 +61,12 @@ namespace krill
         const auto sourceFragments = mpSource->query(local);
         for (const auto& fragment : sourceFragments)
         {
-          QueryFragment mapped;
-          mapped.wholeStart = fragment.wholeStart + cycleBase;
-          mapped.wholeEnd = fragment.wholeEnd + cycleBase;
-          mapped.partStart = fragment.partStart + cycleBase;
-          mapped.partEnd = fragment.partEnd + cycleBase;
-          mapped.value = fragment.value;
-          mapped.controls = fragment.controls;
+            auto mapped = remapFragmentTiming(
+              fragment,
+              fragment.wholeStart + cycleBase,
+              fragment.wholeEnd + cycleBase,
+              fragment.partStart + cycleBase,
+              fragment.partEnd + cycleBase);
           out.push_back(mapped);
         }
       }

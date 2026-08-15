@@ -84,13 +84,12 @@ namespace krill
           const auto childFragments = pChild->query(localRequest);
           for (const auto& childFragment : childFragments)
           {
-            QueryFragment mapped;
-            mapped.wholeStart = childFragment.wholeStart + slotStart;
-            mapped.wholeEnd = childFragment.wholeEnd + slotStart;
-            mapped.partStart = childFragment.partStart + slotStart;
-            mapped.partEnd = childFragment.partEnd + slotStart;
-            mapped.value = childFragment.value;
-            mapped.controls = childFragment.controls;
+            auto mapped = remapFragmentTiming(
+              childFragment,
+              childFragment.wholeStart + slotStart,
+              childFragment.wholeEnd + slotStart,
+              childFragment.partStart + slotStart,
+              childFragment.partEnd + slotStart);
             fragments.push_back(mapped);
           }
         }

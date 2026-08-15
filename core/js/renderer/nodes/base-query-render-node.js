@@ -1,6 +1,6 @@
 var math = require("mathjs");
 var TimeUtils = require("../../utils/time-utils.js");
-var TypeGuards = require("../../utils/type-guards.js");
+var FragmentUtils = require("../fragment-utils.js");
 
 // Base class for render nodes that follow the common query pattern.
 // Provides template method for input validation and fragment construction.
@@ -54,20 +54,7 @@ BaseQueryRenderNode.prototype.hasValidChild_ = function(child)
 // Helper: construct a fragment object with all required fields.
 BaseQueryRenderNode.prototype.makeFragment_ = function(wholeStart, wholeEnd, partStart, partEnd, value, controls)
 {
-  var fragment = {
-    wholeStart: TimeUtils.toFraction(wholeStart),
-    wholeEnd: TimeUtils.toFraction(wholeEnd),
-    partStart: TimeUtils.toFraction(partStart),
-    partEnd: TimeUtils.toFraction(partEnd),
-    value: String(value)
-  };
-
-  if (TypeGuards.isPlainObject(controls))
-  {
-    fragment.controls = Object.assign({}, controls);
-  }
-
-  return fragment;
+  return FragmentUtils.createFragment(wholeStart, wholeEnd, partStart, partEnd, value, controls);
 }
 
 // Helper: transform all fragments from a query by scaling their bounds.
