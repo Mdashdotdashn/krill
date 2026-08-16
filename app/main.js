@@ -82,7 +82,7 @@ async function start(options)
 {
 	var app = require('../core/js/application.js');
   app.init(options);
-	const server = await createServer(app, { port: 3000 });
+  const server = await createServer(app, { port: options.port || 3000 });
 
 	await server.start();
 	console.log('Server running at:', server.info.uri);
@@ -96,6 +96,7 @@ if (require.main === module)
     .version('0.0.1')
     .option('-m, --midi-device <midiDevice>', 'selects a midi interface')
     .option('-s, --midi-sync <midiDevice>', 'selects a midi device to sync from')
+    .option('-p, --port <port>', 'selects the server port')
     .option('-c, --cycle <cycleString>', 'use the specied cycleString at startup');
 
   program.parse(process.argv);
